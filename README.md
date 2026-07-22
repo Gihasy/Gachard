@@ -43,6 +43,39 @@ See `.env.example` in each directory.
 - **Payment**: Stripe Test Mode — dual-track (credit top-up untuk pack, direct payment untuk print)
 - **AI**: QR lookup + vision model untuk fitur scan kartu
 
+## Deployment
+
+### Backend (Render)
+1. Buat akun di https://render.com
+2. New → Web Service
+3. Connect GitHub repo `Gihasy/Gachard`
+4. Settings:
+   - Name: `gachard-backend`
+   - Environment: Python
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+5. Add Environment Variables:
+   - `MONGODB_URL`: MongoDB Atlas connection string
+   - `DATABASE_NAME`: gachard
+6. Create Web Service
+
+### Frontend (Vercel)
+1. Buat akun di https://vercel.com
+2. New Project
+3. Import GitHub repo `Gihasy/Gachard`
+4. Settings:
+   - Framework Preset: Next.js
+   - Root Directory: `frontend`
+5. Add Environment Variables:
+   - `NEXT_PUBLIC_API_URL`: URL backend Render (e.g., `https://gachard-backend.onrender.com`)
+   - `GOOGLE_CLIENT_ID`: Google Client ID
+6. Deploy
+
+### Live Demo
+- Frontend: (akan diisi setelah deploy)
+- Backend API: (akan diisi setelah deploy)
+- API Docs: (akan diisi setelah deploy)
+
 ## Catatan untuk AI Coding Agent
 Sebelum membuat perubahan apa pun, baca `MEMORY.md`, `DECISIONS.md`, dan `docs/` terlebih dahulu.
 
