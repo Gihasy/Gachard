@@ -1,0 +1,29 @@
+# Gachard
+
+Platform TCG digital-native di mana brand/IP dapat menerbitkan kartu (Battle Card / Collection Card) yang bisa dibeli, dikoleksi, dicetak fisik, dan ditukar kembali ke digital — dengan blockchain yang sepenuhnya tersembunyi dari user.
+
+Dibangun untuk submission **Indonesia Web3 Hackathon 2026** (track Consumer Apps, BNB Chain).
+
+## Quick Start
+1. Baca `MEMORY.md` — status & sprint saat ini
+2. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci
+3. Baca `docs/00-project-overview.md` — problem, solution, scope
+4. Baca sprint aktif di `sprints/`
+5. Implement sesuai sprint aktif — jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru
+
+## Stack
+- **Chain**: BNB Chain Testnet / opBNB Testnet
+- **Token**: BEP-1155
+- **Wallet**: custodial (dibuat otomatis backend, tersembunyi dari user) + sponsored gas
+- **Payment**: Stripe Test Mode — dual-track (credit top-up untuk pack, direct payment untuk print)
+- **AI**: QR lookup + vision model untuk fitur scan kartu
+
+## Catatan untuk AI Coding Agent
+Sebelum membuat perubahan apa pun, baca `MEMORY.md`, `DECISIONS.md`, dan `docs/` terlebih dahulu.
+
+## Checklist Saat Ganti Model atau Tool
+- [ ] Selesaikan fitur yang sedang berjalan dulu — jangan ganti di tengah satu fitur
+- [ ] Commit ke Git sebelum ganti (titik rollback aman)
+- [ ] Minta model/tool baru menjelaskan pemahamannya dari `MEMORY.md` + `DECISIONS.md` sebelum menulis kode
+- [ ] Review diff Git setelah sesi pertama dengan model/tool baru
+- [ ] Update `MEMORY.md` "Current Sprint"/"Notes" kalau ada perubahan konteks akibat pergantian ini
