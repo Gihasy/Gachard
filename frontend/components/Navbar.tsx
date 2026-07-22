@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -11,6 +12,14 @@ const navItems = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
+  }, []);
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -35,6 +44,16 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+            {user ? (
+              <span className="text-sm text-gray-600">@{user.username}</span>
+            ) : (
+              <Link
+                href="/login"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </div>
