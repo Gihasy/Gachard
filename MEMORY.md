@@ -20,7 +20,13 @@ Setup fondasi + scaffold aplikasi dasar (login Google OAuth, wallet custodial ot
 - Execution Plan 6 minggu sudah disusun, disinkronkan dengan jadwal workshop hackathon
 - Tool utama: MiMoCode (model mimo-v2.5-pro, berbayar) sejak awal — TIDAK memakai Emergent (lihat ADR-015)
 - Hosting: Vercel (frontend) + Render/Railway (backend) + MongoDB Atlas (database), semua free tier untuk skala demo
-- Belum ada kode yang dibangun — baru mulai Sprint 1
+- Sprint 1 progress:
+  - [x] Next.js frontend dengan halaman Home/Koleksi/Profil
+  - [x] FastAPI backend dengan MongoDB connection dan auth routes
+  - [x] Google OAuth + custodial wallet generation
+  - [x] PWA manifest + service worker
+  - [x] Kode di-push ke GitHub
+  - [ ] Manual setup: Vercel, Render, MongoDB Atlas, Google Cloud Console
 
 ## Notes
 - Solo developer, non-programmer, vibe coding via MiMoCode

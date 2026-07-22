@@ -4,15 +4,15 @@
 Setup fondasi + scaffold aplikasi dasar.
 
 ## Tasks
-- [ ] Install MiMoCode CLI (`curl -fsSL https://mimo.xiaomi.com/install | bash` atau `npm install -g @mimo-ai/cli`)
+- [x] Install MiMoCode CLI (`curl -fsSL https://mimo.xiaomi.com/install | bash` atau `npm install -g @mimo-ai/cli`)
 - [ ] Setup akun Xiaomi MiMo Platform (atau custom provider pihak ketiga) untuk akses berbayar model `mimo-v2.5-pro`
-- [ ] `git init` project lokal, buat repo GitHub, `git remote add origin`
-- [ ] Taruh scaffold (README.md, MEMORY.md, DECISIONS.md, docs/, sprints/) ke folder project, commit awal
+- [x] `git init` project lokal, buat repo GitHub, `git remote add origin`
+- [x] Taruh scaffold (README.md, MEMORY.md, DECISIONS.md, docs/, sprints/) ke folder project, commit awal
 - [ ] Setup akun hosting: Vercel (frontend), Render/Railway (backend), MongoDB Atlas (database) — free tier
 - [ ] Setup wallet testnet + claim faucet BNB testnet/opBNB
-- [ ] Scaffold: login Google OAuth, wallet custodial otomatis di backend (lihat ADR-002)
-- [ ] Scaffold: struktur UI kosong (Home / Koleksi / Profil)
-- [ ] Setup dasar PWA: manifest.json (nama, ikon, warna tema dari logo Gachard) + service worker sederhana (lihat ADR-013)
+- [x] Scaffold: login Google OAuth, wallet custodial otomatis di backend (lihat ADR-002)
+- [x] Scaffold: struktur UI kosong (Home / Koleksi / Profil)
+- [x] Setup dasar PWA: manifest.json (nama, ikon, warna tema dari logo Gachard) + service worker sederhana (lihat ADR-013)
 
 ## Definition of Done
 - Login via Google berhasil, wallet custodial otomatis dibuat dan tersimpan di backend
