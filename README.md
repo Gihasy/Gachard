@@ -5,6 +5,31 @@ Platform TCG digital-native di mana brand/IP dapat menerbitkan kartu (Battle Car
 Dibangun untuk submission **Indonesia Web3 Hackathon 2026** (track Consumer Apps, BNB Chain).
 
 ## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- Python 3.11+
+- MongoDB Atlas account (free tier)
+- Google Cloud Console OAuth credentials
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+### Environment Variables
+See `.env.example` in each directory.
+
+## Development Workflow
 1. Baca `MEMORY.md` — status & sprint saat ini
 2. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci
 3. Baca `docs/00-project-overview.md` — problem, solution, scope
