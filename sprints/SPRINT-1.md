@@ -5,14 +5,16 @@ Setup fondasi + scaffold aplikasi dasar.
 
 ## Tasks
 - [x] Install MiMoCode CLI (`curl -fsSL https://mimo.xiaomi.com/install | bash` atau `npm install -g @mimo-ai/cli`)
-- [ ] Setup akun Xiaomi MiMo Platform (atau custom provider pihak ketiga) untuk akses berbayar model `mimo-v2.5-pro`
 - [x] `git init` project lokal, buat repo GitHub, `git remote add origin`
 - [x] Taruh scaffold (README.md, MEMORY.md, DECISIONS.md, docs/, sprints/) ke folder project, commit awal
-- [x] Setup akun hosting: Vercel (frontend), Render/Railway (backend), MongoDB Atlas (database) — free tier
-- [ ] Setup wallet testnet + claim faucet BNB testnet/opBNB
-- [x] Scaffold: login Google OAuth, wallet custodial otomatis di backend (lihat ADR-002)
+- [x] Setup akun hosting: Vercel (frontend+backend) + MongoDB Atlas — free tier
+- [ ] ~~Setup wallet testnet + claim faucet~~ → **Pindah ke Sprint 2** (prasyarat smart contract, di luar scope scaffold)
+- [x] Scaffold: login Google OAuth, wallet custodial REAL via ethers.js (ADR-002, ADR-017)
 - [x] Scaffold: struktur UI kosong (Home / Koleksi / Profil)
-- [x] Setup dasar PWA: manifest.json (nama, ikon, warna tema dari logo Gachard) + service worker sederhana (lihat ADR-013)
+- [x] Setup dasar PWA: manifest.json + service worker + icons (192x192, 512x512) (ADR-013)
+- [x] Migrasi arsitektur: Next.js API routes = satu-satunya backend (ADR-017), hapus FastAPI
+- [x] Implementasi pola async untuk blockchain transactions (ADR-018)
+- [x] Implementasi rate-limiting berbasis MongoDB untuk redeem (ADR-019)
 
 ## Definition of Done
 - Login via Google berhasil, wallet custodial otomatis dibuat dan tersimpan di backend

@@ -3,7 +3,7 @@
 ## ADR-001: Token Standard — BEP-1155
 **Status**: Accepted
 **Decision**: Gunakan BEP-1155 untuk kartu (bukan BEP-721).
-**Reason**: Kartu sama = fungible dalam rarity yang sama, lebih efisien untuk pack-based system. Terbuka untuk kombinasi dengan BEP-721 di tahap produksi jika perlu keunikan individual (mis. edisi legendary bernomor).
+**Reason**: BEP-1155 dipilih untuk efisiensi gas batch-operation (mint multiple token dalam satu transaksi) dan fleksibilitas multi-tipe-token dalam satu kontrak. **Catatan penting**: meskipun BEP-1155 mendukung fungible balance (beberapa user bisa hold quantity >1 untuk tokenId yang sama), di Gachard setiap kartu mendapat tokenId unik (one-token-per-instance) untuk mendukung pelacakan status vault per kartu sesuai ADR-004. Rarity disimpan sebagai metadata per tokenId (`cardRarity` mapping), bukan sebagai pengelompokan tokenId yang sama. Terbuka untuk kombinasi dengan BEP-721 di tahap produksi jika perlu keunikan individual (mis. edisi legendary bernomor).
 
 ## ADR-002: Wallet — Custodial, Tersembunyi dari User
 **Status**: Accepted
@@ -94,3 +94,27 @@
 **Status**: Accepted
 **Decision**: `MEMORY.md` adalah file resmi yang otomatis dibaca MiMoCode setiap sesi (bagian dari sistem memori persisten bawaannya: `MEMORY.md`, `checkpoint.md`, `notes.md`, `tasks/<id>/progress.md`). `.mimo/config.md` dan `CLAUDE.md` **bukan** file yang otomatis dibaca MiMoCode — keduanya dipertahankan sebagai referensi manusia/tool lain (mis. jika kembali ke Claude Code nanti), bukan mekanisme auto-load untuk MiMoCode.
 **Reason**: Klarifikasi teknis setelah pengecekan langsung ke dokumentasi resmi MiMoCode (Juli 2026) — instruksi utama untuk agent dipindahkan ke bagian atas `MEMORY.md` supaya benar-benar terbaca otomatis.
+
+## ADR-017: Arsitektur Backend — Next.js API Routes Sebagai Satu-Satunya Backend
+**Status**: Accepted
+**Decision**: Seluruh backend logic (auth, wallet, transaksi blockchain, rate-limiting) dijalankan lewat Next.js API routes (`app/api/`). Backend FastAPI terpisah (`backend/`) dihapus sepenuhnya.
+**Reason**: Tiga opsi hosting backend terpisah (Koyeb, Railway, Fly.io) tertutup atau wajib kartu kredit; Render bermasalah untuk kartu yang tersedia. Next.js API routes sudah ter-deploy di Vercel tanpa biaya tambahan, mengurangi kompleksitas infrastruktur dari 2 service menjadi 1.
+**Supersedes**: Referensi ke FastAPI/Render/Railway di ADR-012 dan ADR-015 tidak lagi berlaku untuk backend.
+
+## ADR-018: Pola Async untuk Transaksi Blockchain
+**Status**: Accepted
+**Decision**: Semua endpoint yang berinteraksi dengan smart contract menggunakan pola async:
+1. Endpoint langsung return `{status: "pending", txHash: null}` begitu transaksi dikirim ke chain, TIDAK menunggu konfirmasi.
+2. Status transaksi disimpan di MongoDB collection `transactions`, diupdate jadi `confirmed`/`failed` lewat proses terpisah.
+3. Frontend polling endpoint `/api/transactions?txId=...` setiap beberapa detik sampai dapat `confirmed`.
+**Reason**: Blockchain confirmation bisa memakan waktu 3-15 detik di BNB testnet. Menunggu konfirmasi di dalam request HTTP yang sama berisiko timeout di serverless function (Vercel default 10s). Pola async juga lebih scalable dan memungkinkan retry/resilience.
+
+## ADR-019: Rate-Limiting Berbasis MongoDB untuk Redeem
+**Status**: Accepted
+**Decision**: Rate-limiting untuk `redeemCard()` menggunakan MongoDB collection `rate_limits`, bukan in-memory storage. Maksimal 5 percobaan per user per menit (lihat ADR-006). Setiap percobaan dicatat dengan window timestamp per menit.
+**Reason**: Serverless function di Vercel bersifat stateless — in-memory storage tidak konsisten antar invocation. MongoDB memastikan rate-limit tetap efektif meski request diarahkan ke instance yang berbeda.
+
+## ADR-020: Enkripsi Private Key di Database
+**Status**: Accepted
+**Decision**: Semua private key (wallet user dan wallet admin) dienkripsi menggunakan AES-256-GCM sebelum disimpan di MongoDB. Secret key disimpan di environment variable `ENCRYPTION_SECRET_KEY` (minimal 32 karakter), bukan di database. Saat dipakai untuk sign transaksi, private key didekripsi terlebih dahulu.
+**Reason**: Private key plaintext di database adalah risiko keamanan kritis — jika database bocor, semua wallet bisa dicuri. AES-256-GCM menyediakan authenticated encryption (integrity + confidentiality). Secret key di env var memastikan kompromi database saja tidak cukup untuk mendekripsi.

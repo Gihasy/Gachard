@@ -8,26 +8,29 @@ Dibangun untuk submission **Indonesia Web3 Hackathon 2026** (track Consumer Apps
 
 ### Prerequisites
 - Node.js 18+
-- Python 3.11+
 - MongoDB Atlas account (free tier)
 - Google Cloud Console OAuth credentials
 
-### Frontend
+### Frontend + Backend (Single Service)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Backend
+Backend berjalan lewat Next.js API routes (`app/api/`) — tidak ada service terpisah.
+
+### Smart Contracts (Foundry)
+Setelah clone, install dependencies kontrak sebelum compile/test:
 ```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
+cd contracts
+forge install
 ```
 
+Lihat `contracts/foundry.toml` untuk konfigurasi.
+
 ### Environment Variables
-See `.env.example` in each directory.
+Lihat `frontend/.env.local.example`.
 
 ## Development Workflow
 1. Baca `MEMORY.md` — status & sprint saat ini
@@ -37,42 +40,31 @@ See `.env.example` in each directory.
 5. Implement sesuai sprint aktif — jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru
 
 ## Stack
+- **Frontend + Backend**: Next.js 16 (App Router) + API Routes
 - **Chain**: BNB Chain Testnet / opBNB Testnet
 - **Token**: BEP-1155
-- **Wallet**: custodial (dibuat otomatis backend, tersembunyi dari user) + sponsored gas
+- **Wallet**: custodial (ethers.js, dibuat otomatis, tersembunyi dari user) + sponsored gas
+- **Database**: MongoDB Atlas
 - **Payment**: Stripe Test Mode — dual-track (credit top-up untuk pack, direct payment untuk print)
 - **AI**: QR lookup + vision model untuk fitur scan kartu
 
 ## Deployment
 
-### Backend (Render)
-1. Buat akun di https://render.com
-2. New → Web Service
-3. Connect GitHub repo `Gihasy/Gachard`
-4. Settings:
-   - Name: `gachard-backend`
-   - Environment: Python
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-5. Add Environment Variables:
-   - `MONGODB_URL`: MongoDB Atlas connection string
-   - `DATABASE_NAME`: gachard
-6. Create Web Service
-
-### Frontend (Vercel)
+### Vercel (Single Service)
 1. Buat akun di https://vercel.com
-2. New Project
-3. Import GitHub repo `Gihasy/Gachard`
-4. Settings:
+2. New Project → Import GitHub repo `Gihasy/Gachard`
+3. Settings:
    - Framework Preset: Next.js
    - Root Directory: `frontend`
-5. Add Environment Variables:
-   - `NEXT_PUBLIC_API_URL`: URL backend Render (e.g., `https://gachard-backend.onrender.com`)
+4. Add Environment Variables:
+   - `MONGODB_URL`: MongoDB Atlas connection string
+   - `DATABASE_NAME`: gachard
    - `GOOGLE_CLIENT_ID`: Google Client ID
-6. Deploy
+   - `GOOGLE_CLIENT_SECRET`: Google Client Secret
+5. Deploy
 
 ### Live Demo
-- **Frontend**: https://frontend-rosy-pi-88.vercel.app
+- **App**: https://frontend-rosy-pi-88.vercel.app
 - **API Health**: https://frontend-rosy-pi-88.vercel.app/api/health
 - **Login Endpoint**: POST https://frontend-rosy-pi-88.vercel.app/api/auth/google
 
