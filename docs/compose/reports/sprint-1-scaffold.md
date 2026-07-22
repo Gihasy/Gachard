@@ -5,16 +5,16 @@ specs: []
 plans:
   - docs/compose/plans/2026-07-22-sprint-1-scaffold.md
 branch: main
-commits: 4ba2b47..6f564ab
+commits: 4ba2b47..c09357c
 ---
 
 # Sprint 1 — Setup & Scaffold Final Report
 
 ## What Was Built
 
-Sprint 1 berhasil membangun fondasi aplikasi Gachard: Next.js frontend dengan halaman Home, Koleksi, dan Profil; FastAPI backend dengan koneksi MongoDB dan endpoint autentikasi; sistem login Google OAuth dengan generasi wallet custodial otomatis; serta setup PWA dengan manifest.json dan service worker.
+Sprint 1 berhasil membangun fondasi aplikasi Gachard: Next.js frontend dengan halaman Home, Koleksi, dan Profil; API routes untuk Google OAuth login dan custodial wallet generation; serta setup PWA dengan manifest.json dan service worker.
 
-Kode sudah di-push ke GitHub dan siap untuk deployment ke Vercel (frontend) dan Render (backend).
+Aplikasi sudah di-deploy ke Vercel dan bisa diakses di: **https://frontend-rosy-pi-88.vercel.app**
 
 ## Architecture
 
@@ -77,15 +77,18 @@ uvicorn main:app --reload  # http://localhost:8000
 
 - [x] Frontend build berhasil tanpa error
 - [x] Semua halaman (Home, Koleksi, Profil, Login) bisa diakses
-- [x] Backend bisa di-import dan dijalankan
-- [x] Wallet generation berfungsi (test script berhasil)
+- [x] Backend API berfungsi (login, health check)
+- [x] Wallet generation berfungsi
 - [x] Kode di-push ke GitHub
+- [x] Deploy ke Vercel berhasil
+- [x] Live URL bisa diakses: https://frontend-rosy-pi-88.vercel.app
 
 ## Journey Log
 
 - [lesson] Next.js App Router memerlukan `viewport` export terpisah untuk `themeColor`
 - [lesson] Git tidak track direktori kosong — perlu file di dalamnya
 - [lesson] Python dependencies perlu diinstall via `python -m pip` di environment ini
+- [pivot] Menggunakan Next.js API routes daripada backend terpisah untuk deployment yang lebih sederhana
 
 ## Source Materials
 
