@@ -10,26 +10,28 @@ Selain file ini, baca juga secara eksplisit di awal sesi:
 Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru. Jangan membangun fitur di luar scope sprint aktif meski tampak berguna.
 
 ## Current Sprint
-Sprint 2 (Minggu 2: 27 Juli – 2 Agustus 2026)
+Sprint 3 selesai. Siap Sprint 4 (10–16 Agustus 2026).
 
 ## Current Goal
-Core mint function jalan di testnet. Prioritas #1 — TIDAK BOLEH gagal.
+Sprint 4: Sistem credit dual-track + UI utama.
 
 ## Project Status
 - PRD selesai — lihat `docs/00-project-overview.md` (ringkas) dan `PRD-Gachard-Hackathon.md` (lengkap)
-- Execution Plan 6 minggu sudah disusun, disinkronkan dengan jadwal workshop hackathon
 - Tool utama: MiMoCode (model mimo-v2.5-pro, berbayar) sejak awal — TIDAK memakai Emergent (lihat ADR-015)
 - Hosting: Vercel (frontend + backend via API routes) + MongoDB Atlas (database), semua free tier
 - **Arsitektur final**: Next.js API routes sebagai SATU-SATUNYA backend (lihat ADR-017). FastAPI sudah dihapus.
-- **Enkripsi**: Private key dienkripsi AES-256-GCM sebelum simpan di MongoDB (ADR-020)
+- **Enkripsi**: Private key + redeem code dienkripsi AES-256-GCM (ADR-020)
 - Sprint 1: SELESAI — laporan di `docs/compose/reports/sprint-1-final.md`
-- Sprint 2 progress:
-  - [x] Setup wallet testnet + claim faucet
-  - [x] Smart contract BEP-1155 (`GachardCard.sol`) dengan `mintCard(address,uint8 rarity)`
-  - [x] Deploy ke BNB Testnet: `0xc7d37b43fa706c646f89b19b78b9c2329925731c` (wallet baru)
-  - [x] Test mint di testnet (3 kartu: Common, Rare, Epic — terverifikasi)
-  - [x] Integrasi frontend (API route `/api/mint` + odds table + card templates + async tx)
-  - [x] Rotasi wallet admin (private key lama sudah tidak aman, wallet baru aktif)
+- Sprint 2: SELESAI — laporan di `docs/compose/reports/sprint-2-final.md`
+- Sprint 3: SELESAI — laporan di `docs/compose/reports/sprint-3-final.md`
+  - [x] Smart contract: `requestPrint()` + `redeemCard()` + 24/24 tests
+  - [x] Deploy kontrak baru: `0x122ace919d9da1ddb736ce6c0db6f00638ab0637` (BNB Testnet)
+  - [x] Full loop mint→print→redeem verified on-chain (3 siklus)
+  - [x] API routes: `/api/print`, `/api/redeem` dengan rate-limiting + enkripsi code
+  - [x] Hash overwrite verified: kode lama invalid setelah siklus baru (tested on-chain)
+- Kontrak aktif: `0x122ace919d9da1ddb736ce6c0db6f00638ab0637`
+- Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
+- 9 API routes aktif di Vercel
 
 ## Notes
 - Solo developer, non-programmer, vibe coding via MiMoCode

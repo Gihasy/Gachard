@@ -6,10 +6,15 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS!;
 // ABI minimal untuk fungsi yang dibutuhkan
 const GACHARD_ABI = [
   "function mintCard(address to, uint8 rarity) external returns (uint256 tokenId)",
+  "function requestPrint(uint256 tokenId, bytes32 redeemHash, address ownerAddress) external",
+  "function redeemCard(uint256 tokenId, bytes32 redeemHash, address recipientAddress) external",
   "function cardStatus(uint256 tokenId) external view returns (uint8)",
   "function cardRarity(uint256 tokenId) external view returns (uint8)",
+  "function storedHash(uint256 tokenId) external view returns (bytes32)",
+  "function lastOwner(uint256 tokenId) external view returns (address)",
   "function balanceOf(address account, uint256 id) external view returns (uint256)",
   "event CardMinted(uint256 indexed tokenId, address indexed to, uint8 status, uint8 rarity)",
+  "event CardStatusChanged(uint256 indexed tokenId, uint8 oldStatus, uint8 newStatus)",
 ];
 
 export function getProvider() {
@@ -33,6 +38,18 @@ export async function mintCard(toAddress: string, rarity: number): Promise<strin
   return tx.hash;
 }
 
+export async function requestPrint(tokenId: number, redeemHash: string, ownerAddress: string): Promise<string> {
+  const contract = getContract();
+  const tx = await contract.requestPrint(tokenId, redeemHash, ownerAddress);
+  return tx.hash;
+}
+
+export async function redeemCard(tokenId: number, redeemHash: string, recipientAddress: string): Promise<string> {
+  const contract = getContract();
+  const tx = await contract.redeemCard(tokenId, redeemHash, recipientAddress);
+  return tx.hash;
+}
+
 export async function getCardStatus(tokenId: number): Promise<number> {
   const contract = getContract();
   return contract.cardStatus(tokenId);
@@ -41,6 +58,16 @@ export async function getCardStatus(tokenId: number): Promise<number> {
 export async function getCardRarity(tokenId: number): Promise<number> {
   const contract = getContract();
   return contract.cardRarity(tokenId);
+}
+
+export async function getStoredHash(tokenId: number): Promise<string> {
+  const contract = getContract();
+  return contract.storedHash(tokenId);
+}
+
+export async function getLastOwner(tokenId: number): Promise<string> {
+  const contract = getContract();
+  return contract.lastOwner(tokenId);
 }
 
 export async function getBalance(address: string, tokenId: number): Promise<bigint> {
