@@ -13,17 +13,19 @@ contract GachardCardTest is Test {
         card = new GachardCard();
     }
 
+    // ==================== mintCard tests ====================
+
     function test_mint_creates_token_with_digital_status() public {
-        uint256 tokenId = card.mintCard(user1, 0); // 0 = Common
+        uint256 tokenId = card.mintCard(user1, 0);
 
         assertEq(card.balanceOf(user1, tokenId), 1);
         assertEq(uint8(card.cardStatus(tokenId)), uint8(GachardCard.CardStatus.Digital));
     }
 
     function test_mint_stores_rarity() public {
-        uint256 id1 = card.mintCard(user1, 0); // Common
-        uint256 id2 = card.mintCard(user1, 2); // Epic
-        uint256 id3 = card.mintCard(user1, 3); // Legendary
+        uint256 id1 = card.mintCard(user1, 0);
+        uint256 id2 = card.mintCard(user1, 2);
+        uint256 id3 = card.mintCard(user1, 3);
 
         assertEq(uint8(card.cardRarity(id1)), 0);
         assertEq(uint8(card.cardRarity(id2)), 2);
@@ -60,6 +62,218 @@ contract GachardCardTest is Test {
 
     function test_mint_reverts_on_invalid_rarity() public {
         vm.expectRevert("Invalid rarity");
-        card.mintCard(user1, 4); // 4 tidak valid
+        card.mintCard(user1, 4);
+    }
+
+    // ==================== requestPrint tests ====================
+
+    function test_requestPrint_changes_status_to_vaulted() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("testcode123");
+
+        card.requestPrint(tokenId, hash, user1);
+
+        assertEq(uint8(card.cardStatus(tokenId)), uint8(GachardCard.CardStatus.Vaulted));
+    }
+
+    function test_requestPrint_stores_hash() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("testcode123");
+
+        card.requestPrint(tokenId, hash, user1);
+
+        assertEq(card.storedHash(tokenId), hash);
+    }
+
+    function test_requestPrint_transfers_to_vault() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("testcode123");
+
+        card.requestPrint(tokenId, hash, user1);
+
+        // Vault = address(this) karena kontrak menyimpan token-nya sendiri
+        assertEq(card.balanceOf(address(card), tokenId), 1);
+        assertEq(card.balanceOf(user1, tokenId), 0);
+    }
+
+    function test_requestPrint_updates_last_owner() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("testcode123");
+
+        card.requestPrint(tokenId, hash, user1);
+
+        assertEq(card.lastOwner(tokenId), user1);
+    }
+
+    function test_requestPrint_emits_status_changed_event() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("testcode123");
+
+        vm.expectEmit(true, false, false, true);
+        emit GachardCard.CardStatusChanged(tokenId, GachardCard.CardStatus.Digital, GachardCard.CardStatus.Vaulted);
+        card.requestPrint(tokenId, hash, user1);
+    }
+
+    function test_requestPrint_reverts_when_already_vaulted() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash1 = keccak256("code1");
+        bytes32 hash2 = keccak256("code2");
+
+        card.requestPrint(tokenId, hash1, user1);
+
+        vm.expectRevert("Card is not digital");
+        card.requestPrint(tokenId, hash2, user1);
+    }
+
+    function test_requestPrint_only_owner() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("testcode");
+
+        // user1 bukan owner — owner adalah deployer (address(this) di test)
+        vm.prank(user1);
+        vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user1));
+        card.requestPrint(tokenId, hash, user1);
+    }
+
+    // ==================== redeemCard tests ====================
+
+    function test_redeemCard_transfers_to_recipient() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("code123");
+
+        card.requestPrint(tokenId, hash, user1);
+        card.redeemCard(tokenId, hash, user2);
+
+        assertEq(card.balanceOf(user2, tokenId), 1);
+        assertEq(card.balanceOf(address(card), tokenId), 0);
+    }
+
+    function test_redeemCard_changes_status_to_digital() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("code123");
+
+        card.requestPrint(tokenId, hash, user1);
+        card.redeemCard(tokenId, hash, user2);
+
+        assertEq(uint8(card.cardStatus(tokenId)), uint8(GachardCard.CardStatus.Digital));
+    }
+
+    function test_redeemCard_updates_last_owner() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("code123");
+
+        card.requestPrint(tokenId, hash, user1);
+        card.redeemCard(tokenId, hash, user2);
+
+        assertEq(card.lastOwner(tokenId), user2);
+    }
+
+    function test_redeemCard_emits_status_changed_event() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("code123");
+
+        card.requestPrint(tokenId, hash, user1);
+
+        vm.expectEmit(true, false, false, true);
+        emit GachardCard.CardStatusChanged(tokenId, GachardCard.CardStatus.Vaulted, GachardCard.CardStatus.Digital);
+        card.redeemCard(tokenId, hash, user2);
+    }
+
+    function test_redeemCard_reverts_when_not_vaulted() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("code123");
+
+        vm.expectRevert("Card is not vaulted");
+        card.redeemCard(tokenId, hash, user2);
+    }
+
+    function test_redeemCard_reverts_on_wrong_code() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("correctcode");
+        bytes32 wrongHash = keccak256("wrongcode");
+
+        card.requestPrint(tokenId, hash, user1);
+
+        vm.expectRevert("Invalid redeem code");
+        card.redeemCard(tokenId, wrongHash, user2);
+    }
+
+    function test_redeemCard_works_when_called_by_anyone() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("code123");
+
+        card.requestPrint(tokenId, hash, user1);
+
+        // user2 yang memanggil, tapi recipientAddress = user1
+        vm.prank(user2);
+        card.redeemCard(tokenId, hash, user1);
+        assertEq(card.balanceOf(user1, tokenId), 1);
+    }
+
+    // ==================== Full loop tests ====================
+
+    function test_old_code_invalid_after_new_print() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash1 = keccak256("code_siklus_1");
+        bytes32 hash2 = keccak256("code_siklus_2");
+
+        // Siklus 1
+        card.requestPrint(tokenId, hash1, user1);
+        card.redeemCard(tokenId, hash1, user2);
+        assertEq(card.balanceOf(user2, tokenId), 1);
+
+        // Siklus 2
+        card.requestPrint(tokenId, hash2, user2);
+
+        // Coba redeem dengan kode lama — HARUS GAGAL
+        vm.expectRevert("Invalid redeem code");
+        card.redeemCard(tokenId, hash1, user1);
+
+        // Redeem dengan kode baru — HARUS BERHASIL
+        card.redeemCard(tokenId, hash2, user1);
+        assertEq(card.balanceOf(user1, tokenId), 1);
+    }
+
+    function test_requestPrint_overwrites_old_hash() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash1 = keccak256("code1");
+        bytes32 hash2 = keccak256("code2");
+
+        // Siklus 1
+        card.requestPrint(tokenId, hash1, user1);
+        assertEq(card.storedHash(tokenId), hash1);
+
+        // Redeem dulu supaya bisa print lagi
+        card.redeemCard(tokenId, hash1, user2);
+
+        // Siklus 2 — hash HARUS ditimpa
+        card.requestPrint(tokenId, hash2, user2);
+        assertEq(card.storedHash(tokenId), hash2);
+        assertTrue(card.storedHash(tokenId) != hash1);
+    }
+
+    function test_full_loop_three_cycles() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32[3] memory hashes = [
+            keccak256("cycle_1_code"),
+            keccak256("cycle_2_code"),
+            keccak256("cycle_3_code")
+        ];
+        address[3] memory owners = [user1, user2, user1];
+        address[3] memory recipients = [user2, user1, user2];
+
+        for (uint256 i = 0; i < 3; i++) {
+            // Print
+            card.requestPrint(tokenId, hashes[i], owners[i]);
+            assertEq(uint8(card.cardStatus(tokenId)), uint8(GachardCard.CardStatus.Vaulted));
+            assertEq(card.storedHash(tokenId), hashes[i]);
+            assertEq(card.lastOwner(tokenId), owners[i]);
+
+            // Redeem
+            card.redeemCard(tokenId, hashes[i], recipients[i]);
+            assertEq(uint8(card.cardStatus(tokenId)), uint8(GachardCard.CardStatus.Digital));
+            assertEq(card.balanceOf(recipients[i], tokenId), 1);
+            assertEq(card.lastOwner(tokenId), recipients[i]);
+        }
     }
 }

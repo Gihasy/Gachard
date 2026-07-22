@@ -7,16 +7,16 @@ export interface CardTemplate {
   artworkUrl: string;
 }
 
-// Default placeholder templates (2 per rarity)
+// Default templates — artworkUrl sesuai nama file di public/cards/
 const DEFAULT_TEMPLATES: CardTemplate[] = [
-  { templateId: "common-1", rarity: 0, name: "Common Card A", artworkUrl: "" },
-  { templateId: "common-2", rarity: 0, name: "Common Card B", artworkUrl: "" },
-  { templateId: "rare-1", rarity: 1, name: "Rare Card A", artworkUrl: "" },
-  { templateId: "rare-2", rarity: 1, name: "Rare Card B", artworkUrl: "" },
-  { templateId: "epic-1", rarity: 2, name: "Epic Card A", artworkUrl: "" },
-  { templateId: "epic-2", rarity: 2, name: "Epic Card B", artworkUrl: "" },
-  { templateId: "legendary-1", rarity: 3, name: "Legendary Card A", artworkUrl: "" },
-  { templateId: "legendary-2", rarity: 3, name: "Legendary Card B", artworkUrl: "" },
+  { templateId: "common-1", rarity: 0, name: "Common Card A", artworkUrl: "/cards/common-1.png" },
+  { templateId: "common-2", rarity: 0, name: "Common Card B", artworkUrl: "/cards/common-2.png" },
+  { templateId: "rare-1", rarity: 1, name: "Rare Card A", artworkUrl: "/cards/rare-1.png" },
+  { templateId: "rare-2", rarity: 1, name: "Rare Card B", artworkUrl: "/cards/rare-2.png" },
+  { templateId: "epic-1", rarity: 2, name: "Epic Card A", artworkUrl: "/cards/epic-1.png" },
+  { templateId: "epic-2", rarity: 2, name: "Epic Card B", artworkUrl: "/cards/epic-2.png" },
+  { templateId: "legendary-1", rarity: 3, name: "Legendary Card A", artworkUrl: "/cards/legendary-1.png" },
+  { templateId: "legendary-2", rarity: 3, name: "Legendary Card B", artworkUrl: "/cards/legendary-2.png" },
 ];
 
 /**
@@ -28,6 +28,23 @@ export async function seedCardTemplates(): Promise<void> {
   if (count === 0) {
     await collection.insertMany(DEFAULT_TEMPLATES);
   }
+}
+
+/**
+ * Update artworkUrl for all templates based on templateId.
+ * Called once after artwork files are added to public/cards/.
+ */
+export async function updateArtworkUrls(): Promise<number> {
+  const collection = await getCollection("card_templates");
+  let updated = 0;
+  for (const template of DEFAULT_TEMPLATES) {
+    const result = await collection.updateOne(
+      { templateId: template.templateId },
+      { $set: { artworkUrl: template.artworkUrl } }
+    );
+    updated += result.modifiedCount;
+  }
+  return updated;
 }
 
 /**

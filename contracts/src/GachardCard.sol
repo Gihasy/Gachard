@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @notice BEP-1155 token untuk kartu Gachard dengan state machine Digital/Vaulted
  * @dev ADR-001: BEP-1155 (one-token-per-instance, bukan fungible balance)
  * @dev ADR-004: Lock & Transfer ke Vault bukan Burn
+ * @dev ADR-007: recipientAddress/ownerAddress eksplisit, bukan msg.sender
  */
 contract GachardCard is ERC1155, Ownable {
     enum CardStatus { Digital, Vaulted }
@@ -40,6 +41,62 @@ contract GachardCard is ERC1155, Ownable {
         cardRarity[tokenId] = Rarity(rarity);
         lastOwner[tokenId] = to;
         emit CardMinted(tokenId, to, CardStatus.Digital, Rarity(rarity));
+    }
+
+    /**
+     * @notice Kunci kartu untuk cetak fisik — generate hash baru, overwrite hash lama
+     * @dev onlyOwner — backend yang memanggil, bukan wallet user (ADR-007)
+     * @param tokenId ID kartu yang akan di-print
+     * @param redeemHash Hash dari redeem code yang baru (backend generate, kirim hash-nya saja)
+     * @param ownerAddress Alamat pemilik kartu saat ini (untuk update lastOwner)
+     */
+    function requestPrint(uint256 tokenId, bytes32 redeemHash, address ownerAddress) external onlyOwner {
+        require(cardStatus[tokenId] == CardStatus.Digital, "Card is not digital");
+
+        // Simpan owner sebelum transfer
+        lastOwner[tokenId] = ownerAddress;
+
+        // Overwrite hash lama (ADR-005)
+        storedHash[tokenId] = redeemHash;
+
+        // Transfer ke vault DULU (selagi status masih Digital, supaya _update() tidak memblokir)
+        uint256[] memory ids = new uint256[](1);
+        ids[0] = tokenId;
+        uint256[] memory values = new uint256[](1);
+        values[0] = 1;
+        _update(ownerAddress, address(this), ids, values);
+
+        // Baru ubah status ke Vaulted SETELAH transfer berhasil
+        cardStatus[tokenId] = CardStatus.Vaulted;
+
+        emit CardStatusChanged(tokenId, CardStatus.Digital, CardStatus.Vaulted);
+    }
+
+    /**
+     * @notice Redeem kartu dari vault kembali ke digital
+     * @dev Backend yang memanggil atas nama user (ADR-006, ADR-007)
+     * @param tokenId ID kartu yang akan di-redeem
+     * @param redeemHash Hash dari code yang dimasukkan user
+     * @param recipientAddress Alamat yang akan menerima kartu (ADR-007)
+     */
+    function redeemCard(uint256 tokenId, bytes32 redeemHash, address recipientAddress) external {
+        require(cardStatus[tokenId] == CardStatus.Vaulted, "Card is not vaulted");
+        require(storedHash[tokenId] == redeemHash, "Invalid redeem code");
+
+        // Ubah status dulu, SEBELUM transfer — supaya _update() tidak memblokir
+        cardStatus[tokenId] = CardStatus.Digital;
+
+        // Update last owner
+        lastOwner[tokenId] = recipientAddress;
+
+        // Transfer dari vault ke recipient — pakai _update dengan array
+        uint256[] memory ids = new uint256[](1);
+        ids[0] = tokenId;
+        uint256[] memory values = new uint256[](1);
+        values[0] = 1;
+        _update(address(this), recipientAddress, ids, values);
+
+        emit CardStatusChanged(tokenId, CardStatus.Vaulted, CardStatus.Digital);
     }
 
     /**
