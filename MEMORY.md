@@ -26,7 +26,8 @@ Setup fondasi + scaffold aplikasi dasar (login Google OAuth, wallet custodial ot
   - [x] Google OAuth + custodial wallet generation
   - [x] PWA manifest + service worker
   - [x] Kode di-push ke GitHub
-  - [ ] Manual setup: Vercel, Render, MongoDB Atlas, Google Cloud Console
+  - [x] Deploy ke Vercel: https://frontend-rosy-pi-88.vercel.app
+  - [x] API endpoints berfungsi (login, health check)
 
 ## Notes
 - Solo developer, non-programmer, vibe coding via MiMoCode

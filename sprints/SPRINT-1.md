@@ -8,7 +8,7 @@ Setup fondasi + scaffold aplikasi dasar.
 - [ ] Setup akun Xiaomi MiMo Platform (atau custom provider pihak ketiga) untuk akses berbayar model `mimo-v2.5-pro`
 - [x] `git init` project lokal, buat repo GitHub, `git remote add origin`
 - [x] Taruh scaffold (README.md, MEMORY.md, DECISIONS.md, docs/, sprints/) ke folder project, commit awal
-- [ ] Setup akun hosting: Vercel (frontend), Render/Railway (backend), MongoDB Atlas (database) — free tier
+- [x] Setup akun hosting: Vercel (frontend), Render/Railway (backend), MongoDB Atlas (database) — free tier
 - [ ] Setup wallet testnet + claim faucet BNB testnet/opBNB
 - [x] Scaffold: login Google OAuth, wallet custodial otomatis di backend (lihat ADR-002)
 - [x] Scaffold: struktur UI kosong (Home / Koleksi / Profil)

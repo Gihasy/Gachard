@@ -1,7 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export async function googleLogin(token: string) {
-  const response = await fetch(`${API_URL}/auth/google`, {
+  const response = await fetch("/api/auth/google", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token }),

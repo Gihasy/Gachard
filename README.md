@@ -72,9 +72,9 @@ See `.env.example` in each directory.
 6. Deploy
 
 ### Live Demo
-- Frontend: (akan diisi setelah deploy)
-- Backend API: (akan diisi setelah deploy)
-- API Docs: (akan diisi setelah deploy)
+- **Frontend**: https://frontend-rosy-pi-88.vercel.app
+- **API Health**: https://frontend-rosy-pi-88.vercel.app/api/health
+- **Login Endpoint**: POST https://frontend-rosy-pi-88.vercel.app/api/auth/google
 
 ## Catatan untuk AI Coding Agent
 Sebelum membuat perubahan apa pun, baca `MEMORY.md`, `DECISIONS.md`, dan `docs/` terlebih dahulu.
