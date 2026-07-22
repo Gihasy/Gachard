@@ -1,5 +1,10 @@
 # Sprint 1 — Setup & Scaffold Implementation Plan
 
+> [!NOTE]
+> This document may not reflect the current implementation.
+> See the final report for up-to-date state:
+> [Final Report](../reports/sprint-1-scaffold.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Setup fondasi project Gachard — Google OAuth login, custodial wallet otomatis, UI shell (Home/Koleksi/Profil), dan deployment awal ke hosting mandiri.
