@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Gachard",
   description: "Platform kartu TCG digital-native",
+  manifest: "/manifest.json",
+};
+
+export const viewport = {
+  themeColor: "#4f46e5",
 };
 
 export default function RootLayout({
@@ -33,6 +38,17 @@ export default function RootLayout({
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
           {children}
         </main>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
