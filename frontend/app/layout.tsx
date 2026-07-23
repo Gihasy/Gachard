@@ -3,6 +3,7 @@ import { Inter, Unbounded } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -50,19 +51,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator && ${
-                process.env.NODE_ENV === "production" ? "true" : "false"
-              }) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js').catch(() => {});
-                });
-              }
-            `,
-          }}
-        />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

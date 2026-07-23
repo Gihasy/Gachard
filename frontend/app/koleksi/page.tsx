@@ -28,6 +28,9 @@ export default function Koleksi() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<string>("all");
 
+  // Mount-only: hydrate session + trigger the middleware fallback if the
+  // client happens to be reached without the cookie somehow. React setters
+  // are stable and don't need to be in deps.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem("user");
@@ -41,6 +44,7 @@ export default function Koleksi() {
     } catch {
       window.location.replace("/login");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -52,10 +56,10 @@ export default function Koleksi() {
     }, 6000);
     fetch(`/api/cards?userId=${user.user_id}`)
       .then((r) => r.json())
-      .then((d) => {
+      .then((d: { cards?: Card[] }) => {
         if (timedOut) return;
         clearTimeout(timer);
-        setCards(d.cards || []);
+        setCards(d.cards ?? []);
         setLoading(false);
       })
       .catch(() => {
@@ -145,9 +149,9 @@ export default function Koleksi() {
           className="grid grid-cols-2 md:grid-cols-4 gap-5"
           data-testid="koleksi-loading"
         >
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 8 }, (_, i) => `skeleton-${i}`).map((k) => (
             <div
-              key={i}
+              key={k}
               className="glass p-3"
               style={{ minHeight: 320 }}
             >

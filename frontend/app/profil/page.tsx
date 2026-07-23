@@ -15,6 +15,7 @@ export default function Profil() {
   const [balance, setBalance] = useState<number | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
 
+  // Mount-only: hydrate session. Setters from useState are stable.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem("user");
@@ -28,19 +29,33 @@ export default function Profil() {
     } catch {
       window.location.replace("/login");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!ready || !user) return;
+    let cancelled = false;
     fetch(`/api/credits?userId=${user.user_id}`)
       .then((r) => r.json())
-      .then((d) => setBalance(d.balance ?? 0))
-      .catch(() => setBalance(0));
+      .then((d: { balance?: number }) => {
+        if (!cancelled) setBalance(d.balance ?? 0);
+      })
+      .catch(() => {
+        if (!cancelled) setBalance(0);
+      });
 
     fetch(`/api/cards?userId=${user.user_id}`)
       .then((r) => r.json())
-      .then((d) => setCards(d.cards || []))
-      .catch(() => {});
+      .then((d: { cards?: Card[] }) => {
+        if (!cancelled) setCards(d.cards ?? []);
+      })
+      .catch(() => {
+        /* stats will show zero — silently ignore */
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [ready, user]);
 
   const stats = {

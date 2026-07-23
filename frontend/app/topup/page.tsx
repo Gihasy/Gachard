@@ -21,6 +21,7 @@ export default function TopUp() {
   const [balance, setBalance] = useState<number | null>(null);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
+  // Mount-only: hydrate session. Setters from useState are stable.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem("user");
@@ -34,14 +35,23 @@ export default function TopUp() {
     } catch {
       window.location.replace("/login");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!ready || !user) return;
+    let cancelled = false;
     fetch(`/api/credits?userId=${user.user_id}`)
       .then((r) => r.json())
-      .then((d) => setBalance(d.balance))
-      .catch(() => {});
+      .then((d: { balance?: number }) => {
+        if (!cancelled) setBalance(d.balance ?? null);
+      })
+      .catch(() => {
+        /* balance is optional — silently ignore */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [ready, user]);
 
   const handleTopUp = async () => {

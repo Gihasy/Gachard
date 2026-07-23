@@ -25,6 +25,9 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Mount-only: read the persisted user + attach the scroll listener.
+  // State setters from useState are guaranteed stable by React and don't need
+  // to be in the deps array; `localStorage` and `window` are globals.
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) setUser(JSON.parse(stored));
@@ -33,8 +36,10 @@ export default function Navbar() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Close the mobile drawer whenever the route changes.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);

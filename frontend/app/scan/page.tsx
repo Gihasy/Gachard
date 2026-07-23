@@ -14,25 +14,58 @@ const RARITY_COLORS = [
 const RARITY_GLOW = ["", "glow-rare", "glow-epic", "glow-legendary"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 
+interface ScanTx {
+  type: string;
+  status: string;
+  timestamp: string | number;
+  txHash?: string;
+}
+
+interface ScanData {
+  tokenId: string | number;
+  onChain: {
+    rarityCode: number;
+    rarity: string;
+    status: string;
+    lastOwner?: string;
+  };
+  metadata: {
+    templateName?: string;
+    artworkUrl?: string;
+  };
+  verification: { flag: "verified" | "warning" | string };
+  history?: ScanTx[];
+  purchasePrice: number | null;
+}
+
 function ScanContent() {
   const searchParams = useSearchParams();
   const tokenId = searchParams.get("tokenId");
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<ScanData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!tokenId) return;
+    let cancelled = false;
     setLoading(true);
     setError(null);
     fetch(`/api/scan?tokenId=${tokenId}`)
       .then((r) => r.json())
       .then((d) => {
+        if (cancelled) return;
         if (d.error) setError(d.error);
-        else setData(d);
+        else setData(d as ScanData);
       })
-      .catch(() => setError("Network error"))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) setError("Network error");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [tokenId]);
 
   // Landing state — no token yet
@@ -256,9 +289,9 @@ function ScanContent() {
                   Transaction History
                 </p>
                 <div className="space-y-2">
-                  {data.history.map((tx: any, i: number) => (
+                  {data.history.map((tx, i) => (
                     <div
-                      key={i}
+                      key={tx.txHash ?? `${tx.type}-${tx.timestamp}-${i}`}
                       className="flex justify-between items-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
                     >
                       <div className="flex items-center gap-3">
