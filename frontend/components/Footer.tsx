@@ -55,7 +55,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-3 mb-5">
-              <Logo size={40} />
+              <Logo size={56} />
             </Link>
             <p className="text-sm text-white/60 max-w-[280px] leading-relaxed">
               Collect. Play. Trade. A next-generation collectible card ecosystem

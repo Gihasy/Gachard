@@ -6,7 +6,7 @@ import Image from "next/image";
 const MARK_SRC = "/icons/gachard-logo.png";
 
 interface LogoProps {
-  /** Rendered width & height in px. */
+  /** Approximate rendered height in px. */
   size?: number;
   /** Extra class on the outer wrapper. */
   className?: string;
@@ -15,18 +15,21 @@ interface LogoProps {
 }
 
 export default function Logo({
-  size = 36,
+  size = 40,
   className = "",
   priority = false,
 }: LogoProps) {
   return (
-    <span className={`relative shrink-0 ${className}`} style={{ width: size, height: size }}>
+    <span
+      className={`relative shrink-0 inline-flex items-center justify-center ${className}`}
+      style={{ height: size, width: size * 2.4 }}
+    >
       <Image
         src={MARK_SRC}
         alt="Gachard"
         fill
-        sizes={`${size}px`}
         className="object-contain"
+        sizes={`${Math.round(size * 2.4)}px`}
         priority={priority}
       />
     </span>
