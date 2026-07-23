@@ -10,10 +10,10 @@ Selain file ini, baca juga secara eksplisit di awal sesi:
 Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru. Jangan membangun fitur di luar scope sprint aktif meski tampak berguna.
 
 ## Current Sprint
-Sprint 4 selesai. Siap Sprint 5 (17–25 Agustus 2026).
+Sprint 5 selesai. Siap Sprint 6 (26–30 Agustus 2026).
 
 ## Current Goal
-Sprint 5: Fitur AI Scan (QR + vision).
+Sprint 6: Stabilisasi + pitch deck.
 
 ## Project Status
 - PRD selesai — lihat `docs/00-project-overview.md` (ringkas) dan `PRD-Gachard-Hackathon.md` (lengkap)
@@ -38,9 +38,17 @@ Sprint 5: Fitur AI Scan (QR + vision).
   - [x] UI: Top Up credit page
   - [x] UI: Koleksi page dengan card grid + Request Print button
   - [x] UI: Marketplace "Coming Soon"
-- Kontrak aktif: `0x122ace919d9da1ddb736ce6c0db6f00638ab0637`
+- Sprint 5: SELESAI
+  - [x] QR code generation untuk setiap kartu
+  - [x] `/api/scan` endpoint — data on-chain + off-chain + history + verification flag
+  - [x] Scan page dengan card detail + verification ✅/⚠️
+  - [x] QR display di CardItem (Show QR button)
+  - [x] purchasePrice di scan response
+  - [x] tokenIds array di mintBatch transaction
+  - [x] card-artwork-guideline: QR info-scan terpisah dari redeem code
+- Kontrak aktif: `0xe62bc7c470eaef3fcad1816b9ac6d63d585b5ee8`
 - Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
-- 11 API routes aktif di Vercel
+- 12 API routes aktif di Vercel
 
 ## Notes
 - Solo developer, non-programmer, vibe coding via MiMoCode

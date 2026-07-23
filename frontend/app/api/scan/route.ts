@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { getCardStatus, getCardRarity, getLastOwner } from "@/lib/blockchain";
+import { analyzeCardImage } from "@/lib/vision";
 
 const STATUS_LABELS = ["Digital", "Vaulted"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://frontend-rosy-pi-88.vercel.app";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const tokenIdParam = searchParams.get("tokenId");
+    const withVision = searchParams.get("vision") === "true";
 
     if (!tokenIdParam) {
       return NextResponse.json({ error: "tokenId required" }, { status: 400 });
@@ -19,7 +22,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid tokenId" }, { status: 400 });
     }
 
-    // Get on-chain data
+    // Get on-chain data (with retry)
     const [statusOnChain, rarityOnChain, lastOwnerAddress] = await Promise.all([
       getCardStatus(tokenId),
       getCardRarity(tokenId),
@@ -40,7 +43,6 @@ export async function GET(request: Request) {
     const txCollection = await getCollection("transactions");
     let purchasePrice: number | null = null;
 
-    // Cari transaksi mint yang memiliki tokenId ini di array tokenIds
     const mintTx = await txCollection.findOne({
       type: "mint",
       tokenIds: tokenId,
@@ -50,13 +52,10 @@ export async function GET(request: Request) {
       purchasePrice = mintTx.purchasePrice;
     }
 
-    // Get ownership history — cari berdasarkan tokenId di field tokenId ATAU tokenIds array
+    // Get ownership history
     const history = await txCollection
       .find({
-        $or: [
-          { tokenId },
-          { tokenIds: tokenId },
-        ],
+        $or: [{ tokenId }, { tokenIds: tokenId }],
       })
       .sort({ createdAt: -1 })
       .limit(10)
@@ -67,6 +66,23 @@ export async function GET(request: Request) {
     const statusMatch = card
       ? STATUS_LABELS[statusOnChain] === card.status
       : false;
+
+    // AI Vision analysis (if requested and artwork exists)
+    let vision = null;
+    if (withVision && template?.artworkUrl) {
+      const imageUrl = `${BASE_URL}${template.artworkUrl}`;
+      vision = await analyzeCardImage(
+        imageUrl,
+        RARITY_LABELS[rarityOnChain] || "Unknown",
+        template.name || card?.templateId || "Unknown"
+      );
+    }
+
+    // Update verification flag if vision analysis available
+    let verificationFlag = verified && statusMatch ? "verified" : "warning";
+    if (vision && !vision.matches) {
+      verificationFlag = "warning";
+    }
 
     return NextResponse.json({
       tokenId,
@@ -86,7 +102,8 @@ export async function GET(request: Request) {
       verification: {
         verified,
         statusMatch,
-        flag: verified && statusMatch ? "verified" : "warning",
+        flag: verificationFlag,
+        vision: vision || null,
       },
       history: history.map((tx) => ({
         type: tx.type,

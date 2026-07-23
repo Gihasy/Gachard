@@ -2,6 +2,8 @@ import { ethers } from "ethers";
 
 const RPC_URL = process.env.BSC_TESTNET_RPC!;
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS!;
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
 
 // ABI minimal untuk fungsi yang dibutuhkan
 const GACHARD_ABI = [
@@ -17,6 +19,26 @@ const GACHARD_ABI = [
   "event CardMinted(uint256 indexed tokenId, address indexed to, uint8 status, uint8 rarity)",
   "event CardStatusChanged(uint256 indexed tokenId, uint8 oldStatus, uint8 newStatus)",
 ];
+
+/**
+ * Retry wrapper for blockchain calls.
+ * Retries up to MAX_RETRIES times with exponential backoff.
+ */
+async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  let lastError: Error | null = null;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      console.warn(`[blockchain] ${label} attempt ${attempt}/${MAX_RETRIES} failed:`, (error as Error).message);
+      if (attempt < MAX_RETRIES) {
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * attempt));
+      }
+    }
+  }
+  throw new Error(`[blockchain] ${label} failed after ${MAX_RETRIES} attempts: ${lastError?.message}`);
+}
 
 export function getProvider() {
   return new ethers.JsonRpcProvider(RPC_URL);
@@ -58,26 +80,36 @@ export async function redeemCard(tokenId: number, redeemHash: string, recipientA
 }
 
 export async function getCardStatus(tokenId: number): Promise<number> {
-  const contract = getContract();
-  return contract.cardStatus(tokenId);
+  return withRetry(async () => {
+    const contract = getContract();
+    return contract.cardStatus(tokenId);
+  }, `cardStatus(${tokenId})`);
 }
 
 export async function getCardRarity(tokenId: number): Promise<number> {
-  const contract = getContract();
-  return contract.cardRarity(tokenId);
+  return withRetry(async () => {
+    const contract = getContract();
+    return contract.cardRarity(tokenId);
+  }, `cardRarity(${tokenId})`);
 }
 
 export async function getStoredHash(tokenId: number): Promise<string> {
-  const contract = getContract();
-  return contract.storedHash(tokenId);
+  return withRetry(async () => {
+    const contract = getContract();
+    return contract.storedHash(tokenId);
+  }, `storedHash(${tokenId})`);
 }
 
 export async function getLastOwner(tokenId: number): Promise<string> {
-  const contract = getContract();
-  return contract.lastOwner(tokenId);
+  return withRetry(async () => {
+    const contract = getContract();
+    return contract.lastOwner(tokenId);
+  }, `lastOwner(${tokenId})`);
 }
 
 export async function getBalance(address: string, tokenId: number): Promise<bigint> {
-  const contract = getContract();
-  return contract.balanceOf(address, tokenId);
+  return withRetry(async () => {
+    const contract = getContract();
+    return contract.balanceOf(address, tokenId);
+  }, `balanceOf(${address}, ${tokenId})`);
 }
