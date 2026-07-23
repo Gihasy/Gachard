@@ -2,16 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import PageShell from "@/components/PageShell";
 
-const PRESETS = [500, 1000, 2000, 5000];
+const PRESETS = [
+  { credits: 500, price: "$5", bonus: null, popular: false },
+  { credits: 1000, price: "$10", bonus: "+50", popular: true },
+  { credits: 2000, price: "$18", bonus: "+150", popular: false },
+  { credits: 5000, price: "$40", bonus: "+500", popular: false },
+];
 
 export default function TopUp() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ user_id: string; username: string } | null>(null);
   const [amount, setAmount] = useState(1000);
   const [loading, setLoading] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -23,27 +30,26 @@ export default function TopUp() {
     setUser(u);
     fetch(`/api/credits?userId=${u.user_id}`)
       .then((r) => r.json())
-      .then((d) => setBalance(d.balance));
+      .then((d) => setBalance(d.balance))
+      .catch(() => {});
   }, [router]);
 
   const handleTopUp = async () => {
     if (!user) return;
     setLoading(true);
     setMessage(null);
-
     try {
       const res = await fetch("/api/credits/topup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.user_id, amountCents: amount }),
       });
-
       const data = await res.json();
       if (res.ok) {
         setBalance(data.newBalance);
-        setMessage(`Top-up berhasil! Saldo: ${data.newBalance} Credit`);
+        setMessage({ text: `Top-up successful! Balance: ${data.newBalance} Credit`, ok: true });
       } else {
-        setMessage(data.error || "Top-up gagal");
+        setMessage({ text: data.error || "Top-up failed", ok: false });
       }
     } finally {
       setLoading(false);
@@ -51,55 +57,202 @@ export default function TopUp() {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold mb-8 uppercase" style={{ color: "var(--text-primary)" }}>
-        Top Up Credit
-      </h1>
+    <PageShell
+      testId="topup-page"
+      eyebrow="Credit Wallet"
+      title={
+        <>
+          Top up <span className="text-gradient-gold">credit</span>
+        </>
+      }
+      description="Instant top-ups. Credits are used to buy card packs, request prints, and settle marketplace trades."
+    >
+      <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] max-w-5xl mx-auto lg:mx-0">
+        {/* Left: presets + CTA */}
+        <div>
+          {/* Balance card */}
+          {balance !== null && (
+            <div
+              className="glass p-6 mb-6 flex items-center justify-between"
+              data-testid="topup-balance-card"
+            >
+              <div>
+                <p className="text-[0.7rem] uppercase tracking-[0.22em] text-white/50 mb-1.5">
+                  Current Balance
+                </p>
+                <p
+                  className="font-display text-3xl"
+                  style={{ color: "var(--aurora-gold)" }}
+                >
+                  {balance.toLocaleString()}{" "}
+                  <span className="text-lg text-white/70">Credit</span>
+                </p>
+              </div>
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(255,196,102,0.2), rgba(255,107,186,0.1))",
+                  border: "1px solid rgba(255,196,102,0.35)",
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="var(--aurora-gold)" strokeWidth="1.6" />
+                  <path
+                    d="M12 7v10M9 10h4a2 2 0 010 4H9m6 0h-2"
+                    stroke="var(--aurora-gold)"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
 
-      {balance !== null && (
-        <div className="rounded-lg p-4 mb-6" style={{ background: "rgba(184,172,255,0.1)", border: "1px solid rgba(184,172,255,0.2)" }}>
-          <p className="text-sm" style={{ color: "var(--silver-mist)" }}>
-            Saldo saat ini: <span className="font-bold text-lg" style={{ color: "var(--aurora-gold)" }}>{balance} Credit</span>
+          {/* Presets */}
+          <p className="text-[0.72rem] uppercase tracking-[0.22em] mb-3" style={{ color: "var(--cosmic-violet)" }}>
+            Choose an amount
           </p>
-        </div>
-      )}
+          <div className="grid grid-cols-2 gap-3 mb-6" data-testid="topup-presets">
+            {PRESETS.map((p) => {
+              const active = amount === p.credits;
+              return (
+                <button
+                  key={p.credits}
+                  onClick={() => setAmount(p.credits)}
+                  className="relative text-left p-5 rounded-2xl transition-all"
+                  style={{
+                    background: active
+                      ? "linear-gradient(135deg, rgba(184,172,255,0.15), rgba(255,107,186,0.08))"
+                      : "rgba(255,255,255,0.03)",
+                    border: active
+                      ? "1px solid rgba(184,172,255,0.55)"
+                      : "1px solid rgba(255,255,255,0.08)",
+                    boxShadow: active
+                      ? "0 10px 30px -12px rgba(184,172,255,0.35)"
+                      : "none",
+                  }}
+                  data-testid={`preset-${p.credits}`}
+                >
+                  {p.popular && (
+                    <span
+                      className="absolute -top-2 right-4 text-[0.6rem] font-bold uppercase tracking-widest px-2 py-0.5 rounded"
+                      style={{
+                        background: "var(--aurora-gold)",
+                        color: "var(--deep-navy)",
+                      }}
+                    >
+                      Popular
+                    </span>
+                  )}
+                  <div
+                    className="font-display text-2xl mb-1"
+                    style={{ color: active ? "#FFFFFF" : "rgba(255,255,255,0.85)" }}
+                  >
+                    {p.credits.toLocaleString()}
+                    {p.bonus && (
+                      <span
+                        className="ml-2 text-sm font-semibold"
+                        style={{ color: "var(--aurora-gold)" }}
+                      >
+                        {p.bonus}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs uppercase tracking-widest text-white/50">
+                    {p.price} · Credit pack
+                  </div>
+                </button>
+              );
+            })}
+          </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {PRESETS.map((p) => (
           <button
-            key={p}
-            onClick={() => setAmount(p)}
-            className="py-3 rounded-lg font-medium transition-all"
-            style={{
-              background: amount === p ? "rgba(184,172,255,0.2)" : "rgba(255,255,255,0.05)",
-              color: amount === p ? "var(--cosmic-violet)" : "var(--silver-mist)",
-              border: `1px solid ${amount === p ? "var(--cosmic-violet)" : "rgba(255,255,255,0.08)"}`,
-            }}
+            onClick={handleTopUp}
+            disabled={loading}
+            className="btn-primary w-full disabled:opacity-50"
+            data-testid="topup-submit-btn"
           >
-            {p} Credit
+            {loading ? "Processing…" : `Top Up ${amount.toLocaleString()} Credit`}
           </button>
-        ))}
-      </div>
 
-      <button
-        onClick={handleTopUp}
-        disabled={loading}
-        className="btn-cta w-full py-3 text-sm disabled:opacity-50"
-      >
-        {loading ? "Processing..." : `Top Up ${amount} Credit`}
-      </button>
-
-      {message && (
-        <div
-          className="mt-4 p-3 rounded-lg text-sm"
-          style={{
-            background: message.includes("berhasil") ? "rgba(0,204,255,0.1)" : "rgba(255,107,186,0.1)",
-            color: message.includes("berhasil") ? "var(--electric-blue)" : "var(--aurora-pink)",
-          }}
-        >
-          {message}
+          {message && (
+            <div
+              className="mt-4 p-4 rounded-2xl text-sm"
+              style={{
+                background: message.ok ? "rgba(0,204,255,0.08)" : "rgba(255,107,186,0.08)",
+                border: message.ok
+                  ? "1px solid rgba(0,204,255,0.3)"
+                  : "1px solid rgba(255,107,186,0.3)",
+                color: message.ok ? "var(--electric-blue)" : "var(--aurora-pink)",
+              }}
+              data-testid="topup-message"
+            >
+              {message.text}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Right: info panel */}
+        <div className="space-y-4">
+          <div className="glass p-6" data-testid="topup-info-card">
+            <p className="text-[0.72rem] uppercase tracking-[0.22em] mb-4" style={{ color: "var(--cosmic-violet)" }}>
+              What can credits do?
+            </p>
+            <ul className="space-y-3">
+              <InfoItem
+                title="Buy Card Packs"
+                desc="500 Credit / pack. 8 cards, at least 1 Rare+."
+              />
+              <InfoItem
+                title="Request a physical print"
+                desc="Turn digital cards into premium foil prints delivered to your door."
+              />
+              <InfoItem
+                title="Trade in the Marketplace"
+                desc="Settle peer-to-peer trades instantly."
+              />
+            </ul>
+          </div>
+
+          <div
+            className="glass p-6"
+            style={{ borderColor: "rgba(255,196,102,0.25)" }}
+          >
+            <p className="text-[0.72rem] uppercase tracking-[0.22em] mb-2" style={{ color: "var(--aurora-gold)" }}>
+              Payment
+            </p>
+            <p className="text-sm text-white/70 leading-relaxed">
+              This is a demo top-up. In production, payments are settled via
+              Stripe / on-chain. Your credit balance updates instantly.
+            </p>
+          </div>
+
+          <Link
+            href="/koleksi"
+            className="btn-ghost w-full !justify-center"
+            data-testid="topup-view-collection"
+          >
+            View My Collection
+          </Link>
+        </div>
+      </div>
+    </PageShell>
+  );
+}
+
+function InfoItem({ title, desc }: { title: string; desc: string }) {
+  return (
+    <li className="flex gap-3">
+      <span
+        className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+        style={{ background: "var(--cosmic-violet)" }}
+      />
+      <div>
+        <p className="text-sm font-medium text-white">{title}</p>
+        <p className="text-xs text-white/60 leading-relaxed mt-0.5">{desc}</p>
+      </div>
+    </li>
   );
 }
