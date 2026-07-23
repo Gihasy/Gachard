@@ -21,49 +21,48 @@ Persiapan Demo Day.
 - Hosting: Vercel (frontend + backend via API routes) + MongoDB Atlas (database), semua free tier
 - **Arsitektur final**: Next.js API routes sebagai SATU-SATUNYA backend (lihat ADR-017). FastAPI sudah dihapus.
 - **Enkripsi**: Private key + redeem code dienkripsi AES-256-GCM (ADR-020)
-- Sprint 1: SELESAI — laporan di `docs/compose/reports/sprint-1-final.md`
-- Sprint 2: SELESAI — laporan di `docs/compose/reports/sprint-2-final.md`
-- Sprint 3: SELESAI — laporan di `docs/compose/reports/sprint-3-final.md`
-  - [x] Smart contract: `requestPrint()` + `redeemCard()` + 24/24 tests
-  - [x] Deploy kontrak baru: `0x122ace919d9da1ddb736ce6c0db6f00638ab0637` (BNB Testnet)
-  - [x] Full loop mint→print→redeem verified on-chain (3 siklus)
-  - [x] API routes: `/api/print`, `/api/redeem` dengan rate-limiting + enkripsi code
-  - [x] Hash overwrite verified: kode lama invalid setelah siklus baru (tested on-chain)
-- Sprint 4: SELESAI
-  - [x] Credit system (creditBalance, topUp, deduct) + refund on failure
-  - [x] Buy pack deducts credit + mint
-  - [x] Request print with simulated Stripe checkout
-  - [x] confirmTransaction() extracts tokenId from CardMinted event
-  - [x] UI: Home dengan inline reveal (artwork + rarity colors)
-  - [x] UI: Top Up credit page
-  - [x] UI: Koleksi page dengan card grid + Request Print button
-  - [x] UI: Marketplace "Coming Soon"
-- Sprint 5: SELESAI
-  - [x] QR code generation untuk setiap kartu
-  - [x] `/api/scan` endpoint — data on-chain + off-chain + history + verification flag
-  - [x] Scan page dengan card detail + verification ✅/⚠️
-  - [x] QR display di CardItem (Show QR button)
-  - [x] purchasePrice di scan response
-  - [x] tokenIds array di mintBatch transaction
-  - [x] card-artwork-guideline: QR info-scan terpisah dari redeem code
 - Kontrak aktif: `0xe62bc7c470eaef3fcad1816b9ac6d63d585b5ee8`
 - Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
-- 12 API routes aktif di Vercel
-- AI Vision: di-skip untuk hackathon (Gemini API quota issues). QR lookup saja sudah cukup.
-- Scan endpoint: baca dari MongoDB cache (bukan ethers.js RPC) — fix timeout di Vercel
-- Sprint 6: SELESAI
-  - [x] Audit core loop — semua endpoint berfungsi, 31/31 contract tests pass
-  - [x] Draft pitch deck outline
-  - [x] Final deploy + verification
-- Brand Identity: SELESAI (8/8 tasks)
-  - [x] CSS variables (brand colors, gradients, rarity glow)
-  - [x] Navbar (dark navy, cosmic violet, CTA gradient)
-  - [x] Home page (hero, gold accent, card reveal)
-  - [x] PackCard (dark surface, gold price)
-  - [x] CardItem (card-surface, rarity glow, tag badges)
-  - [x] TopUp page (dark theme, gold balance)
-  - [x] Scan page (card-surface, verification flag)
-  - [x] Login, Koleksi, Marketplace, Profil (brand-consistent)
+- 12 API routes aktif di Vercel, 22 routes total (8 pages + 12 API + middleware)
+- Deploy: https://frontend-rosy-pi-88.vercel.app
+
+### Sprint 1-6: SEMUA SELESAI
+- Sprint 1: scaffold, login, UI, PWA icons — laporan di `docs/compose/reports/sprint-1-final.md`
+- Sprint 2: core mint, smart contract, test mint on-chain — laporan di `docs/compose/reports/sprint-2-final.md`
+- Sprint 3: requestPrint + redeemCard, full loop verified — laporan di `docs/compose/reports/sprint-3-final.md`
+- Sprint 4: credit system, buy pack, print checkout, UI pages
+- Sprint 5: QR codes, /api/scan, scan page, purchasePrice
+- Sprint 6: stabilization + pitch deck outline + brand identity (8/8 tasks)
+- Brand Identity: SELESAI — CSS variables, Navbar, Home, PackCard, CardItem, TopUp, Scan, Login, Collection, Marketplace, Profile
+
+### Emergent Design Overhaul: SELESAI + AUDITED
+- 8 commits from Emergent pulled, merged, deployed (+3470/-482 lines)
+- 6-step audit completed: ADR-010 compliant, no credential leak, proxy.ts safe, .emergent/cron inert
+- TypeScript fixes applied (scan/page.tsx)
+- External logos replaced with local assets (`frontend/public/icons/`)
+- `.emergent/cron/` deleted from repo
+- Route renames: `/koleksi` → `/collection`, `/profil` → `/profile`
+
+### Google OAuth: IMPLEMENTED, PERLU VERIFIKASI USER
+- `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` set di `.env.local` dan Vercel Production
+- Login page menggunakan Google Identity Services SDK (real OAuth, bukan mock)
+- Backend decode JWT ID token langsung (bukan Bearer token ke userinfo endpoint)
+- Authorized JavaScript origin ditambahkan di Google Cloud Console
+- **Status**: Code deployed, user perlu test login + clear cache dulu
+
+### Service Worker: FIXED, DEPLOYED
+- sw.js di-fix: cache versioning (`gachard-v2026-07-23-02`), `skipWaiting()`, `activate` event dengan old cache cleanup
+- HTML pages: network-first strategy (selalu fetch fresh)
+- Static assets: cache-first strategy
+- ServiceWorkerRegister.tsx: cache-bust SW registration dengan timestamp
+- **Status**: Deployed, user perlu hard refresh atau Incognito untuk verifikasi
+
+### Open Items (belum selesai)
+1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: A record @ → 76.76.21.21 + CNAME www → cname.vercel-dns.com
+2. **AI Vision (Gemini)** — di-skip untuk hackathon. QR lookup saja sudah cukup. Gemini API key ada tapi quota issues.
+3. **Google OAuth verification** — code deployed, user perlu test login setelah clear cache
+4. **SW cache verification** — user perlu hard refresh/Incognito untuk verifikasi deployment benar
+5. **Demo Day prep** — video backup, pitch deck, rehearsal
 
 ## Notes
 - Solo developer, non-programmer, vibe coding via MiMoCode
@@ -73,6 +72,9 @@ Persiapan Demo Day.
 - Tanggal Demo Day pasti belum diumumkan — cek grup peserta hackathon
 - Rencana kerja sama cetak-dan-segel dengan Millennium Print Group (MPG) — hanya untuk tahap produksi, bukan hackathon
 - Jalankan `/dream` di akhir setiap sprint untuk merangkum pembelajaran sesi ke file ini
+- **Routes sudah English**: `/collection` (bukan /koleksi), `/profile` (bukan /profil), `/marketplace`, `/scan`, `/topup`
+- **Service Worker**: sw.js sekarang punya cache versioning + network-first untuk HTML. Bump version di sw.js setiap deploy jika ada perubahan UI signifikan.
+- **Google OAuth**: Login menggunakan Google Identity Services SDK. Backend decode JWT langsung. Jika login gagal, cek: (1) cache browser, (2) Authorized JavaScript origins di Google Cloud Console, (3) env vars di Vercel.
 
 ## Aturan untuk Tool Eksternal (Emergent, AI lain, dll)
 WAJIB berikan akses ke file ini SEBELUM meminta tool eksternal mengerjakan apa pun:
