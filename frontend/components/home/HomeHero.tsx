@@ -15,13 +15,6 @@ const TIER_COLOR: Record<string, string> = {
   RARE: "var(--electric-blue)",
 };
 
-const STATS = [
-  { v: "12K+", l: "Collectors" },
-  { v: "45K+", l: "Cards Minted" },
-  { v: "3.2K+", l: "Matches Played" },
-  { v: "50+", l: "Countries" },
-] as const;
-
 interface HomeHeroProps {
   onExplore: () => void;
   exploreLoading: boolean;
@@ -79,17 +72,6 @@ export default function HomeHero({
                 </svg>
                 Play Now
               </Link>
-            </div>
-
-            <div className="reveal reveal-5 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-[560px]" data-testid="hero-stats">
-              {STATS.map((s) => (
-                <div key={s.l}>
-                  <div className="font-display text-2xl sm:text-[1.75rem] mb-1" style={{ color: "var(--cosmic-violet)" }}>
-                    {s.v}
-                  </div>
-                  <div className="text-[0.7rem] uppercase tracking-[0.18em] text-white/50">{s.l}</div>
-                </div>
-              ))}
             </div>
 
             {isAuthenticated && balance !== null && (
