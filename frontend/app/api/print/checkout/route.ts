@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 const PRINT_PRICE_CENTS = 999; // $9.99 per print
 
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
     }
 
     const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: userId });
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) } as Record<string, unknown>);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

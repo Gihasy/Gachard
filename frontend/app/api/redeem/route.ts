@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 import { redeemCard } from "@/lib/blockchain";
 import { hashRedeemCode } from "@/lib/redeem-code";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
 
     // Get user
     const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: userId });
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) } as Record<string, unknown>);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

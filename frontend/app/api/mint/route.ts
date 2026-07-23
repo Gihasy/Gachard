@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 import { mintCard } from "@/lib/blockchain";
 import { pickRarity } from "@/lib/odds";
 import { pickCardTemplate, seedCardTemplates } from "@/lib/card-templates";
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
 
   // Get user from DB
   const usersCollection = await getCollection("users");
-  const user = await usersCollection.findOne({ _id: userId });
+  const user = await usersCollection.findOne({ _id: new ObjectId(userId) } as Record<string, unknown>);
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
       txId: result.insertedId.toString(),
       txHash,
       rarity,
-      template: { templateId: template.templateId, name: template.name },
+      template: { templateId: template.templateId, name: template.name, artworkUrl: template.artworkUrl },
       newBalance,
     });
   } catch (error) {
