@@ -26,13 +26,15 @@ export default function Koleksi() {
       });
   }, [router]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p className="text-center mt-20" style={{ color: "var(--silver-mist)" }}>Loading...</p>;
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">Koleksi Saya</h1>
+      <h1 className="text-3xl font-bold mb-6 uppercase" style={{ color: "var(--text-primary)" }}>
+        Koleksi Saya
+      </h1>
       {cards.length === 0 ? (
-        <p className="text-gray-500">Belum ada kartu. Beli pack di Home!</p>
+        <p style={{ color: "var(--silver-mist)" }}>Belum ada kartu. Beli pack di Home!</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {cards.map((card) => (

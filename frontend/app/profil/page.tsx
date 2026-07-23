@@ -1,10 +1,10 @@
 export default function Profil() {
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">
+      <h1 className="text-3xl font-bold mb-4 uppercase" style={{ color: "var(--text-primary)" }}>
         Profil
       </h1>
-      <p className="text-gray-600">
+      <p style={{ color: "var(--silver-mist)" }}>
         Informasi akun dan pengaturan.
       </p>
     </div>
