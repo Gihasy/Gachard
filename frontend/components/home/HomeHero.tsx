@@ -42,11 +42,6 @@ export default function HomeHero({
         <div className="grid lg:grid-cols-[1.1fr_1fr] gap-14 lg:gap-8 items-center">
           {/* Copy column */}
           <div className="relative z-10">
-            <div className="chip reveal reveal-1 mb-6" data-testid="hero-chip">
-              <span className="chip-dot" />
-              <span>Season 1 — Cosmic Genesis is live</span>
-            </div>
-
             <h1
               className="font-display uppercase leading-[0.92] text-[clamp(3rem,7vw,6.25rem)] mb-6"
               style={{ letterSpacing: "-0.045em" }}
