@@ -3,8 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
-const MARK_URL =
-  "https://customer-assets-39nsmqrw.emergentagent.net/job_ui-modernize-78/artifacts/ny1n5epl_Gachard%20Logogram.png";
+const MARK_URL = "/icons/gachard-logo.png";
 
 const columns = [
   {

@@ -5,10 +5,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const LOGO_URL =
-  "https://customer-assets-39nsmqrw.emergentagent.net/job_ui-modernize-78/artifacts/pa86m8xz_Gachard%20Logogram%2Bwhitetext.png";
-const MARK_URL =
-  "https://customer-assets-39nsmqrw.emergentagent.net/job_ui-modernize-78/artifacts/ny1n5epl_Gachard%20Logogram.png";
+const LOGO_URL = "/icons/gachard-logo-full.png";
+const MARK_URL = "/icons/gachard-logo.png";
 
 const navItems = [
   { href: "/", label: "Home" },
