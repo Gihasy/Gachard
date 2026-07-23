@@ -140,13 +140,16 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
         }
       } else if (tx.type === "print") {
         // Print: decode CardStatusChanged, update status ke Vaulted
+        // oldStatus/newStatus bukan indexed — ada di log.data
         for (const log of receipt.logs) {
           if (
             log.topics[0] === CARD_STATUS_CHANGED_TOPIC &&
             log.address.toLowerCase() === contractAddress
           ) {
             const tokenId = parseInt(log.topics[1], 16);
-            const newCardStatus = parseInt(log.topics[3], 16); // 1 = Vaulted
+            // data: 32 bytes oldStatus + 32 bytes newStatus
+            const data = log.data.slice(2); // remove "0x"
+            const newCardStatus = parseInt(data.slice(64, 128), 16); // second 32-byte word
 
             if (newCardStatus === 1) {
               await cardsCollection.updateOne(
@@ -169,7 +172,8 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
             log.address.toLowerCase() === contractAddress
           ) {
             const tokenId = parseInt(log.topics[1], 16);
-            const newCardStatus = parseInt(log.topics[3], 16); // 0 = Digital
+            const data = log.data.slice(2);
+            const newCardStatus = parseInt(data.slice(64, 128), 16); // second 32-byte word
 
             if (newCardStatus === 0) {
               await cardsCollection.updateOne(
