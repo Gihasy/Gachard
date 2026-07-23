@@ -176,9 +176,9 @@ export default function Profil() {
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <QuickAction href="/collection" label="Collection" />
+                <QuickAction href="/topup" label="Top Up" />
                 <QuickAction href="/scan" label="Scan Card" />
                 <QuickAction href="/marketplace" label="Marketplace" />
-                <QuickAction href="/" label="Buy Pack" />
               </div>
             </div>
           </div>
