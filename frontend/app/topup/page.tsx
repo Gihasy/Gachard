@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-const PRESETS = [500, 1000, 2000, 5000]; // Credit units
+const PRESETS = [500, 1000, 2000, 5000];
 
 export default function TopUp() {
   const router = useRouter();
@@ -52,11 +52,15 @@ export default function TopUp() {
 
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Top Up Credit</h1>
+      <h1 className="text-3xl font-bold mb-8 uppercase" style={{ color: "var(--text-primary)" }}>
+        Top Up Credit
+      </h1>
 
       {balance !== null && (
-        <div className="bg-indigo-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-indigo-700">Saldo saat ini: <span className="font-bold">{balance} Credit</span></p>
+        <div className="rounded-lg p-4 mb-6" style={{ background: "rgba(184,172,255,0.1)", border: "1px solid rgba(184,172,255,0.2)" }}>
+          <p className="text-sm" style={{ color: "var(--silver-mist)" }}>
+            Saldo saat ini: <span className="font-bold text-lg" style={{ color: "var(--aurora-gold)" }}>{balance} Credit</span>
+          </p>
         </div>
       )}
 
@@ -65,7 +69,12 @@ export default function TopUp() {
           <button
             key={p}
             onClick={() => setAmount(p)}
-            className={`py-3 rounded-lg font-medium ${amount === p ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            className="py-3 rounded-lg font-medium transition-all"
+            style={{
+              background: amount === p ? "rgba(184,172,255,0.2)" : "rgba(255,255,255,0.05)",
+              color: amount === p ? "var(--cosmic-violet)" : "var(--silver-mist)",
+              border: `1px solid ${amount === p ? "var(--cosmic-violet)" : "rgba(255,255,255,0.08)"}`,
+            }}
           >
             {p} Credit
           </button>
@@ -75,13 +84,19 @@ export default function TopUp() {
       <button
         onClick={handleTopUp}
         disabled={loading}
-        className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
+        className="btn-cta w-full py-3 text-sm disabled:opacity-50"
       >
         {loading ? "Processing..." : `Top Up ${amount} Credit`}
       </button>
 
       {message && (
-        <div className={`mt-4 p-3 rounded-lg text-sm ${message.includes("berhasil") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+        <div
+          className="mt-4 p-3 rounded-lg text-sm"
+          style={{
+            background: message.includes("berhasil") ? "rgba(0,204,255,0.1)" : "rgba(255,107,186,0.1)",
+            color: message.includes("berhasil") ? "var(--electric-blue)" : "var(--aurora-pink)",
+          }}
+        >
           {message}
         </div>
       )}
