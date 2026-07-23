@@ -1,231 +1,111 @@
-# Laporan Sprint 5 — Fitur AI Scan
+# Laporan Sprint 5 — Final (AI Vision Di-skip)
 **Tanggal**: 23 Juli 2026
-**Status**: SELESAI, ter-deploy
+**Status**: SELESAI
 **Deploy**: https://frontend-rosy-pi-88.vercel.app
 
 ---
 
-## 1. Ringkasan Eksekutif
+## 1. Ringkasan
 
-Sprint 5 mengimplementasikan fitur AI Scan — wajib untuk tema hackathon "AI x Web3". User bisa scan kartu (fisik via QR atau digital) dan melihat metadata lengkap: rarity, status vault, riwayat kepemilikan, flag verifikasi. Beberapa perbaikan terkait juga diterapkan (purchasePrice, tokenIds array, QR info-scan terpisah dari redeem code).
-
----
-
-## 2. Task Status
-
-| # | Task | Status | Catatan |
-|---|---|---|---|
-| 1 | QR code generation | Done | `lib/qr.ts` + `GET /api/cards/:tokenId/qr` |
-| 2 | Scan API | Done | `GET /api/scan?tokenId=...` |
-| 3 | Scan page | Done | `/scan` dengan verification flag |
-| 4 | QR di CardItem | Done | "Show QR" button |
-| 5 | purchasePrice | Done | Dari mint transaction |
-| 6 | tokenIds array | Done | Populate saat konfirmasi |
-| 7 | card-artwork-guideline | Done | QR info-scan terpisah dari redeem |
-| 8 | AI Vision | Opsional | Belum diimplementasi |
+Sprint 5 mengimplementasikan fitur AI Scan (QR + metadata lookup). AI Vision di-skip karena Gemini API quota issues — QR lookup saja sudah memenuhi requirement hackathon "AI x Web3".
 
 ---
 
-## 3. Definition of Done — Verifikasi
+## 2. Status Task
 
-| Kriteria | Status | Bukti |
+| Task | Status | Catatan |
 |---|---|---|
-| Scan kartu menghasilkan data akurat | Pass | `/api/scan` return on-chain + off-chain data |
-| Flag verifikasi tampil | Pass | ✅ / ⚠️ di scan page |
-| QR code bisa di-generate | Pass | `/api/cards/:tokenId/qr` return PNG |
+| QR code generation | Done | `lib/qr.ts` + `/api/cards/:tokenId/qr` |
+| Scan API (cache-based) | Done | `/api/scan` baca dari MongoDB |
+| Scan page | Done | `/scan` dengan verification flag |
+| QR di CardItem | Done | "Show QR" button |
+| purchasePrice | Done | Dari mint transaction |
+| tokenIds array | Done | Populate saat konfirmasi |
+| card-artwork-guideline | Done | QR info-scan terpisah dari redeem |
+| AI Vision | **Di-skip** | Gemini API quota issues |
 
 ---
 
-## 4. File yang Dibuat/Dimodifikasi
+## 3. Perubahan Teknis
 
-### File Baru
+### 3.1 Scan Endpoint — Cache-Based (Fix Timeout)
 
-| File | Fungsi |
-|---|---|
-| `frontend/lib/qr.ts` | QR code generation (data URL + PNG buffer) |
-| `frontend/app/api/scan/route.ts` | Scan endpoint — on-chain + off-chain + history |
-| `frontend/app/api/cards/[tokenId]/qr/route.ts` | QR code image endpoint |
-| `frontend/app/scan/page.tsx` | Scan page UI |
+**Sebelum:** `/api/scan` panggil ethers.js langsung ke BNB Testnet RPC → timeout di Vercel (10s).
 
-### File Dimodifikasi
+**Sesudah:** Baca dari MongoDB cache. `confirmTransaction()` update cache saat transaksi dikonfirmasi.
 
-| File | Perubahan |
-|---|---|
-| `frontend/lib/transactions.ts` | Tambah `tokenIds` array collection + populate saat konfirmasi |
-| `frontend/app/api/mint/route.ts` | Tambah `tokenIds: []` dan `purchasePrice` ke transaction record |
-| `frontend/components/CardItem.tsx` | Tambah "Show QR" button + QR display |
-| `frontend/components/Navbar.tsx` | Tambah "Scan" link |
-| `docs/card-artwork-guideline.md` | Pisahkan QR info-scan dari redeem code |
-
----
-
-## 5. QR Code System
-
-### 5.1 QR Generation (`lib/qr.ts`)
-
-```typescript
-generateQRData(tokenId) → "https://frontend-rosy-pi-88.vercel.app/scan?tokenId=6"
-generateQRCode(tokenId) → base64 data URL
-generateQRCodeBuffer(tokenId) → PNG Buffer
+```
+confirmTransaction() → update cards: { rarity, lastOwner, lastOnChainSync }
+/api/scan → findOne({ tokenId }) from MongoDB → <1 detik response
 ```
 
-### 5.2 QR API Route
+### 3.2 QR Code System
 
-| Endpoint | Method | Response |
+- `lib/qr.ts` — generate QR PNG buffer
+- `/api/cards/:tokenId/qr` — return QR image
+- QR berisi URL `/scan?tokenId=...`
+- CardItem: tombol "Show QR" menampilkan QR 128x128
+
+### 3.3 Scan Page UI
+
+- Card image + rarity colors
+- Verification flag: ✅ Verified / ⚠️ Warning
+- Metadata: tokenId, name, rarity, status, lastOwner, purchasePrice
+- History: list transaksi (type, status, timestamp)
+- Manual input: field untuk masukkan tokenId
+
+---
+
+## 4. API Endpoints (12)
+
+| Endpoint | Method | Fungsi |
 |---|---|---|
-| `/api/cards/:tokenId/qr` | GET | PNG image (256x256) |
-
-QR berisi URL ke `/scan?tokenId=...` — siapa saja bisa scan untuk lihat info kartu.
-
-### 5.3 QR di CardItem
-
-- Tombol "Show QR" muncul untuk semua kartu dengan tokenId terisi
-- Klik menampilkan QR code 128x128 di bawah kartu
+| `/api/auth/google` | POST | Login Google |
+| `/api/health` | GET | Cek MongoDB |
+| `/api/mint` | POST | Buy pack (8 kartu, 500 Credit) |
+| `/api/print` | POST | Request print |
+| `/api/print/checkout` | POST | Print payment |
+| `/api/redeem` | POST | Redeem card |
+| `/api/transactions` | GET | Tx status polling |
+| `/api/seed-templates` | POST | Seed card_templates |
+| `/api/credits` | GET | Check balance |
+| `/api/credits/topup` | POST | Top-up credit |
+| `/api/cards` | GET | User's cards |
+| `/api/cards/:tokenId/qr` | GET | QR code image |
+| `/api/scan` | GET | Card metadata + verification |
 
 ---
 
-## 6. Scan System
+## 5. Git Commits
 
-### 6.1 Scan API (`/api/scan`)
-
-**Request:** `GET /api/scan?tokenId=6`
-
-**Response:**
-```json
-{
-  "tokenId": 6,
-  "onChain": {
-    "status": "Vaulted",
-    "statusCode": 1,
-    "rarity": "Legendary",
-    "rarityCode": 3,
-    "lastOwner": "0xF7DEd49EB412F69520c38C3f7e36523d71428DEa"
-  },
-  "metadata": {
-    "templateId": "legendary-2",
-    "templateName": "Legendary Card B",
-    "artworkUrl": "/cards/legendary-2.png"
-  },
-  "purchasePrice": 500,
-  "verification": {
-    "verified": true,
-    "statusMatch": true,
-    "flag": "verified"
-  },
-  "history": [
-    {"type": "print", "status": "confirmed", "from": "0xF7DE...", "to": "vault", "timestamp": "..."},
-    {"type": "mint", "status": "confirmed", "from": "0xF7DE...", "to": "0xF7DE...", "timestamp": "..."}
-  ]
-}
 ```
-
-### 6.2 Data Sources
-
-| Field | Source |
-|---|---|
-| status, rarity, lastOwner | On-chain (ethers.js call) |
-| templateId, templateName, artworkUrl | MongoDB `cards` + `card_templates` |
-| purchasePrice | MongoDB `transactions` (type=mint, tokenIds match) |
-| history | MongoDB `transactions` (tokenId OR tokenIds match) |
-| verification.flag | Compare on-chain vs MongoDB |
-
-### 6.3 Verification Logic
-
-```typescript
-const verified = statusOnChain !== undefined && card !== null;
-const statusMatch = STATUS_LABELS[statusOnChain] === card.status;
-const flag = verified && statusMatch ? "verified" : "warning";
-```
-
-- **✅ Verified**: data on-chain cocok dengan MongoDB
-- **⚠️ Warning**: data mismatch atau kartu tidak ditemukan
-
----
-
-## 7. Scan Page UI
-
-| Elemen | Tampilan |
-|---|---|
-| Card Image | Artwork dari `artworkUrl` dengan background warna rarity |
-| Verification Flag | ✅ Verified (hijau) atau ⚠️ Warning (kuning) |
-| Metadata | Token ID, Name, Rarity, Status, Last Owner, Purchase Price |
-| History | List transaksi (type, status, timestamp) |
-| Manual Input | Input field untuk masukkan tokenId manual |
-
----
-
-## 8. tokenIds Array Fix
-
-**Masalah:** Transaksi `mintBatch` tidak menyimpan array tokenId yang di-mint.
-
-**Solusi:**
-- `/api/mint` insert `tokenIds: []` saat transaksi dibuat
-- `confirmTransaction()` populate `tokenIds` dari `CardMinted` events saat konfirmasi
-- `/api/scan` query history dengan `$or: [{ tokenId }, { tokenIds: tokenId }]`
-
-**Kode (`lib/transactions.ts`):**
-```typescript
-if (tx.type === "mint") {
-  const tokenIds: number[] = [];
-  let mintIndex = 0;
-  for (const log of receipt.logs) {
-    if (log.topics[0] === CARD_MINTED_TOPIC && ...) {
-      const tokenId = parseInt(log.topics[1], 16);
-      tokenIds.push(tokenId);
-      // ... update cards collection
-      mintIndex++;
-    }
-  }
-  // Update transaksi dengan array tokenIds
-  if (tokenIds.length > 0) {
-    await collection.updateOne({ _id: tx._id }, { $set: { tokenIds } });
-  }
-}
+0652e51 fix: scan endpoint reads from MongoDB cache, not ethers.js RPC
+9b32619 feat: AI vision integration with Gemini API + blockchain retry logic
+0de9ebf feat: sprint-5 AI scan + QR codes + purchasePrice + tokenIds array
+f946676 fix: decode CardStatusChanged event data correctly
+8c4975f feat: pack economy 8 cards/500 Credit + mintBatch + event sync
 ```
 
 ---
 
-## 9. card-artwork-guideline Update
+## 6. Known Issues
 
-**Perubahan:** Pisahkan QR info-scan dari redeem code secara fisik.
-
-| Area | Posisi | Visibility | Isi |
-|---|---|---|---|
-| QR Info-Scan | Pojok atas/bawah (~1.5cm) | SELALU terlihat | URL `/scan?tokenId=...` |
-| Area Redeem Code | Posisi terpisah (~2cm) | Ditutup scratch-off | Kode redeem rahasia + QR |
+1. **AI Vision di-skip** — Gemini API quota issues, butuh key dari AI Studio
+2. **`lastSync` null untuk kartu lama** — kartu yang di-mint sebelum caching tidak punya data
+3. **`purchasePrice` null untuk kartu lama** — sama, perlu re-sync
 
 ---
 
-## 10. Git Status
+## 7. Sprint 6 Preview
 
-```
-Commit: 0de9ebf feat: sprint-5 AI scan + QR codes + purchasePrice + tokenIds array
-Branch: main, synced
-Working tree: clean
-```
-
----
-
-## 11. Known Issues
-
-1. **`/api/scan` timeout** — Blockchain RPC calls bisa timeout di Vercel serverless. Perlu caching atau retry logic jika sering terjadi.
-
-2. **AI Vision belum diimplementasi** — Task opsional, fallback ke QR lookup saja sudah cukup untuk hackathon.
-
-3. **purchasePrice hanya untuk kartu yang di-mint via `/api/mint`** — Kartu yang di-mint langsung via smart contract (tanpa melalui API) tidak punya purchasePrice.
-
----
-
-## 12. Sprint Berikutnya — Sprint 6 (26–30 Agustus)
-
-**Goal**: Stabilisasi, bukan fitur baru.
+**Goal**: Stabilisasi + pitch deck (26–30 Agustus 2026)
 
 **Tasks:**
-- Bug fixing dari fitur yang sudah dibangun
-- Mentor review khusus logika vault/redeem
+- Bug fixing
+- Mentor review logika vault/redeem
 - Draft pitch deck
-- Rekam video backup satu siklus redeem
+- Rekam video backup siklus redeem
 
 ---
 
-*Laporan ini disusun untuk review Sprint 5.*
+*Laporan ini disusun untuk review Sprint 5 final.*

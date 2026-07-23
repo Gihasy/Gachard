@@ -10,10 +10,10 @@ Selain file ini, baca juga secara eksplisit di awal sesi:
 Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru. Jangan membangun fitur di luar scope sprint aktif meski tampak berguna.
 
 ## Current Sprint
-Sprint 5 selesai. Siap Sprint 6 (26–30 Agustus 2026).
+Sprint 6 selesai. Semua sprint selesai.
 
 ## Current Goal
-Sprint 6: Stabilisasi + pitch deck.
+Persiapan Demo Day.
 
 ## Project Status
 - PRD selesai — lihat `docs/00-project-overview.md` (ringkas) dan `PRD-Gachard-Hackathon.md` (lengkap)
@@ -49,6 +49,12 @@ Sprint 6: Stabilisasi + pitch deck.
 - Kontrak aktif: `0xe62bc7c470eaef3fcad1816b9ac6d63d585b5ee8`
 - Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
 - 12 API routes aktif di Vercel
+- AI Vision: di-skip untuk hackathon (Gemini API quota issues). QR lookup saja sudah cukup.
+- Scan endpoint: baca dari MongoDB cache (bukan ethers.js RPC) — fix timeout di Vercel
+- Sprint 6: SELESAI
+  - [x] Audit core loop — semua endpoint berfungsi, 31/31 contract tests pass
+  - [x] Draft pitch deck outline
+  - [x] Final deploy + verification
 
 ## Notes
 - Solo developer, non-programmer, vibe coding via MiMoCode
