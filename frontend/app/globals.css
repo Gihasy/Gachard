@@ -263,6 +263,15 @@ body {
 .reveal-4 { animation-delay: 460ms; }
 .reveal-5 { animation-delay: 580ms; }
 
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-1, .reveal-2, .reveal-3, .reveal-4, .reveal-5 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .floaty, .pulse-glow, .marquee-track { animation: none !important; }
+}
+
 @keyframes pulseGlow { 0%,100% { opacity: 0.55; } 50% { opacity: 0.9; } }
 .pulse-glow { animation: pulseGlow 3.5s ease-in-out infinite; }
 
