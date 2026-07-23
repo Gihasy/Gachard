@@ -13,7 +13,7 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 const PROTECTED = ["/koleksi", "/profil", "/topup"];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isProtected = PROTECTED.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
