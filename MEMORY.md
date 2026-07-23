@@ -10,10 +10,10 @@ Selain file ini, baca juga secara eksplisit di awal sesi:
 Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru. Jangan membangun fitur di luar scope sprint aktif meski tampak berguna.
 
 ## Current Sprint
-Sprint 3 selesai. Siap Sprint 4 (10–16 Agustus 2026).
+Sprint 4 selesai. Siap Sprint 5 (17–25 Agustus 2026).
 
 ## Current Goal
-Sprint 4: Sistem credit dual-track + UI utama.
+Sprint 5: Fitur AI Scan (QR + vision).
 
 ## Project Status
 - PRD selesai — lihat `docs/00-project-overview.md` (ringkas) dan `PRD-Gachard-Hackathon.md` (lengkap)
@@ -29,9 +29,18 @@ Sprint 4: Sistem credit dual-track + UI utama.
   - [x] Full loop mint→print→redeem verified on-chain (3 siklus)
   - [x] API routes: `/api/print`, `/api/redeem` dengan rate-limiting + enkripsi code
   - [x] Hash overwrite verified: kode lama invalid setelah siklus baru (tested on-chain)
+- Sprint 4: SELESAI
+  - [x] Credit system (creditBalance, topUp, deduct) + refund on failure
+  - [x] Buy pack deducts credit + mint
+  - [x] Request print with simulated Stripe checkout
+  - [x] confirmTransaction() extracts tokenId from CardMinted event
+  - [x] UI: Home dengan inline reveal (artwork + rarity colors)
+  - [x] UI: Top Up credit page
+  - [x] UI: Koleksi page dengan card grid + Request Print button
+  - [x] UI: Marketplace "Coming Soon"
 - Kontrak aktif: `0x122ace919d9da1ddb736ce6c0db6f00638ab0637`
 - Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
-- 9 API routes aktif di Vercel
+- 11 API routes aktif di Vercel
 
 ## Notes
 - Solo developer, non-programmer, vibe coding via MiMoCode

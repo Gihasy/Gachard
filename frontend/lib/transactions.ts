@@ -1,6 +1,7 @@
 import { getCollection } from "./mongodb";
 import { ObjectId } from "mongodb";
 import { getProvider } from "./blockchain";
+import { ethers } from "ethers";
 
 export type TxStatus = "pending" | "confirmed" | "failed";
 
@@ -18,6 +19,9 @@ export interface Transaction {
   createdAt: string;
   updatedAt: string;
 }
+
+// CardMinted(uint256 indexed tokenId, address indexed to, uint8 status, uint8 rarity)
+const CARD_MINTED_TOPIC = ethers.id("CardMinted(uint256,address,uint8,uint8)");
 
 /**
  * Create a new pending transaction record.
@@ -87,7 +91,7 @@ export async function getTransactionStatus(txId: string) {
 
 /**
  * Check on-chain receipt and update transaction status.
- * Called by polling endpoint when status is still "pending".
+ * For mint transactions, extract tokenId from CardMinted event.
  */
 export async function confirmTransaction(txId: string): Promise<TxStatus> {
   const collection = await getCollection("transactions");
@@ -105,6 +109,33 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
     }
 
     const newStatus: TxStatus = receipt.status === 1 ? "confirmed" : "failed";
+
+    // Jika confirmed dan type mint, extract tokenId dari CardMinted event
+    if (newStatus === "confirmed" && tx.type === "mint" && receipt.logs) {
+      for (const log of receipt.logs) {
+        if (
+          log.topics[0] === CARD_MINTED_TOPIC &&
+          log.address.toLowerCase() === process.env.CONTRACT_ADDRESS?.toLowerCase()
+        ) {
+          // topics[1] = tokenId (indexed)
+          const tokenId = parseInt(log.topics[1], 16);
+
+          // Update cards collection — match by txId
+          const cardsCollection = await collection.db.collection("cards");
+          await cardsCollection.updateOne(
+            { txId: tx._id.toString() },
+            {
+              $set: {
+                tokenId,
+                status: "Digital",
+                updatedAt: new Date().toISOString(),
+              },
+            }
+          );
+          break;
+        }
+      }
+    }
 
     await collection.updateOne(
       { _id: tx._id },

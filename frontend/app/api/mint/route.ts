@@ -3,28 +3,43 @@ import { getCollection } from "@/lib/mongodb";
 import { mintCard } from "@/lib/blockchain";
 import { pickRarity } from "@/lib/odds";
 import { pickCardTemplate, seedCardTemplates } from "@/lib/card-templates";
+import { deductCredits, addCredits } from "@/lib/credits";
+
+const PACK_PRICE_CENTS = 299; // $2.99 per pack
 
 export async function POST(request: Request) {
+  const { userId } = await request.json();
+
+  // Get user from DB
+  const usersCollection = await getCollection("users");
+  const user = await usersCollection.findOne({ _id: userId });
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  // Deduct credit FIRST (before minting)
+  let newBalance: number;
   try {
-    const { userId } = await request.json();
+    newBalance = await deductCredits(userId, PACK_PRICE_CENTS);
+  } catch {
+    return NextResponse.json(
+      { error: "Insufficient credit balance", price: PACK_PRICE_CENTS },
+      { status: 402 }
+    );
+  }
 
-    // Get user from DB
-    const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: userId });
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
+  // Bungkus sisa proses dalam try/catch — refund jika gagal
+  try {
     // Seed card templates if needed
     await seedCardTemplates();
 
-    // Weighted random pick rarity SEBELUM mint (ADR-009: odds di backend)
+    // Weighted random pick rarity (ADR-009: odds di backend)
     const rarity = await pickRarity();
 
-    // Pick card template for this rarity
+    // Pick card template
     const template = await pickCardTemplate(rarity);
 
-    // Submit mint transaction (async — tidak tunggu konfirmasi, ADR-018)
+    // Submit mint transaction (async — ADR-018)
     const txHash = await mintCard(user.walletAddress, rarity);
 
     // Simpan transaksi sebagai pending
@@ -59,16 +74,24 @@ export async function POST(request: Request) {
       txId: result.insertedId.toString(),
       txHash,
       rarity,
-      template: {
-        templateId: template.templateId,
-        name: template.name,
-      },
+      template: { templateId: template.templateId, name: template.name },
+      newBalance,
     });
   } catch (error) {
-    console.error("Mint error:", error);
-    return NextResponse.json(
-      { error: "Mint failed" },
-      { status: 500 }
-    );
+    // REFUND: kembalikan saldo jika mint gagal setelah deduct
+    console.error("Mint failed after deduct, refunding:", error);
+    let refunded = false;
+    try {
+      await addCredits(userId, PACK_PRICE_CENTS);
+      refunded = true;
+    } catch (refundError) {
+      console.error("CRITICAL: Refund failed:", refundError);
+    }
+
+    const message = refunded
+      ? "Mint failed, credit refunded"
+      : "Mint failed, credit refund FAILED — contact support";
+
+    return NextResponse.json({ error: message, refunded }, { status: 500 });
   }
 }
