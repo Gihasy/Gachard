@@ -39,6 +39,9 @@ export default function RootLayout({
       lang="id"
       className={`${inter.variable} ${unbounded.variable} h-full antialiased`}
     >
+      <head>
+        <meta name="google-client-id" content={process.env.GOOGLE_CLIENT_ID || ""} />
+      </head>
       <body
         className="min-h-full flex flex-col"
         style={{
