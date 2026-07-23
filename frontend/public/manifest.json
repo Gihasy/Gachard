@@ -4,9 +4,14 @@
   "description": "Platform kartu TCG digital-native",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
+  "background_color": "#0B0E1A",
+  "theme_color": "#0B0E1A",
   "icons": [
+    {
+      "src": "/icons/gachard-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",

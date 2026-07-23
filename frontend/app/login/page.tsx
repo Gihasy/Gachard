@@ -2,10 +2,8 @@
 
 import { useState, Suspense, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-
-const MARK_URL = "/icons/gachard-logo.png";
+import Logo from "@/components/Logo";
 
 declare global {
   interface Window {
@@ -118,14 +116,7 @@ function LoginInner() {
               boxShadow: "0 0 40px -8px rgba(184,172,255,0.45)",
             }}
           >
-            <Image
-              src={MARK_URL}
-              alt="Gachard"
-              width={44}
-              height={44}
-              className="object-contain drop-shadow-[0_0_18px_rgba(184,172,255,0.6)]"
-              priority
-            />
+            <Logo size={44} priority className="drop-shadow-[0_0_18px_rgba(184,172,255,0.6)]" />
           </div>
         </div>
 

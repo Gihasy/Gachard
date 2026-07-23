@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-
-const LOGO_URL = "/icons/gachard-logo-full.png";
-const MARK_URL = "/icons/gachard-logo.png";
+import Logo from "@/components/Logo";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -66,22 +63,7 @@ export default function Navbar() {
             className="flex items-center gap-3 group"
             data-testid="nav-logo-link"
           >
-            <span className="relative w-9 h-9 shrink-0">
-              <Image
-                src={MARK_URL}
-                alt="Gachard"
-                fill
-                sizes="36px"
-                className="object-contain drop-shadow-[0_0_18px_rgba(184,172,255,0.5)]"
-                priority
-              />
-            </span>
-            <span
-              className="font-display text-[1.05rem] tracking-[0.18em] text-white uppercase"
-              style={{ fontWeight: 700 }}
-            >
-              Gachard
-            </span>
+            <Logo size={36} priority className="drop-shadow-[0_0_18px_rgba(184,172,255,0.5)]" />
           </Link>
 
           {/* Desktop nav */}

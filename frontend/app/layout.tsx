@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   description:
     "A next-generation collectible card ecosystem that connects the physical and digital worlds. Collect rare cards. Play your way. Trade with everyone.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icons/gachard-logo.png",
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export const viewport = {

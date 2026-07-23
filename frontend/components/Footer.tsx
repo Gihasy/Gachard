@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-
-const MARK_URL = "/icons/gachard-logo.png";
+import Logo from "@/components/Logo";
 
 const columns = [
   {
@@ -57,21 +55,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-3 mb-5">
-              <span className="relative w-10 h-10">
-                <Image
-                  src={MARK_URL}
-                  alt="Gachard"
-                  fill
-                  sizes="40px"
-                  className="object-contain"
-                />
-              </span>
-              <span
-                className="font-display text-lg tracking-[0.18em] text-white uppercase"
-                style={{ fontWeight: 700 }}
-              >
-                Gachard
-              </span>
+              <Logo size={40} />
             </Link>
             <p className="text-sm text-white/60 max-w-[280px] leading-relaxed">
               Collect. Play. Trade. A next-generation collectible card ecosystem
