@@ -63,7 +63,7 @@ export default function Navbar() {
             className="flex items-center gap-3 group"
             data-testid="nav-logo-link"
           >
-            <Logo size={48} priority className="drop-shadow-[0_0_18px_rgba(184,172,255,0.5)]" />
+            <Logo size={48} showWordmark priority className="drop-shadow-[0_0_18px_rgba(184,172,255,0.5)]" />
           </Link>
 
           {/* Desktop nav */}

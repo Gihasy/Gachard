@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Unbounded } from "next/font/google";
+import { Inter, Unbounded, Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -15,6 +15,13 @@ const unbounded = Unbounded({
   variable: "--font-unbounded",
   subsets: ["latin"],
   weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["600"],
   display: "swap",
 });
 
@@ -41,7 +48,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${inter.variable} ${unbounded.variable} h-full antialiased`}
+      className={`${inter.variable} ${unbounded.variable} ${poppins.variable} h-full antialiased`}
     >
       <head>
         <meta name="google-client-id" content={process.env.GOOGLE_CLIENT_ID || ""} />
