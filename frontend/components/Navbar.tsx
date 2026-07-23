@@ -14,7 +14,7 @@ const navItems = [
   { href: "/scan", label: "Scan" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/topup", label: "Top Up" },
-  { href: "/profil", label: "Profile" },
+  { href: "/profile", label: "Profile" },
 ];
 
 export default function Navbar() {
