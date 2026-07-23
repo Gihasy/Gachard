@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { googleLogin } from "@/lib/api";
@@ -8,7 +9,9 @@ import { googleLogin } from "@/lib/api";
 const MARK_URL =
   "https://customer-assets-39nsmqrw.emergentagent.net/job_ui-modernize-78/artifacts/ny1n5epl_Gachard%20Logogram.png";
 
-export default function Login() {
+function LoginInner() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") || "/";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +22,10 @@ export default function Login() {
       const mockToken = "mock-google-token";
       const result = await googleLogin(mockToken);
       localStorage.setItem("user", JSON.stringify(result));
-      window.location.href = "/";
+      document.cookie = `gachard_uid=${encodeURIComponent(
+        result.user_id
+      )}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+      window.location.href = next;
     } catch {
       setError("Login failed. Please try again.");
     } finally {
@@ -158,5 +164,19 @@ export default function Login() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex-1 flex items-center justify-center py-24">
+          <div className="glass p-8 text-white/60">Loading…</div>
+        </div>
+      }
+    >
+      <LoginInner />
+    </Suspense>
   );
 }

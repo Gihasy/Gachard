@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import CardItem from "@/components/CardItem";
 import PageShell from "@/components/PageShell";
@@ -23,28 +22,48 @@ type Card = {
 };
 
 export default function Koleksi() {
-  const router = useRouter();
+  const [user, setUser] = useState<{ user_id: string } | null>(null);
+  const [ready, setReady] = useState(false);
   const [cards, setCards] = useState<Card[]>([]);
-  const [userId, setUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<string>("all");
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("user");
     if (!stored) {
-      router.push("/login");
+      window.location.replace("/login");
       return;
     }
-    const user = JSON.parse(stored);
-    setUserId(user.user_id);
+    try {
+      setUser(JSON.parse(stored));
+      setReady(true);
+    } catch {
+      window.location.replace("/login");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!ready || !user) return;
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      setLoading(false);
+    }, 6000);
     fetch(`/api/cards?userId=${user.user_id}`)
       .then((r) => r.json())
       .then((d) => {
+        if (timedOut) return;
+        clearTimeout(timer);
         setCards(d.cards || []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
-  }, [router]);
+      .catch(() => {
+        clearTimeout(timer);
+        setLoading(false);
+      });
+    return () => clearTimeout(timer);
+  }, [ready, user]);
 
   const counts = useMemo(() => {
     const c = { all: cards.length, common: 0, rare: 0, epic: 0, legendary: 0 };
@@ -62,6 +81,8 @@ export default function Koleksi() {
     const code = RARITY_TABS.find((t) => t.key === tab)?.code ?? -1;
     return cards.filter((c) => c.rarity === code);
   }, [cards, tab]);
+
+  if (!ready || !user) return null;
 
   return (
     <PageShell
@@ -158,7 +179,7 @@ export default function Koleksi() {
               rarity={card.rarity}
               artworkUrl={card.artworkUrl || ""}
               status={card.status || "Digital"}
-              userId={userId}
+              userId={user.user_id}
             />
           ))}
         </div>

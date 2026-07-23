@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
+
+type SessionUser = { user_id: string; username: string };
 
 const PRESETS = [
   { credits: 500, price: "$5", bonus: null, popular: false },
@@ -13,26 +14,35 @@ const PRESETS = [
 ];
 
 export default function TopUp() {
-  const router = useRouter();
-  const [user, setUser] = useState<{ user_id: string; username: string } | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [ready, setReady] = useState(false);
   const [amount, setAmount] = useState(1000);
   const [loading, setLoading] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("user");
     if (!stored) {
-      router.push("/login");
+      window.location.replace("/login");
       return;
     }
-    const u = JSON.parse(stored);
-    setUser(u);
-    fetch(`/api/credits?userId=${u.user_id}`)
+    try {
+      setUser(JSON.parse(stored));
+      setReady(true);
+    } catch {
+      window.location.replace("/login");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!ready || !user) return;
+    fetch(`/api/credits?userId=${user.user_id}`)
       .then((r) => r.json())
       .then((d) => setBalance(d.balance))
       .catch(() => {});
-  }, [router]);
+  }, [ready, user]);
 
   const handleTopUp = async () => {
     if (!user) return;
@@ -55,6 +65,8 @@ export default function TopUp() {
       setLoading(false);
     }
   };
+
+  if (!ready || !user) return null;
 
   return (
     <PageShell

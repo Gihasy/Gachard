@@ -1,0 +1,29 @@
+{
+  "summary": "Frontend-only regression test focused on the middleware.ts auth-guard fix + dark-cosmic design consistency across /koleksi, /profil, /topup, /marketplace, /scan, /login. ALL 6 SPEC BULLETS PASS. (1) Logged-out redirects — verified via curl AND page.request.fetch(max_redirects=0): /koleksi, /profil, /topup all return HTTP 307 with Location: /login?next=%2F<path>. (2) Positive/authed case — with cookie {gachard_uid:demo123} + localStorage.user, all three protected pages render fully: /koleksi shows h1='MY COLLECTION', /topup shows h1='TOP UP CREDIT' (POPULAR badge on 1 preset, 4 preset-* testids, $10 & 'credit' text), /profil shows h1='PROFILE' with 'CosmicPlayer' username + 'progress' bar + 14 profile-related testids. (3) /login?next=%2Fkoleksi renders correctly (title='ENTER THE UNIVERSE', google btn visible, cookie-setting flow intact per source review). (4) /marketplace public renders 'coming soon' + 6 preview cards (market-preview-lumora/pyrax/noxel/auren/nyxthalon/aquoris) + waitlist/back-home/status-chip testids. /scan public renders 'how to scan' + 'manual' 2-panel layout. /login renders glass card with ENTER THE UNIVERSE gradient. (5) Nav active underline verified — /koleksi highlights COLLECTION (screenshot), /topup highlights TOP UP (HTML), /marketplace highlights MARKETPLACE (via preview-testid enumeration). (6) Mobile 420-wide: nav-mobile-toggle button present in server-rendered HTML with all 7 mobile-nav-* testids inside nav-mobile-menu (home/collection/scan/marketplace/top-up/profile/login-btn). Regression from iteration_2 is FIXED — the middleware.ts approach works reliably.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_3.json"],
+  "action_items": [
+    "LOW: The service worker registered at /sw.js in app/layout caches Next.js dev responses and, combined with any transient compile error in .next cache, causes Chromium (Playwright) to sometimes return net::ERR_FAILED on subsequent visits even after the code is fixed. Consider gating the SW registration to production only (process.env.NODE_ENV === 'production') so it doesn't pollute dev debugging.",
+    "LOW: Next.js emits a deprecation warning on startup: \"The 'middleware' file convention is deprecated. Please use 'proxy' instead.\" The current middleware.ts still works, but plan to rename to proxy.ts per https://nextjs.org/docs/messages/middleware-to-proxy before upgrading Next.js.",
+    "LOW: Stale compile-error was observed on startup: 'Module not found: @/lib/useRequireUser' in app/topup/page.tsx (from a previous iteration's attempt). Current source no longer imports that file. A one-time `rm -rf .next` + restart cleared it; ensure no residual references remain in any branch."
+  ],
+  "critical_code_review_comments": [
+    "middleware.ts implementation is clean, minimal, and correctly scoped via matcher config to only the 3 protected routes. Uses NextRequest cookie API rather than parsing headers — good.",
+    "login/page.tsx handleGoogleLogin correctly encodes user_id into the gachard_uid cookie with SameSite=Lax + 30-day max-age, mirroring the middleware's expectation. window.location.href = next preserves the ?next= param behavior.",
+    "profil/page.tsx and koleksi/page.tsx still keep a client-side useEffect user-check as defense-in-depth after the middleware — good redundancy since middleware only checks cookie existence, not payload validity.",
+    "Service worker registration in the layout should be feature-flagged by NODE_ENV to avoid caching dev-mode error pages."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "N/A (skipped)", "frontend": "100% (6 of 6 spec bullets verified)" },
+  "test_credentials": "Cookie gachard_uid=demo123 + localStorage.user={user_id:'demo123',username:'CosmicPlayer',email:'demo@gachard.io'}",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "middleware.ts auth guard works correctly at the edge. Verified by BOTH curl and Playwright request.fetch: /koleksi, /profil, /topup return 307 to /login?next=<encoded-path> when cookie is absent; return 200 when cookie is present. All 6 pages render the Gachard PageShell (eyebrow + gradient title + testids). Only sidenote for future agents: if you see Playwright ERR_FAILED on protected routes, first run `rm -rf /app/frontend/.next && sudo supervisorctl restart frontend` and unregister the service worker via page.evaluate before testing.",
+  "rca of the issue": "Previous iteration's client-side redirect on koleksi/profil failed because router.push races with concurrent fetch() calls in the same effect. New middleware.ts implementation moves the guard to Next.js edge — before any client JS runs. Verified by page.request.fetch(url, max_redirects=0): status=307, Location header contains /login?next=<encoded-path>. FIXED."
+}

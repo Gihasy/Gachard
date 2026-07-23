@@ -5,36 +5,43 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
 
-type User = { user_id: string; username: string; email?: string };
+type SessionUser = { user_id: string; username: string; email?: string };
 type Card = { rarity: number; status?: string };
 
 export default function Profil() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [ready, setReady] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("user");
     if (!stored) {
-      router.push("/login");
+      window.location.replace("/login");
       return;
     }
-    const u: User = JSON.parse(stored);
-    setUser(u);
+    try {
+      setUser(JSON.parse(stored));
+      setReady(true);
+    } catch {
+      window.location.replace("/login");
+    }
+  }, []);
 
-    // Fire-and-forget: the shell renders immediately with zeros and fills in
-    // as data arrives. Silently swallow errors so the UI is never blocked.
-    fetch(`/api/credits?userId=${u.user_id}`)
+  useEffect(() => {
+    if (!ready || !user) return;
+    fetch(`/api/credits?userId=${user.user_id}`)
       .then((r) => r.json())
       .then((d) => setBalance(d.balance ?? 0))
       .catch(() => setBalance(0));
 
-    fetch(`/api/cards?userId=${u.user_id}`)
+    fetch(`/api/cards?userId=${user.user_id}`)
       .then((r) => r.json())
       .then((d) => setCards(d.cards || []))
       .catch(() => {});
-  }, [router]);
+  }, [ready, user]);
 
   const stats = {
     total: cards.length,
@@ -47,8 +54,11 @@ export default function Profil() {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    document.cookie = "gachard_uid=; path=/; max-age=0; SameSite=Lax";
     router.push("/");
   };
+
+  if (!ready || !user) return null;
 
   return (
     <PageShell
