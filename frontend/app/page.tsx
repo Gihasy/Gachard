@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PackCard from "@/components/PackCard";
 
-const RARITY_COLORS = ["border-gray-300", "border-blue-400", "border-purple-400", "border-yellow-400"];
-const RARITY_BG = ["bg-gray-50", "bg-blue-50", "bg-purple-50", "bg-yellow-50"];
+const RARITY_GLOW = ["", "glow-rare", "glow-epic", "glow-legendary"];
+const RARITY_COLORS = ["var(--rarity-common)", "var(--rarity-rare)", "var(--rarity-epic)", "var(--rarity-legendary)"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 
 export default function Home() {
@@ -56,53 +56,72 @@ export default function Home() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">Selamat Datang di Gachard</h1>
-      <p className="text-gray-600 mb-8">Platform kartu TCG digital-native dengan mekanisme lock-vault-redeem.</p>
+      {/* Hero Section */}
+      <div className="text-center py-12">
+        <h1
+          className="text-5xl md:text-6xl font-bold mb-4 uppercase tracking-tight"
+          style={{ color: "var(--text-primary)", letterSpacing: "-0.05em" }}
+        >
+          Collect. Play. Trade.
+        </h1>
+        <p className="text-lg mb-2" style={{ color: "var(--aurora-gold)" }}>
+          One bond. Infinite legends.
+        </p>
+        <p className="text-sm mb-8" style={{ color: "var(--silver-mist)" }}>
+          Enter the world of Gachard and build your legacy with powerful cards and trusted connections.
+        </p>
 
-      {user && balance !== null && (
-        <div className="bg-indigo-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-indigo-700">Saldo: <span className="font-bold">{balance} Credit</span></p>
+        {user && balance !== null && (
+          <div className="inline-block rounded-full px-6 py-2 mb-6" style={{ background: "rgba(184,172,255,0.1)", border: "1px solid rgba(184,172,255,0.2)" }}>
+            <span className="text-sm" style={{ color: "var(--silver-mist)" }}>Saldo: </span>
+            <span className="font-bold text-lg" style={{ color: "var(--aurora-gold)" }}>{balance} Credit</span>
+          </div>
+        )}
+
+        <div className="flex justify-center gap-4 mb-8">
+          <PackCard price={500} onBuy={handleBuyPack} loading={loading} />
         </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <PackCard price={500} onBuy={handleBuyPack} loading={loading} />
       </div>
 
-      {/* Reveal — grid 8 kartu */}
+      {/* Reveal Section */}
       {reveal && !reveal.error && (
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4 text-center">Pack Dibuka!</h2>
+        <div className="mt-4">
+          <h2 className="text-2xl font-bold mb-6 text-center uppercase" style={{ color: "var(--text-primary)" }}>
+            Pack Dibuka!
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {reveal.cards?.map((card: any, i: number) => (
               <div
                 key={i}
-                className={`rounded-xl overflow-hidden shadow-md border-2 ${RARITY_COLORS[card.rarity]} ${RARITY_BG[card.rarity]}`}
+                className={`card-surface overflow-hidden ${RARITY_GLOW[card.rarity]}`}
+                style={{ borderColor: RARITY_COLORS[card.rarity] }}
               >
                 {card.template?.artworkUrl ? (
                   <img src={card.template.artworkUrl} alt={card.template.name} className="w-full h-40 object-cover" />
                 ) : (
-                  <div className="w-full h-40 bg-gray-200 flex items-center justify-center">
+                  <div className="w-full h-40 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.05)" }}>
                     <span className="text-4xl">🎴</span>
                   </div>
                 )}
-                <div className="p-2 text-center">
-                  <p className="text-xs font-medium">{card.template?.name}</p>
-                  <p className={`text-xs font-bold ${card.rarity >= 2 ? "text-purple-600" : "text-gray-600"}`}>
+                <div className="p-3 text-center">
+                  <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{card.template?.name}</p>
+                  <span
+                    className={`tag tag-${RARITY_LABELS[card.rarity].toLowerCase()}`}
+                  >
                     {RARITY_LABELS[card.rarity]}
-                  </p>
+                  </span>
                 </div>
               </div>
             ))}
           </div>
-          <p className="mt-4 text-sm text-gray-500 text-center">
-            <a href="/koleksi" className="text-indigo-600 underline">Lihat di Koleksi →</a>
+          <p className="mt-6 text-sm text-center">
+            <a href="/koleksi" style={{ color: "var(--cosmic-violet)" }}>Lihat di Koleksi →</a>
           </p>
         </div>
       )}
 
       {reveal?.error && (
-        <div className="mt-8 bg-red-50 text-red-700 p-4 rounded-lg text-center">
+        <div className="mt-8 p-4 rounded-lg text-center" style={{ background: "rgba(255,107,186,0.1)", color: "var(--aurora-pink)" }}>
           {reveal.error}
         </div>
       )}

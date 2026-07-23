@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Gachard Brand Colors */
+  --cosmic-violet: #B8ACFF;
+  --aurora-pink: #FF6BBA;
+  --electric-blue: #00CCFF;
+  --aurora-gold: #FFC466;
+  --deep-navy: #0B0E1A;
+  --silver-mist: #E6E8F0;
+
+  /* Semantic */
+  --background: var(--deep-navy);
+  --foreground: var(--silver-mist);
+  --text-primary: #FFFFFF;
+  --text-secondary: var(--silver-mist);
+  --accent: var(--cosmic-violet);
+  --cta: linear-gradient(135deg, var(--aurora-pink), var(--electric-blue));
+
+  /* Rarity Colors */
+  --rarity-common: #9CA3AF;
+  --rarity-rare: var(--electric-blue);
+  --rarity-epic: var(--cosmic-violet);
+  --rarity-legendary: var(--aurora-gold);
 }
 
 @theme inline {
@@ -12,15 +31,78 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
 }
+
+/* CTA Button Gradient */
+.btn-cta {
+  background: linear-gradient(135deg, var(--aurora-pink), var(--electric-blue));
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-cta:hover {
+  opacity: 0.9;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Gold Button */
+.btn-gold {
+  background: var(--aurora-gold);
+  color: var(--deep-navy);
+  border: none;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.btn-gold:hover {
+  opacity: 0.9;
+}
+
+/* Rarity Glow Effects */
+.glow-common { box-shadow: 0 0 15px rgba(156, 163, 175, 0.3); }
+.glow-rare { box-shadow: 0 0 20px rgba(0, 204, 255, 0.4); }
+.glow-epic { box-shadow: 0 0 20px rgba(184, 172, 255, 0.4); }
+.glow-legendary { box-shadow: 0 0 25px rgba(255, 196, 102, 0.5); }
+
+/* Card Container */
+.card-surface {
+  background: rgba(11, 14, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+/* Tag/Badge */
+.tag {
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tag-rare { border: 1px solid var(--rarity-rare); color: var(--rarity-rare); }
+.tag-epic { border: 1px solid var(--rarity-epic); color: var(--rarity-epic); }
+.tag-legendary { border: 1px solid var(--rarity-legendary); color: var(--rarity-legendary); }
+.tag-common { border: 1px solid var(--rarity-common); color: var(--rarity-common); }

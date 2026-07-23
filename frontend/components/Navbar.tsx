@@ -25,12 +25,12 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav style={{ background: "var(--deep-navy)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="text-xl font-bold text-indigo-600">
-              Gachard
+            <Link href="/" className="text-xl font-bold" style={{ color: "var(--cosmic-violet)" }}>
+              GACHARD
             </Link>
           </div>
           <div className="flex items-center space-x-4">
@@ -38,21 +38,21 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  pathname === item.href
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className="px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wide"
+                style={{
+                  color: pathname === item.href ? "var(--cosmic-violet)" : "var(--silver-mist)",
+                  background: pathname === item.href ? "rgba(184,172,255,0.1)" : "transparent",
+                }}
               >
                 {item.label}
               </Link>
             ))}
             {user ? (
-              <span className="text-sm text-gray-600">@{user.username}</span>
+              <span className="text-sm" style={{ color: "var(--silver-mist)" }}>@{user.username}</span>
             ) : (
               <Link
                 href="/login"
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+                className="btn-cta px-4 py-2 text-sm"
               >
                 Login
               </Link>
