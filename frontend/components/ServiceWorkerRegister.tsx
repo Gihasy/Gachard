@@ -13,7 +13,9 @@ export default function ServiceWorkerRegister() {
     if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
 
     const onLoad = () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => {
+      // Add timestamp to force browser to check for new SW version on every deploy
+      const swUrl = `/sw.js?v=${Date.now()}`;
+      navigator.serviceWorker.register(swUrl).catch(() => {
         /* SW registration failure is non-fatal — silently ignore. */
       });
     };
