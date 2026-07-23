@@ -55,6 +55,15 @@ Persiapan Demo Day.
   - [x] Audit core loop — semua endpoint berfungsi, 31/31 contract tests pass
   - [x] Draft pitch deck outline
   - [x] Final deploy + verification
+- Brand Identity: SELESAI (8/8 tasks)
+  - [x] CSS variables (brand colors, gradients, rarity glow)
+  - [x] Navbar (dark navy, cosmic violet, CTA gradient)
+  - [x] Home page (hero, gold accent, card reveal)
+  - [x] PackCard (dark surface, gold price)
+  - [x] CardItem (card-surface, rarity glow, tag badges)
+  - [x] TopUp page (dark theme, gold balance)
+  - [x] Scan page (card-surface, verification flag)
+  - [x] Login, Koleksi, Marketplace, Profil (brand-consistent)
 
 ## Notes
 - Solo developer, non-programmer, vibe coding via MiMoCode

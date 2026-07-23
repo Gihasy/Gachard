@@ -138,7 +138,7 @@ function ScanContent() {
               {data.metadata.artworkUrl ? (
                 <Image
                   src={data.metadata.artworkUrl}
-                  alt={data.metadata.templateName}
+                  alt={data.metadata.templateName || "Card"}
                   fill
                   sizes="(max-width:1024px) 100vw, 40vw"
                   className="object-cover"
@@ -283,7 +283,7 @@ function ScanContent() {
             </div>
 
             {/* History */}
-            {data.history?.length > 0 && (
+            {data.history && data.history.length > 0 && (
               <div className="glass p-5" data-testid="scan-history">
                 <p className="text-[0.72rem] uppercase tracking-[0.22em] mb-4" style={{ color: "var(--cosmic-violet)" }}>
                   Transaction History
