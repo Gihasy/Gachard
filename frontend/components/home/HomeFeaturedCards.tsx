@@ -21,7 +21,7 @@ export default function HomeFeaturedCards() {
           <h2 className="font-display text-3xl sm:text-4xl uppercase text-white">The Legends Await</h2>
         </div>
         <Link
-          href="/koleksi"
+          href="/collection"
           className="hidden sm:inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/70 hover:text-white transition-colors"
           data-testid="featured-view-all"
         >

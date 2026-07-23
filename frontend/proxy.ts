@@ -11,7 +11,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * This runs before the page bundle loads, so it's much more reliable than a
  * useEffect-based redirect in dev.
  */
-const PROTECTED = ["/koleksi", "/profil", "/topup"];
+const PROTECTED = ["/collection", "/profil", "/topup"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -30,5 +30,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/koleksi/:path*", "/profil/:path*", "/topup/:path*"],
+  matcher: ["/collection/:path*", "/profil/:path*", "/topup/:path*"],
 };

@@ -103,7 +103,7 @@ export default function PackReveal({ result }: PackRevealProps) {
       </div>
       <p className="mt-6 text-sm text-center">
         <Link
-          href="/koleksi"
+          href="/collection"
           className="hover:text-white transition-colors"
           style={{ color: "var(--cosmic-violet)" }}
         >

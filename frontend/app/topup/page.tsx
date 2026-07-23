@@ -252,7 +252,7 @@ export default function TopUp() {
           </div>
 
           <Link
-            href="/koleksi"
+            href="/collection"
             className="btn-ghost w-full !justify-center"
             data-testid="topup-view-collection"
           >

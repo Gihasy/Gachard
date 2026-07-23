@@ -10,7 +10,7 @@ const MARK_URL = "/icons/gachard-logo.png";
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/koleksi", label: "Collection" },
+  { href: "/collection", label: "Collection" },
   { href: "/scan", label: "Scan" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/topup", label: "Top Up" },
