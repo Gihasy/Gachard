@@ -124,15 +124,21 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
             log.address.toLowerCase() === contractAddress
           ) {
             const tokenId = parseInt(log.topics[1], 16);
+            // rarity ada di data: topics[1]=tokenId, data[0:32]=status, data[32:64]=rarity
+            const logData = log.data.slice(2);
+            const rarity = parseInt(logData.slice(64, 128), 16);
             tokenIds.push(tokenId);
 
-            // Match by txId DAN pickIndex (urutan log = urutan mint di kontrak)
+            // Match by txId DAN pickIndex + cache on-chain data
             await cardsCollection.updateOne(
               { txId: tx._id.toString(), pickIndex: mintIndex },
               {
                 $set: {
                   tokenId,
                   status: "Digital",
+                  rarity,
+                  lastOwner: tx.toAddress,
+                  lastOnChainSync: new Date().toISOString(),
                   updatedAt: new Date().toISOString(),
                 },
               }
@@ -167,6 +173,7 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
                 {
                   $set: {
                     status: "Vaulted",
+                    lastOnChainSync: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                   },
                 }
@@ -192,6 +199,7 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
                   $set: {
                     status: "Digital",
                     ownerAddress: tx.toAddress,
+                    lastOnChainSync: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                   },
                 }

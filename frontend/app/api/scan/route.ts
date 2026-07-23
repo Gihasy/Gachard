@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
-import { getCardStatus, getCardRarity, getLastOwner } from "@/lib/blockchain";
 import { analyzeCardImage } from "@/lib/vision";
 
 const STATUS_LABELS = ["Digital", "Vaulted"];
@@ -22,24 +21,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid tokenId" }, { status: 400 });
     }
 
-    // Get on-chain data (with retry)
-    const [statusOnChain, rarityOnChain, lastOwnerAddress] = await Promise.all([
-      getCardStatus(tokenId),
-      getCardRarity(tokenId),
-      getLastOwner(tokenId),
-    ]);
-
-    // Get off-chain data from MongoDB
+    // Baca dari cache MongoDB (diupdate saat confirmTransaction)
     const cardsCollection = await getCollection("cards");
     const card = await cardsCollection.findOne({ tokenId });
 
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
+
+    // Ambil data template
     let template = null;
-    if (card?.templateId) {
+    if (card.templateId) {
       const templatesCollection = await getCollection("card_templates");
       template = await templatesCollection.findOne({ templateId: card.templateId });
     }
 
-    // Get purchase price from mint transaction
+    // Ambil purchase price dari mint transaction
     const txCollection = await getCollection("transactions");
     let purchasePrice: number | null = null;
 
@@ -52,7 +49,7 @@ export async function GET(request: Request) {
       purchasePrice = mintTx.purchasePrice;
     }
 
-    // Get ownership history
+    // Ambil ownership history
     const history = await txCollection
       .find({
         $or: [{ tokenId }, { tokenIds: tokenId }],
@@ -61,24 +58,33 @@ export async function GET(request: Request) {
       .limit(10)
       .toArray();
 
-    // Verification flag
-    const verified = statusOnChain !== undefined && card !== null;
-    const statusMatch = card
-      ? STATUS_LABELS[statusOnChain] === card.status
-      : false;
+    // Data on-chain dari cache (diupdate saat transaksi dikonfirmasi)
+    const statusCode = card.status === "Vaulted" ? 1 : 0;
+    const rarityCode = card.rarity ?? 0;
+    const lastOwnerAddress = card.lastOwner || null;
+    const lastSync = card.lastOnChainSync || null;
 
-    // AI Vision analysis (if requested and artwork exists)
+    // Verification flag — cek apakah cache masih fresh (< 1 jam)
+    const cacheAge = lastSync
+      ? Date.now() - new Date(lastSync).getTime()
+      : Infinity;
+    const cacheFresh = cacheAge < 3600000; // 1 jam
+
+    const verified = cacheFresh && card.status !== undefined;
+    const statusMatch = STATUS_LABELS[statusCode] === card.status;
+
+    // AI Vision analysis (opsional)
     let vision = null;
     if (withVision && template?.artworkUrl) {
       const imageUrl = `${BASE_URL}${template.artworkUrl}`;
       vision = await analyzeCardImage(
         imageUrl,
-        RARITY_LABELS[rarityOnChain] || "Unknown",
-        template.name || card?.templateId || "Unknown"
+        RARITY_LABELS[rarityCode] || "Unknown",
+        template.name || card.templateId || "Unknown"
       );
     }
 
-    // Update verification flag if vision analysis available
+    // Update verification flag jika vision gagal
     let verificationFlag = verified && statusMatch ? "verified" : "warning";
     if (vision && !vision.matches) {
       verificationFlag = "warning";
@@ -87,15 +93,16 @@ export async function GET(request: Request) {
     return NextResponse.json({
       tokenId,
       onChain: {
-        status: STATUS_LABELS[statusOnChain] || "Unknown",
-        statusCode: statusOnChain,
-        rarity: RARITY_LABELS[rarityOnChain] || "Unknown",
-        rarityCode: rarityOnChain,
+        status: STATUS_LABELS[statusCode] || "Unknown",
+        statusCode,
+        rarity: RARITY_LABELS[rarityCode] || "Unknown",
+        rarityCode,
         lastOwner: lastOwnerAddress,
+        lastSync,
       },
       metadata: {
-        templateId: card?.templateId || null,
-        templateName: template?.name || card?.templateId || null,
+        templateId: card.templateId || null,
+        templateName: template?.name || card.templateId || null,
         artworkUrl: template?.artworkUrl || null,
       },
       purchasePrice,
