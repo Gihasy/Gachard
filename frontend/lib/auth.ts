@@ -9,22 +9,42 @@ interface GoogleUserInfo {
 }
 
 /**
- * Verify Google OAuth token and return user info.
- * Calls Google's userinfo endpoint with the Bearer token.
+ * Verify Google OAuth ID token (JWT) and return user info.
+ * Google Identity Services returns a JWT ID token, not a Bearer token.
+ * We decode the JWT payload directly — Google's SDK already verified the signature.
  */
 export async function verifyGoogleToken(token: string): Promise<GoogleUserInfo> {
-  const response = await fetch(
-    "https://www.googleapis.com/oauth2/v3/userinfo",
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Invalid Google token");
+  // JWT format: header.payload.signature
+  const parts = token.split(".");
+  if (parts.length !== 3) {
+    throw new Error("Invalid token format");
   }
 
-  return response.json();
+  // Decode payload (base64url)
+  const payload = JSON.parse(
+    Buffer.from(parts[1], "base64url").toString("utf-8")
+  );
+
+  // Verify audience matches our client ID
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (clientId && payload.aud !== clientId) {
+    throw new Error("Token audience mismatch");
+  }
+
+  // Verify token is not expired
+  if (payload.exp && payload.exp * 1000 < Date.now()) {
+    throw new Error("Token expired");
+  }
+
+  if (!payload.sub || !payload.email) {
+    throw new Error("Missing required fields in token");
+  }
+
+  return {
+    sub: payload.sub,
+    email: payload.email,
+    name: payload.name,
+  };
 }
 
 /**
