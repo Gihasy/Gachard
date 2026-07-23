@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
-import { analyzeCardImage } from "@/lib/vision";
 
 const STATUS_LABELS = ["Digital", "Vaulted"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://frontend-rosy-pi-88.vercel.app";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const tokenIdParam = searchParams.get("tokenId");
-    const withVision = searchParams.get("vision") === "true";
 
     if (!tokenIdParam) {
       return NextResponse.json({ error: "tokenId required" }, { status: 400 });
@@ -72,23 +69,7 @@ export async function GET(request: Request) {
 
     const verified = cacheFresh && card.status !== undefined;
     const statusMatch = STATUS_LABELS[statusCode] === card.status;
-
-    // AI Vision analysis (opsional)
-    let vision = null;
-    if (withVision && template?.artworkUrl) {
-      const imageUrl = `${BASE_URL}${template.artworkUrl}`;
-      vision = await analyzeCardImage(
-        imageUrl,
-        RARITY_LABELS[rarityCode] || "Unknown",
-        template.name || card.templateId || "Unknown"
-      );
-    }
-
-    // Update verification flag jika vision gagal
-    let verificationFlag = verified && statusMatch ? "verified" : "warning";
-    if (vision && !vision.matches) {
-      verificationFlag = "warning";
-    }
+    const verificationFlag = verified && statusMatch ? "verified" : "warning";
 
     return NextResponse.json({
       tokenId,
@@ -110,7 +91,6 @@ export async function GET(request: Request) {
         verified,
         statusMatch,
         flag: verificationFlag,
-        vision: vision || null,
       },
       history: history.map((tx) => ({
         type: tx.type,

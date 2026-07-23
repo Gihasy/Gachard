@@ -124,3 +124,10 @@
 **Decision**: Setiap pack berisi 8 kartu dengan harga 500 Credit. 7 kartu mengikuti odds table normal, 1 kartu dijamin Rare+ (Rare/Epic/Legendary dengan bobot relatif 20/8/2 dinormalisasi). Mint via `mintBatch()` atomik (1 transaksi untuk seluruh pack, bukan 8x `mintCard` terpisah). Slot jaminan di-shuffle supaya tidak selalu di posisi sama.
 **Reason**: 8 kartu per pack lebih menarik secara visual untuk demo (grid 2x4) dan memberikan pengalaman "unboxing" yang lebih kaya. Jaminan Rare+ meningkatkan kepuasan user tanpa mengorbankan distribusi rarity keseluruhan. `mintBatch()` atomik menghemat gas dan memastikan konsistensi (semua atau tidak sama sekali).
 **Supersedes**: Referensi sebelumnya yang menyebut "1 kartu per pembelian".
+
+## ADR-022: AI Vision (Gemini) — Ditunda, Bukan Dihapus
+**Status**: DITUNDA — kode `lib/vision.ts` tetap ada di repo, tapi tidak dipanggil dari endpoint mana pun.
+**Decision**: AI Vision (Google Gemini) untuk analisis visual kartu di-DEFER dari scope hackathon saat ini. Kode referensi tetap di `lib/vision.ts` untuk dipakai ulang nanti. Semua verifikasi kartu saat ini mengandalkan QR-lookup on-chain vs MongoDB match (cache-based, tanpa elemen vision).
+**Alasan penundaan**: Prioritas dialihkan ke stabilisasi fitur inti dan branding terlebih dahulu, dengan timeline project yang lebih panjang dari perkiraan awal.
+**WAJIB dikerjakan kembali sebelum deadline submission final**, karena ini syarat kelayakan tema hackathon "AI x Web3" yang wajib di semua track — bukan fitur opsional yang boleh hilang dari submission akhir.
+**Target revisit**: 2-3 minggu sebelum deadline submission final (tanggal pasti perlu ditentukan user).

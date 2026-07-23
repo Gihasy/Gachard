@@ -58,11 +58,17 @@ Persiapan Demo Day.
 - **Status**: Deployed, user perlu hard refresh atau Incognito untuk verifikasi
 
 ### Open Items (belum selesai)
-1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: A record @ → 76.76.21.21 + CNAME www → cname.vercel-dns.com
-2. **AI Vision (Gemini)** — di-skip untuk hackathon. QR lookup saja sudah cukup. Gemini API key ada tapi quota issues.
-3. **Google OAuth verification** — code deployed, user perlu test login setelah clear cache
-4. **SW cache verification** — user perlu hard refresh/Incognito untuk verifikasi deployment benar
-5. **Demo Day prep** — video backup, pitch deck, rehearsal
+1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: NS1 → ns1.vercel-dns.com + NS2 → ns2.vercel-dns.com
+2. **Google OAuth verification** — code deployed, user perlu test login setelah clear cache
+3. **SW cache verification** — user perlu hard refresh/Incognito untuk verifikasi deployment benar
+4. **Demo Day prep** — video backup, pitch deck, rehearsal
+
+### AI Vision (Gemini): DITUNDA
+- **Status**: DITUNDA (bukan gagal/blocked). Kode referensi tetap di `lib/vision.ts`.
+- **Alasan**: Prioritas dialihkan ke stabilisasi fitur inti + branding. Timeline project lebih panjang dari perkiraan awal.
+- **WAJIB dikerjakan ulang sebelum submission final** — syarat kelayakan tema hackathon "AI x Web3".
+- **Target revisit**: 2-3 minggu sebelum deadline submission final (tanggal pasti perlu ditentukan user).
+- **Saat ini**: `/api/scan` berfungsi penuh tanpa vision (QR-lookup on-chain vs MongoDB match).
 
 ## Notes
 - Solo developer, non-programmer, vibe coding via MiMoCode
