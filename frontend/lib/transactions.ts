@@ -20,12 +20,12 @@ export interface Transaction {
   updatedAt: string;
 }
 
-// CardMinted(uint256 indexed tokenId, address indexed to, uint8 status, uint8 rarity)
+// Event signatures
 const CARD_MINTED_TOPIC = ethers.id("CardMinted(uint256,address,uint8,uint8)");
+const CARD_STATUS_CHANGED_TOPIC = ethers.id("CardStatusChanged(uint256,uint8,uint8)");
 
 /**
  * Create a new pending transaction record.
- * Called immediately after submitting a tx to the chain.
  */
 export async function createTransaction(
   tx: Omit<Transaction, "_id" | "status" | "txHash" | "createdAt" | "updatedAt">
@@ -91,7 +91,7 @@ export async function getTransactionStatus(txId: string) {
 
 /**
  * Check on-chain receipt and update transaction status.
- * For mint transactions, extract tokenId from CardMinted event.
+ * Handles mint (batch), print, and redeem events.
  */
 export async function confirmTransaction(txId: string): Promise<TxStatus> {
   const collection = await getCollection("transactions");
@@ -105,34 +105,85 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
     const receipt = await provider.getTransactionReceipt(tx.txHash);
 
     if (!receipt) {
-      return "pending"; // Belum ada receipt, masih pending
+      return "pending";
     }
 
     const newStatus: TxStatus = receipt.status === 1 ? "confirmed" : "failed";
+    const contractAddress = process.env.CONTRACT_ADDRESS?.toLowerCase();
 
-    // Jika confirmed dan type mint, extract tokenId dari CardMinted event
-    if (newStatus === "confirmed" && tx.type === "mint" && receipt.logs) {
-      for (const log of receipt.logs) {
-        if (
-          log.topics[0] === CARD_MINTED_TOPIC &&
-          log.address.toLowerCase() === process.env.CONTRACT_ADDRESS?.toLowerCase()
-        ) {
-          // topics[1] = tokenId (indexed)
-          const tokenId = parseInt(log.topics[1], 16);
+    if (newStatus === "confirmed" && receipt.logs) {
+      const cardsCollection = await collection.db.collection("cards");
 
-          // Update cards collection — match by txId
-          const cardsCollection = await collection.db.collection("cards");
-          await cardsCollection.updateOne(
-            { txId: tx._id.toString() },
-            {
-              $set: {
-                tokenId,
-                status: "Digital",
-                updatedAt: new Date().toISOString(),
-              },
+      if (tx.type === "mint") {
+        // Batch mint: loop SEMUA CardMinted events (jangan break setelah 1)
+        let mintIndex = 0;
+        for (const log of receipt.logs) {
+          if (
+            log.topics[0] === CARD_MINTED_TOPIC &&
+            log.address.toLowerCase() === contractAddress
+          ) {
+            const tokenId = parseInt(log.topics[1], 16);
+
+            // Match by txId DAN pickIndex (urutan log = urutan mint di kontrak)
+            await cardsCollection.updateOne(
+              { txId: tx._id.toString(), pickIndex: mintIndex },
+              {
+                $set: {
+                  tokenId,
+                  status: "Digital",
+                  updatedAt: new Date().toISOString(),
+                },
+              }
+            );
+            mintIndex++;
+          }
+        }
+      } else if (tx.type === "print") {
+        // Print: decode CardStatusChanged, update status ke Vaulted
+        for (const log of receipt.logs) {
+          if (
+            log.topics[0] === CARD_STATUS_CHANGED_TOPIC &&
+            log.address.toLowerCase() === contractAddress
+          ) {
+            const tokenId = parseInt(log.topics[1], 16);
+            const newCardStatus = parseInt(log.topics[3], 16); // 1 = Vaulted
+
+            if (newCardStatus === 1) {
+              await cardsCollection.updateOne(
+                { tokenId },
+                {
+                  $set: {
+                    status: "Vaulted",
+                    updatedAt: new Date().toISOString(),
+                  },
+                }
+              );
             }
-          );
-          break;
+          }
+        }
+      } else if (tx.type === "redeem") {
+        // Redeem: decode CardStatusChanged, update status ke Digital
+        for (const log of receipt.logs) {
+          if (
+            log.topics[0] === CARD_STATUS_CHANGED_TOPIC &&
+            log.address.toLowerCase() === contractAddress
+          ) {
+            const tokenId = parseInt(log.topics[1], 16);
+            const newCardStatus = parseInt(log.topics[3], 16); // 0 = Digital
+
+            if (newCardStatus === 0) {
+              await cardsCollection.updateOne(
+                { tokenId },
+                {
+                  $set: {
+                    status: "Digital",
+                    ownerAddress: tx.toAddress,
+                    updatedAt: new Date().toISOString(),
+                  },
+                }
+              );
+            }
+          }
         }
       }
     }
@@ -150,6 +201,6 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
     return newStatus;
   } catch (error) {
     console.error("Confirm transaction error:", error);
-    return "pending"; // Network error, jangan mark as failed
+    return "pending";
   }
 }

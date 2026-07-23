@@ -61,33 +61,41 @@ export default function Home() {
 
       {user && balance !== null && (
         <div className="bg-indigo-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-indigo-700">Saldo Credit: <span className="font-bold">${(balance / 100).toFixed(2)}</span></p>
+          <p className="text-sm text-indigo-700">Saldo: <span className="font-bold">{balance} Credit</span></p>
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <PackCard price={299} onBuy={handleBuyPack} loading={loading} />
+        <PackCard price={500} onBuy={handleBuyPack} loading={loading} />
       </div>
 
+      {/* Reveal — grid 8 kartu */}
       {reveal && !reveal.error && (
-        <div className="mt-8 text-center">
-          <h2 className="text-xl font-bold mb-4">Pack Dibuka!</h2>
-          <div className={`inline-block rounded-xl overflow-hidden shadow-lg border-2 ${RARITY_COLORS[reveal.rarity]} ${RARITY_BG[reveal.rarity]}`}>
-            {reveal.template?.artworkUrl ? (
-              <img src={reveal.template.artworkUrl} alt={reveal.template.name} className="w-48 h-64 object-cover" />
-            ) : (
-              <div className="w-48 h-64 bg-gray-200 flex items-center justify-center">
-                <span className="text-6xl">🎴</span>
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4 text-center">Pack Dibuka!</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {reveal.cards?.map((card: any, i: number) => (
+              <div
+                key={i}
+                className={`rounded-xl overflow-hidden shadow-md border-2 ${RARITY_COLORS[card.rarity]} ${RARITY_BG[card.rarity]}`}
+              >
+                {card.template?.artworkUrl ? (
+                  <img src={card.template.artworkUrl} alt={card.template.name} className="w-full h-40 object-cover" />
+                ) : (
+                  <div className="w-full h-40 bg-gray-200 flex items-center justify-center">
+                    <span className="text-4xl">🎴</span>
+                  </div>
+                )}
+                <div className="p-2 text-center">
+                  <p className="text-xs font-medium">{card.template?.name}</p>
+                  <p className={`text-xs font-bold ${card.rarity >= 2 ? "text-purple-600" : "text-gray-600"}`}>
+                    {RARITY_LABELS[card.rarity]}
+                  </p>
+                </div>
               </div>
-            )}
-            <div className="p-4">
-              <p className="font-semibold">{reveal.template?.name}</p>
-              <p className={`text-sm font-bold ${reveal.rarity >= 2 ? "text-purple-600" : "text-gray-600"}`}>
-                {RARITY_LABELS[reveal.rarity]}
-              </p>
-            </div>
+            ))}
           </div>
-          <p className="mt-4 text-sm text-gray-500">
+          <p className="mt-4 text-sm text-gray-500 text-center">
             <a href="/koleksi" className="text-indigo-600 underline">Lihat di Koleksi →</a>
           </p>
         </div>

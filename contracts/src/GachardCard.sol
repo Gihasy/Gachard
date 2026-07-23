@@ -44,6 +44,36 @@ contract GachardCard is ERC1155, Ownable {
     }
 
     /**
+     * @notice Mint batch kartu (untuk pack) — atomik, semua atau tidak sama sekali
+     * @param to Alamat penerima kartu
+     * @param rarities Array rarity per kartu (0=Common, 1=Rare, 2=Epic, 3=Legendary)
+     * @return tokenIds Array ID kartu yang baru di-mint
+     */
+    function mintBatch(address to, uint8[] calldata rarities) external onlyOwner returns (uint256[] memory tokenIds) {
+        uint256 count = rarities.length;
+        require(count > 0, "Empty rarities array");
+
+        tokenIds = new uint256[](count);
+        uint256[] memory amounts = new uint256[](count);
+
+        for (uint256 i = 0; i < count; i++) {
+            require(rarities[i] <= 3, "Invalid rarity");
+            uint256 tokenId = nextTokenId++;
+            tokenIds[i] = tokenId;
+            amounts[i] = 1;
+            cardStatus[tokenId] = CardStatus.Digital;
+            cardRarity[tokenId] = Rarity(rarities[i]);
+            lastOwner[tokenId] = to;
+        }
+
+        _mintBatch(to, tokenIds, amounts, "");
+
+        for (uint256 i = 0; i < count; i++) {
+            emit CardMinted(tokenIds[i], to, CardStatus.Digital, Rarity(rarities[i]));
+        }
+    }
+
+    /**
      * @notice Kunci kartu untuk cetak fisik — generate hash baru, overwrite hash lama
      * @dev onlyOwner — backend yang memanggil, bukan wallet user (ADR-007)
      * @param tokenId ID kartu yang akan di-print

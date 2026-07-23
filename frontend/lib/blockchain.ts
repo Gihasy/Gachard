@@ -6,6 +6,7 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS!;
 // ABI minimal untuk fungsi yang dibutuhkan
 const GACHARD_ABI = [
   "function mintCard(address to, uint8 rarity) external returns (uint256 tokenId)",
+  "function mintBatch(address to, uint8[] calldata rarities) external returns (uint256[] memory tokenIds)",
   "function requestPrint(uint256 tokenId, bytes32 redeemHash, address ownerAddress) external",
   "function redeemCard(uint256 tokenId, bytes32 redeemHash, address recipientAddress) external",
   "function cardStatus(uint256 tokenId) external view returns (uint8)",
@@ -35,6 +36,12 @@ export function getContract(signer?: ethers.Signer) {
 export async function mintCard(toAddress: string, rarity: number): Promise<string> {
   const contract = getContract();
   const tx = await contract.mintCard(toAddress, rarity);
+  return tx.hash;
+}
+
+export async function mintBatch(toAddress: string, rarities: number[]): Promise<string> {
+  const contract = getContract();
+  const tx = await contract.mintBatch(toAddress, rarities);
   return tx.hash;
 }
 

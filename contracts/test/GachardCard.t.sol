@@ -65,6 +65,89 @@ contract GachardCardTest is Test {
         card.mintCard(user1, 4);
     }
 
+    // ==================== mintBatch tests ====================
+
+    function test_mintBatch_creates_sequential_tokens() public {
+        uint8[] memory rarities = new uint8[](3);
+        rarities[0] = 0; // Common
+        rarities[1] = 1; // Rare
+        rarities[2] = 2; // Epic
+
+        uint256[] memory tokenIds = card.mintBatch(user1, rarities);
+
+        assertEq(tokenIds.length, 3);
+        assertEq(tokenIds[0], 1);
+        assertEq(tokenIds[1], 2);
+        assertEq(tokenIds[2], 3);
+    }
+
+    function test_mintBatch_stores_rarity_per_token() public {
+        uint8[] memory rarities = new uint8[](4);
+        rarities[0] = 0; // Common
+        rarities[1] = 1; // Rare
+        rarities[2] = 2; // Epic
+        rarities[3] = 3; // Legendary
+
+        uint256[] memory tokenIds = card.mintBatch(user1, rarities);
+
+        assertEq(uint8(card.cardRarity(tokenIds[0])), 0);
+        assertEq(uint8(card.cardRarity(tokenIds[1])), 1);
+        assertEq(uint8(card.cardRarity(tokenIds[2])), 2);
+        assertEq(uint8(card.cardRarity(tokenIds[3])), 3);
+    }
+
+    function test_mintBatch_sets_all_tokens_to_digital() public {
+        uint8[] memory rarities = new uint8[](3);
+        rarities[0] = 0;
+        rarities[1] = 1;
+        rarities[2] = 2;
+
+        uint256[] memory tokenIds = card.mintBatch(user1, rarities);
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            assertEq(uint8(card.cardStatus(tokenIds[i])), uint8(GachardCard.CardStatus.Digital));
+            assertEq(card.balanceOf(user1, tokenIds[i]), 1);
+        }
+    }
+
+    function test_mintBatch_emits_events_in_order() public {
+        uint8[] memory rarities = new uint8[](2);
+        rarities[0] = 0; // Common
+        rarities[1] = 3; // Legendary
+
+        vm.expectEmit(true, false, false, true);
+        emit GachardCard.CardMinted(1, user1, GachardCard.CardStatus.Digital, GachardCard.Rarity.Common);
+        vm.expectEmit(true, false, false, true);
+        emit GachardCard.CardMinted(2, user1, GachardCard.CardStatus.Digital, GachardCard.Rarity.Legendary);
+
+        card.mintBatch(user1, rarities);
+    }
+
+    function test_mintBatch_reverts_on_invalid_rarity() public {
+        uint8[] memory rarities = new uint8[](2);
+        rarities[0] = 0;
+        rarities[1] = 4; // Invalid
+
+        vm.expectRevert("Invalid rarity");
+        card.mintBatch(user1, rarities);
+    }
+
+    function test_mintBatch_only_owner() public {
+        uint8[] memory rarities = new uint8[](1);
+        rarities[0] = 0;
+
+        vm.prank(user1);
+        vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user1));
+        card.mintBatch(user1, rarities);
+    }
+
+    function test_mintBatch_empty_array_reverts() public {
+        uint8[] memory rarities = new uint8[](0);
+
+        vm.expectRevert("Empty rarities array");
+        card.mintBatch(user1, rarities);
+    }
+
     // ==================== requestPrint tests ====================
 
     function test_requestPrint_changes_status_to_vaulted() public {

@@ -118,3 +118,9 @@
 **Status**: Accepted
 **Decision**: Semua private key (wallet user dan wallet admin) dienkripsi menggunakan AES-256-GCM sebelum disimpan di MongoDB. Secret key disimpan di environment variable `ENCRYPTION_SECRET_KEY` (minimal 32 karakter), bukan di database. Saat dipakai untuk sign transaksi, private key didekripsi terlebih dahulu.
 **Reason**: Private key plaintext di database adalah risiko keamanan kritis — jika database bocor, semua wallet bisa dicuri. AES-256-GCM menyediakan authenticated encryption (integrity + confidentiality). Secret key di env var memastikan kompromi database saja tidak cukup untuk mendekripsi.
+
+## ADR-021: Pack 8 Kartu dengan Jaminan Rare+
+**Status**: Accepted
+**Decision**: Setiap pack berisi 8 kartu dengan harga 500 Credit. 7 kartu mengikuti odds table normal, 1 kartu dijamin Rare+ (Rare/Epic/Legendary dengan bobot relatif 20/8/2 dinormalisasi). Mint via `mintBatch()` atomik (1 transaksi untuk seluruh pack, bukan 8x `mintCard` terpisah). Slot jaminan di-shuffle supaya tidak selalu di posisi sama.
+**Reason**: 8 kartu per pack lebih menarik secara visual untuk demo (grid 2x4) dan memberikan pengalaman "unboxing" yang lebih kaya. Jaminan Rare+ meningkatkan kepuasan user tanpa mengorbankan distribusi rarity keseluruhan. `mintBatch()` atomik menghemat gas dan memastikan konsistensi (semua atau tidak sama sekali).
+**Supersedes**: Referensi sebelumnya yang menyebut "1 kartu per pembelian".

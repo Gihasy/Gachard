@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { mintCard } from "@/lib/blockchain";
-import { pickRarity } from "@/lib/odds";
+import { mintBatch } from "@/lib/blockchain";
+import { buildPackRarities } from "@/lib/odds";
 import { pickCardTemplate, seedCardTemplates } from "@/lib/card-templates";
 import { deductCredits, addCredits } from "@/lib/credits";
 
-const PACK_PRICE_CENTS = 299; // $2.99 per pack
+const PACK_PRICE_CENTS = 500; // 500 Credit per pack
 
 export async function POST(request: Request) {
   const { userId } = await request.json();
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // Deduct credit FIRST (before minting)
+  // Deduct credit FIRST
   let newBalance: number;
   try {
     newBalance = await deductCredits(userId, PACK_PRICE_CENTS);
@@ -29,27 +29,29 @@ export async function POST(request: Request) {
     );
   }
 
-  // Bungkus sisa proses dalam try/catch — refund jika gagal
+  // Bungkus sisa proses — refund jika gagal
   try {
-    // Seed card templates if needed
     await seedCardTemplates();
 
-    // Weighted random pick rarity (ADR-009: odds di backend)
-    const rarity = await pickRarity();
+    // Build 8 rarities (7 random + 1 guaranteed Rare+)
+    const rarities = await buildPackRarities();
 
-    // Pick card template
-    const template = await pickCardTemplate(rarity);
+    // Pick template untuk setiap kartu
+    const templates = [];
+    for (const rarity of rarities) {
+      templates.push(await pickCardTemplate(rarity));
+    }
 
-    // Submit mint transaction (async — ADR-018)
-    const txHash = await mintCard(user.walletAddress, rarity);
+    // Mint batch — 1 tx untuk seluruh pack (atomik)
+    const txHash = await mintBatch(user.walletAddress, rarities);
 
-    // Simpan transaksi sebagai pending
+    // Simpan transaksi
     const txCollection = await getCollection("transactions");
-    const result = await txCollection.insertOne({
+    const txResult = await txCollection.insertOne({
       userId: user._id.toString(),
       type: "mint",
-      rarity,
-      templateId: template.templateId,
+      rarities,
+      templateIds: templates.map((t) => t.templateId),
       txHash,
       status: "pending",
       fromAddress: process.env.ADMIN_WALLET_ADDRESS,
@@ -58,28 +60,39 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    // Simpan card record (linked ke tokenId on-chain setelah konfirmasi)
+    // Simpan 8 card records
     const cardsCollection = await getCollection("cards");
-    await cardsCollection.insertOne({
+    const cardDocs = templates.map((template, i) => ({
       tokenId: null,
-      txId: result.insertedId.toString(),
+      txId: txResult.insertedId.toString(),
+      pickIndex: i,
       templateId: template.templateId,
-      rarity,
+      rarity: rarities[i],
       ownerAddress: user.walletAddress,
       status: "pending",
       createdAt: new Date().toISOString(),
-    });
+    }));
+    await cardsCollection.insertMany(cardDocs);
+
+    // Build response array
+    const cards = templates.map((template, i) => ({
+      rarity: rarities[i],
+      template: {
+        templateId: template.templateId,
+        name: template.name,
+        artworkUrl: template.artworkUrl,
+      },
+    }));
 
     return NextResponse.json({
       status: "pending",
-      txId: result.insertedId.toString(),
+      txId: txResult.insertedId.toString(),
       txHash,
-      rarity,
-      template: { templateId: template.templateId, name: template.name, artworkUrl: template.artworkUrl },
+      cards,
       newBalance,
     });
   } catch (error) {
-    // REFUND: kembalikan saldo jika mint gagal setelah deduct
+    // REFUND
     console.error("Mint failed after deduct, refunding:", error);
     let refunded = false;
     try {

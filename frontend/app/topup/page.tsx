@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-const PRESETS = [500, 1000, 2000, 5000]; // $5, $10, $20, $50
+const PRESETS = [500, 1000, 2000, 5000]; // Credit units
 
 export default function TopUp() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function TopUp() {
       const data = await res.json();
       if (res.ok) {
         setBalance(data.newBalance);
-        setMessage(`Top-up berhasil! Saldo: $${(data.newBalance / 100).toFixed(2)}`);
+        setMessage(`Top-up berhasil! Saldo: ${data.newBalance} Credit`);
       } else {
         setMessage(data.error || "Top-up gagal");
       }
@@ -56,7 +56,7 @@ export default function TopUp() {
 
       {balance !== null && (
         <div className="bg-indigo-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-indigo-700">Saldo saat ini: <span className="font-bold">${(balance / 100).toFixed(2)}</span></p>
+          <p className="text-sm text-indigo-700">Saldo saat ini: <span className="font-bold">{balance} Credit</span></p>
         </div>
       )}
 
@@ -67,7 +67,7 @@ export default function TopUp() {
             onClick={() => setAmount(p)}
             className={`py-3 rounded-lg font-medium ${amount === p ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
           >
-            ${(p / 100).toFixed(2)}
+            {p} Credit
           </button>
         ))}
       </div>
@@ -77,7 +77,7 @@ export default function TopUp() {
         disabled={loading}
         className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
       >
-        {loading ? "Processing..." : `Top Up $${(amount / 100).toFixed(2)}`}
+        {loading ? "Processing..." : `Top Up ${amount} Credit`}
       </button>
 
       {message && (
