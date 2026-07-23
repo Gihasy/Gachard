@@ -69,7 +69,20 @@ Persiapan Demo Day.
 - Solo developer, non-programmer, vibe coding via MiMoCode
 - ~14 jam/minggu waktu efektif
 - Urutan prioritas potong jika waktu mepet: polish UI/UX → fitur AI vision (fallback ke QR lookup polos) → (core mint–vault–redeem TIDAK BOLEH dipotong)
-- Marketplace: UI placeholder "Coming Soon" saja, tidak fungsional untuk hackathon
+- Marketplace: UI placeholder "Coming Soon" saja, tidak fungsional untuk hackathon (ADR-010)
 - Tanggal Demo Day pasti belum diumumkan — cek grup peserta hackathon
 - Rencana kerja sama cetak-dan-segel dengan Millennium Print Group (MPG) — hanya untuk tahap produksi, bukan hackathon
 - Jalankan `/dream` di akhir setiap sprint untuk merangkum pembelajaran sesi ke file ini
+
+## Aturan untuk Tool Eksternal (Emergent, AI lain, dll)
+WAJIB berikan akses ke file ini SEBELUM meminta tool eksternal mengerjakan apa pun:
+1. `MEMORY.md` — status project, sprint, aturan
+2. `DECISIONS.md` — 20 ADR yang sudah dikunci
+3. `PRD-Gachard-Hackathon.md` — scope, fitur, constraint
+
+Tujuan: mencegah tool yang tidak tahu konteks melanggar keputusan yang sudah dikunci (contoh: ADR-010 marketplace "Coming Soon" dilanggar oleh Emergent yang membuat marketplace fungsional).
+
+## Domain
+- Domain: `gachard.com` (dibeli, belum dikonfigurasi DNS)
+- DNS yang perlu: A @ 76.76.21.21 + CNAME www cname.vercel-dns.com
+- Registrar: Rumahweb
