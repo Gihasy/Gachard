@@ -17,6 +17,7 @@ const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 export default function CardItem({ tokenId, templateId, rarity, artworkUrl, status, userId }: CardItemProps) {
   const [printing, setPrinting] = useState(false);
   const [printStatus, setPrintStatus] = useState<string | null>(null);
+  const [showQR, setShowQR] = useState(false);
 
   const canPrint = status === "Digital" && tokenId !== null;
 
@@ -83,6 +84,19 @@ export default function CardItem({ tokenId, templateId, rarity, artworkUrl, stat
         )}
         {printStatus && (
           <p className="mt-1 text-xs text-gray-600">{printStatus}</p>
+        )}
+        {tokenId && (
+          <button
+            onClick={() => setShowQR(!showQR)}
+            className="mt-1 w-full bg-gray-100 text-gray-700 text-xs py-1.5 rounded hover:bg-gray-200"
+          >
+            {showQR ? "Hide QR" : "Show QR"}
+          </button>
+        )}
+        {showQR && tokenId && (
+          <div className="mt-2 flex justify-center">
+            <img src={`/api/cards/${tokenId}/qr`} alt={`QR for token ${tokenId}`} className="w-32 h-32" />
+          </div>
         )}
       </div>
     </div>

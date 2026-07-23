@@ -116,6 +116,7 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
 
       if (tx.type === "mint") {
         // Batch mint: loop SEMUA CardMinted events (jangan break setelah 1)
+        const tokenIds: number[] = [];
         let mintIndex = 0;
         for (const log of receipt.logs) {
           if (
@@ -123,6 +124,7 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
             log.address.toLowerCase() === contractAddress
           ) {
             const tokenId = parseInt(log.topics[1], 16);
+            tokenIds.push(tokenId);
 
             // Match by txId DAN pickIndex (urutan log = urutan mint di kontrak)
             await cardsCollection.updateOne(
@@ -137,6 +139,14 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
             );
             mintIndex++;
           }
+        }
+
+        // Update transaksi dengan array tokenIds
+        if (tokenIds.length > 0) {
+          await collection.updateOne(
+            { _id: tx._id },
+            { $set: { tokenIds } }
+          );
         }
       } else if (tx.type === "print") {
         // Print: decode CardStatusChanged, update status ke Vaulted

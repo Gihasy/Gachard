@@ -52,6 +52,8 @@ export async function POST(request: Request) {
       type: "mint",
       rarities,
       templateIds: templates.map((t) => t.templateId),
+      tokenIds: [], // populated saat konfirmasi on-chain
+      purchasePrice: PACK_PRICE_CENTS,
       txHash,
       status: "pending",
       fromAddress: process.env.ADMIN_WALLET_ADDRESS,

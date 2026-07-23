@@ -38,9 +38,22 @@ Susun kanvas dengan safe margin (jangan taruh elemen penting terlalu mepet ke te
 Jangan buat card back terpisah per kartu — cukup **satu desain generik** bertema logo/brand Gachard, dipakai untuk semua 8 kartu. Ini menghemat pekerjaan signifikan.
 
 **Elemen wajib di card back:**
-- Logo Gachard (dominan, di tengah)
-- **Area kosong yang disediakan khusus** untuk QR code + redeem code — beri kotak placeholder jelas di desain (misal ukuran ~2cm×2cm) supaya saat proses cetak nanti, QR code dan kode redeem bisa ditempel/dicetak rapi di posisi yang konsisten
-- Area ini yang nantinya ditutup stiker scratch-off — pastikan posisinya tidak menabrak elemen desain penting lain
+
+1. Logo Gachard (dominan, di tengah)
+
+2. **QR Info-Scan** (SELALU terlihat, TIDAK ditutup scratch-off):
+   - Area kecil (~1.5cm×1.5cm), posisi di pojok atas atau bawah
+   - Berisi URL `/scan?tokenId=...` — siapa saja bisa scan untuk lihat info kartu
+   - QR ini bersifat publik, bukan rahasia
+   - Cetak langsung sebagai bagian dari desain card back
+
+3. **Area Redeem Code** (DITUTUP stiker scratch-off):
+   - Area terpisah (~2cm×2cm), posisi berbeda dari QR info-scan
+   - Berisi kode redeem rahasia (12+ karakter) + QR code redeem
+   - Area ini yang nantinya ditutup stiker scratch-off
+   - Kode hanya terlihat setelah stiker digosok/dirusak
+
+**PENTING:** QR info-scan dan area redeem code HARUS terpisah secara fisik. QR info-scan bisa diakses siapa saja tanpa merusak kartu. Redeem code hanya bisa diakses dengan merusak stiker scratch-off (sesuai ADR-005).
 
 ## 5. Penamaan File — WAJIB Cocok dengan Data di MongoDB
 
