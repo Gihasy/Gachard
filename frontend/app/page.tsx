@@ -18,35 +18,19 @@ interface SessionUser {
 export default function Home() {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
-  const [balance, setBalance] = useState<number | null>(null);
   const [reveal, setReveal] = useState<RevealResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Mount-only: hydrate the user + credit balance from local session.
-  // State setters are stable (React guarantee) so they don't need to be
-  // in the deps array.
+  // Mount-only: hydrate the user from local session.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem("user");
     if (!stored) return;
-    let cancelled = false;
     try {
-      const u = JSON.parse(stored) as SessionUser;
-      setUser(u);
-      fetch(`/api/credits?userId=${u.user_id}`)
-        .then((r) => r.json())
-        .then((d: { balance?: number }) => {
-          if (!cancelled) setBalance(d.balance ?? 0);
-        })
-        .catch(() => {
-          /* balance is optional — silently ignore failures */
-        });
+      setUser(JSON.parse(stored) as SessionUser);
     } catch {
       /* corrupt session — ignore */
     }
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   const handleBuyPack = useCallback(async () => {
@@ -64,7 +48,6 @@ export default function Home() {
       });
       const data = await res.json();
       if (res.ok) {
-        setBalance(data.newBalance ?? balance);
         setReveal(data as RevealResult);
       } else {
         setReveal({ error: data.error || "Failed to open pack" });
@@ -74,14 +57,13 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [user, router, balance]);
+  }, [user, router]);
 
   return (
     <div data-testid="home-page">
       <HomeHero
         onExplore={handleBuyPack}
         exploreLoading={loading}
-        balance={balance}
         isAuthenticated={!!user}
       />
 

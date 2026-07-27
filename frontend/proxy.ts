@@ -10,11 +10,43 @@ import { NextResponse, type NextRequest } from "next/server";
  *
  * This runs before the page bundle loads, so it's much more reliable than a
  * useEffect-based redirect in dev.
+ *
+ * Also enforces HTTP Basic Auth on /admin routes.
  */
 const PROTECTED = ["/collection", "/profile", "/topup"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Admin routes: HTTP Basic Auth (covers /admin pages AND /api/admin endpoints)
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    const authHeader = req.headers.get("authorization");
+
+    if (!authHeader || !authHeader.startsWith("Basic ")) {
+      return new NextResponse("Authentication required", {
+        status: 401,
+        headers: { "WWW-Authenticate": 'Basic realm="Gachard Admin"' },
+      });
+    }
+
+    const encoded = authHeader.slice(6);
+    const decoded = atob(encoded);
+    const [username, password] = decoded.split(":");
+
+    const expectedUser = process.env.ADMIN_USERNAME;
+    const expectedPass = process.env.ADMIN_PASSWORD;
+
+    if (username !== expectedUser || password !== expectedPass) {
+      return new NextResponse("Invalid credentials", {
+        status: 401,
+        headers: { "WWW-Authenticate": 'Basic realm="Gachard Admin"' },
+      });
+    }
+
+    return NextResponse.next();
+  }
+
+  // Protected user routes: cookie-based auth
   const isProtected = PROTECTED.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
@@ -30,5 +62,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/collection/:path*", "/profile/:path*", "/topup/:path*"],
+  matcher: ["/collection/:path*", "/profile/:path*", "/topup/:path*", "/admin/:path*", "/api/admin/:path*"],
 };

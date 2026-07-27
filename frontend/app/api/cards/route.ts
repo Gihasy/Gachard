@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { friendlyCardStatus } from "@/lib/status-map";
 
 export async function GET(request: Request) {
   try {
@@ -33,7 +34,7 @@ export async function GET(request: Request) {
         tokenId: card.tokenId,
         templateId: card.templateId,
         rarity: card.rarity,
-        status: card.status || "Digital",
+        status: friendlyCardStatus(card.status || "Digital"),
         artworkUrl: template?.artworkUrl || "",
         templateName: template?.name || card.templateId,
       };

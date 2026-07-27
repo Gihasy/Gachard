@@ -18,7 +18,8 @@ interface ScanTx {
   type: string;
   status: string;
   timestamp: string | number;
-  txHash?: string;
+  from?: string;
+  to?: string;
 }
 
 interface ScanData {
@@ -79,7 +80,7 @@ function ScanContent() {
             Scan a <span className="text-gradient-aurora">card</span>
           </>
         }
-        description="Every Gachard card carries a unique on-chain signature. Scan its QR code with your camera or enter the Token ID below to verify ownership, rarity, and history."
+        description="Every Gachard card carries a unique on-chain signature. Scan its QR code with your camera or enter the Card ID below to verify ownership, rarity, and history."
       >
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] items-start">
           <ScanInstructions />
@@ -134,14 +135,14 @@ function ScanContent() {
             className={`glass overflow-hidden ${RARITY_GLOW[data.onChain.rarityCode]}`}
             style={{ borderColor: RARITY_COLORS[data.onChain.rarityCode] }}
           >
-            <div className="relative aspect-[3/4] w-full bg-white/5">
+            <div className="relative w-full bg-white/5" style={{ aspectRatio: "5/7" }}>
               {data.metadata.artworkUrl ? (
                 <Image
                   src={data.metadata.artworkUrl}
                   alt={data.metadata.templateName || "Card"}
                   fill
                   sizes="(max-width:1024px) 100vw, 40vw"
-                  className="object-cover"
+                  className="object-contain"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -219,7 +220,7 @@ function ScanContent() {
 
             {/* Metadata */}
             <div className="glass p-5">
-              <MetaRow label="Token ID" value={`#${data.tokenId}`} mono />
+              <MetaRow label="Card ID" value={`#${data.tokenId}`} mono />
               <MetaRow
                 label="Name"
                 value={data.metadata.templateName || "Unknown"}
@@ -239,15 +240,15 @@ function ScanContent() {
                     className="text-[0.65rem] uppercase tracking-widest px-2 py-0.5 rounded"
                     style={{
                       background:
-                        data.onChain.status === "Vaulted"
+                        data.onChain.status === "Print Requested"
                           ? "rgba(255,107,186,0.15)"
                           : "rgba(0,204,255,0.15)",
                       color:
-                        data.onChain.status === "Vaulted"
+                        data.onChain.status === "Print Requested"
                           ? "var(--aurora-pink)"
                           : "var(--electric-blue)",
                       border: `1px solid ${
-                        data.onChain.status === "Vaulted"
+                        data.onChain.status === "Print Requested"
                           ? "rgba(255,107,186,0.35)"
                           : "rgba(0,204,255,0.35)"
                       }`,
@@ -260,9 +261,8 @@ function ScanContent() {
               <MetaRow
                 label="Last Owner"
                 value={
-                  <span className="font-mono text-xs text-white/70">
-                    {data.onChain.lastOwner?.slice(0, 6)}…
-                    {data.onChain.lastOwner?.slice(-4)}
+                  <span className="text-sm text-white/70">
+                    {data.onChain.lastOwner || "—"}
                   </span>
                 }
               />
@@ -291,30 +291,35 @@ function ScanContent() {
                 <div className="space-y-2">
                   {data.history.map((tx, i) => (
                     <div
-                      key={tx.txHash ?? `${tx.type}-${tx.timestamp}-${i}`}
+                      key={`${tx.type}-${tx.timestamp}-${i}`}
                       className="flex justify-between items-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium capitalize text-white">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-sm font-medium capitalize text-white shrink-0">
                           {tx.type}
                         </span>
                         <span
-                          className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded"
+                          className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded shrink-0"
                           style={{
                             background:
-                              tx.status === "confirmed"
+                              tx.status === "Success"
                                 ? "rgba(0,204,255,0.15)"
                                 : "rgba(255,196,102,0.15)",
                             color:
-                              tx.status === "confirmed"
+                              tx.status === "Success"
                                 ? "var(--electric-blue)"
                                 : "var(--aurora-gold)",
                           }}
                         >
                           {tx.status}
                         </span>
+                        {tx.from && tx.to && (
+                          <span className="text-[0.65rem] text-white/40 truncate">
+                            {tx.from} → {tx.to}
+                          </span>
+                        )}
                       </div>
-                      <span className="text-xs text-white/50">
+                      <span className="text-xs text-white/50 shrink-0 ml-3">
                         {new Date(tx.timestamp).toLocaleDateString()}
                       </span>
                     </div>
@@ -414,7 +419,7 @@ function ManualInput() {
       <p className="text-[0.72rem] uppercase tracking-[0.22em] mb-4" style={{ color: "var(--cosmic-violet)" }}>
         Or enter manually
       </p>
-      <label className="block text-sm text-white/70 mb-2">Token ID</label>
+      <label className="block text-sm text-white/70 mb-2">Card ID</label>
       <div
         className="flex items-center gap-2 p-1 pl-4 rounded-full mb-4"
         style={{
@@ -440,7 +445,7 @@ function ManualInput() {
         Verify Card
       </button>
       <p className="mt-4 text-xs text-white/50 leading-relaxed">
-        Token IDs are numeric. If you don't have one, scan a card's QR with
+        Card IDs are numeric. If you don't have one, scan a card's QR with
         your camera to jump straight to the result.
       </p>
     </form>

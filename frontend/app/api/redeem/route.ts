@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { redeemCard } from "@/lib/blockchain";
+import { redeemCard, getProvider } from "@/lib/blockchain";
 import { hashRedeemCode } from "@/lib/redeem-code";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { generateInvoiceId } from "@/lib/invoice";
+import { friendlyTxStatus } from "@/lib/status-map";
+import { confirmTransaction } from "@/lib/transactions";
 
 export async function POST(request: Request) {
   try {
@@ -46,10 +49,27 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
+    // Tunggu transaksi terkonfirmasi on-chain
+    const txIdStr = result.insertedId.toString();
+    let finalStatus = "pending";
+    try {
+      const provider = getProvider();
+      for (let i = 0; i < 10; i++) {
+        const receipt = await provider.getTransactionReceipt(txHash);
+        if (receipt) {
+          await confirmTransaction(txIdStr);
+          finalStatus = receipt.status === 1 ? "confirmed" : "failed";
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    } catch (confirmErr) {
+      console.warn("Auto-confirm failed (will retry on next poll):", confirmErr);
+    }
+
     return NextResponse.json({
-      status: "pending",
-      txId: result.insertedId.toString(),
-      txHash,
+      status: friendlyTxStatus(finalStatus),
+      txId: generateInvoiceId(txIdStr),
       rateLimitRemaining: rateLimit.remaining,
     });
   } catch (error) {

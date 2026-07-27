@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { mintBatch } from "@/lib/blockchain";
+import { mintBatch, getProvider } from "@/lib/blockchain";
 import { buildPackRarities } from "@/lib/odds";
 import { pickCardTemplate, seedCardTemplates } from "@/lib/card-templates";
 import { deductCredits, addCredits } from "@/lib/credits";
+import { generateInvoiceId } from "@/lib/invoice";
+import { friendlyTxStatus } from "@/lib/status-map";
+import { confirmTransaction } from "@/lib/transactions";
 
 const PACK_PRICE_CENTS = 500; // 500 Credit per pack
 
@@ -76,6 +79,24 @@ export async function POST(request: Request) {
     }));
     await cardsCollection.insertMany(cardDocs);
 
+    // Tunggu transaksi terkonfirmasi on-chain (poll receipt)
+    const txIdStr = txResult.insertedId.toString();
+    let finalStatus = "pending";
+    try {
+      const provider = getProvider();
+      for (let i = 0; i < 10; i++) {
+        const receipt = await provider.getTransactionReceipt(txHash);
+        if (receipt) {
+          await confirmTransaction(txIdStr);
+          finalStatus = receipt.status === 1 ? "confirmed" : "failed";
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    } catch (confirmErr) {
+      console.warn("Auto-confirm failed (will retry on next poll):", confirmErr);
+    }
+
     // Build response array
     const cards = templates.map((template, i) => ({
       rarity: rarities[i],
@@ -87,9 +108,8 @@ export async function POST(request: Request) {
     }));
 
     return NextResponse.json({
-      status: "pending",
-      txId: txResult.insertedId.toString(),
-      txHash,
+      status: friendlyTxStatus(finalStatus),
+      txId: generateInvoiceId(txIdStr),
       cards,
       newBalance,
     });

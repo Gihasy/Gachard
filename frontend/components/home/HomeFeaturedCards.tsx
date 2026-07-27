@@ -33,41 +33,16 @@ export default function HomeFeaturedCards() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {FEATURED_CARDS.map((c, i) => (
-          <div key={c.id} className="glass glass-hover group overflow-hidden p-3" data-testid={`featured-card-${c.name.toLowerCase()}`}>
-            <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4">
+        {FEATURED_CARDS.map((c) => (
+          <div key={c.id} className="glass glass-hover group overflow-hidden" data-testid={`featured-card-${c.name.toLowerCase()}`}>
+            <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
               <Image
                 src={c.img}
                 alt={c.name}
                 fill
                 sizes="(max-width: 1024px) 45vw, 25vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                className="object-contain transition-transform duration-700 group-hover:scale-105"
               />
-              <div
-                className="absolute top-3 right-3 text-[0.6rem] font-bold uppercase tracking-widest px-2 py-1 rounded"
-                style={{
-                  background: "rgba(11,14,26,0.75)",
-                  color: c.color,
-                  border: `1px solid ${c.color}`,
-                }}
-              >
-                {c.tier}
-              </div>
-            </div>
-            <div className="px-2 pb-2">
-              <div className="flex items-baseline justify-between mb-2">
-                <h3 className="font-display text-lg uppercase text-white" style={{ letterSpacing: "-0.01em" }}>
-                  {c.name}
-                </h3>
-                <span className="text-[0.65rem] uppercase tracking-widest text-white/50">
-                  #{String(i + 1).padStart(3, "0")}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-1 text-[0.65rem] uppercase tracking-wider text-white/50">
-                <span>ATK {600 + i * 40}</span>
-                <span>DEF {380 + i * 30}</span>
-                <span>HP {800 + i * 20}</span>
-              </div>
             </div>
           </div>
         ))}

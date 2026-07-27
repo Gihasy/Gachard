@@ -14,6 +14,10 @@ export default function Profil() {
   const [ready, setReady] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
+  const [redeemTokenId, setRedeemTokenId] = useState("");
+  const [redeemCode, setRedeemCode] = useState("");
+  const [redeemLoading, setRedeemLoading] = useState(false);
+  const [redeemMessage, setRedeemMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
   // Mount-only: hydrate session. Setters from useState are stable.
   useEffect(() => {
@@ -64,13 +68,50 @@ export default function Profil() {
     epic: cards.filter((c) => c.rarity === 2).length,
     rare: cards.filter((c) => c.rarity === 1).length,
     common: cards.filter((c) => c.rarity === 0).length,
-    vaulted: cards.filter((c) => c.status === "Vaulted").length,
+    vaulted: cards.filter((c) => c.status === "Print Requested" || c.status === "Real").length,
   };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     document.cookie = "gachard_uid=; path=/; max-age=0; SameSite=Lax";
     router.push("/");
+  };
+
+  const handleRedeem = async () => {
+    if (!user || !redeemTokenId.trim() || !redeemCode.trim()) return;
+    setRedeemLoading(true);
+    setRedeemMessage(null);
+    try {
+      const res = await fetch("/api/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.user_id,
+          tokenId: parseInt(redeemTokenId.trim()),
+          code: redeemCode.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setRedeemMessage({
+          text: `Card #${redeemTokenId} redeemed successfully! It's now in your collection.`,
+          ok: true,
+        });
+        setRedeemTokenId("");
+        setRedeemCode("");
+        // Refresh cards
+        fetch(`/api/cards?userId=${user.user_id}`)
+          .then((r) => r.json())
+          .then((d: { cards?: Card[] }) => setCards(d.cards ?? []))
+          .catch(() => {});
+      } else {
+        setRedeemMessage({ text: data.error || "Redeem failed", ok: false });
+      }
+    } catch {
+      setRedeemMessage({ text: "Network error", ok: false });
+    } finally {
+      setRedeemLoading(false);
+    }
   };
 
   if (!ready || !user) return null;
@@ -128,10 +169,6 @@ export default function Profil() {
                       {user.email}
                     </p>
                   )}
-                  <div className="mt-2 chip">
-                    <span className="chip-dot" />
-                    <span>Season 1 Collector</span>
-                  </div>
                 </div>
               </div>
 
@@ -201,28 +238,6 @@ export default function Profil() {
                 <StatBlock label="Common" value={stats.common} color="#9CA3AF" />
                 <StatBlock label="Vaulted" value={stats.vaulted} color="var(--aurora-pink)" />
               </div>
-
-              {/* Progress */}
-              <div>
-                <div className="flex justify-between text-[0.7rem] uppercase tracking-widest text-white/60 mb-2">
-                  <span>Season 1 progress</span>
-                  <span>{Math.min(100, Math.round((stats.total / 168) * 100))}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${Math.min(100, (stats.total / 168) * 100)}%`,
-                      background:
-                        "linear-gradient(90deg, var(--cosmic-violet), var(--aurora-pink), var(--electric-blue))",
-                    }}
-                  />
-                </div>
-                <p className="mt-2 text-xs text-white/50">
-                  {stats.total} of 168 cards collected. Keep opening packs to
-                  complete the set.
-                </p>
-              </div>
             </div>
 
             {stats.total === 0 && (
@@ -244,6 +259,80 @@ export default function Profil() {
                 </Link>
               </div>
             )}
+
+            {/* Redeem Card */}
+            <div
+              className="glass p-6"
+              data-testid="profil-redeem"
+              style={{ borderColor: "rgba(0,255,136,0.2)" }}
+            >
+              <p
+                className="text-[0.72rem] uppercase tracking-[0.22em] mb-4"
+                style={{ color: "#00ff88" }}
+              >
+                Redeem a Physical Card
+              </p>
+              <p className="text-xs text-white/50 mb-4">
+                Got a physical Gachard card? Enter the Card ID (from QR code) and
+                the redeem code printed on the card to claim it.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[0.65rem] uppercase tracking-widest text-white/40 mb-1.5">
+                    Card ID
+                  </label>
+                  <input
+                    type="number"
+                    value={redeemTokenId}
+                    onChange={(e) => setRedeemTokenId(e.target.value)}
+                    placeholder="e.g. 14"
+                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
+                    data-testid="redeem-token-input"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[0.65rem] uppercase tracking-widest text-white/40 mb-1.5">
+                    Redeem Code
+                  </label>
+                  <input
+                    type="text"
+                    value={redeemCode}
+                    onChange={(e) => setRedeemCode(e.target.value)}
+                    placeholder="e.g. xIdVoe2A0TWZvNOR"
+                    className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30 font-mono"
+                    data-testid="redeem-code-input"
+                  />
+                </div>
+                <button
+                  onClick={handleRedeem}
+                  disabled={redeemLoading || !redeemTokenId.trim() || !redeemCode.trim()}
+                  className="w-full py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,204,255,0.15))",
+                    border: "1px solid rgba(0,255,136,0.4)",
+                    color: "#00ff88",
+                  }}
+                  data-testid="redeem-submit-btn"
+                >
+                  {redeemLoading ? "Redeeming..." : "Redeem Card"}
+                </button>
+              </div>
+              {redeemMessage && (
+                <div
+                  className="mt-3 p-3 rounded-xl text-sm"
+                  style={{
+                    background: redeemMessage.ok ? "rgba(0,255,136,0.08)" : "rgba(255,107,186,0.08)",
+                    border: redeemMessage.ok
+                      ? "1px solid rgba(0,255,136,0.3)"
+                      : "1px solid rgba(255,107,186,0.3)",
+                    color: redeemMessage.ok ? "#00ff88" : "#ff6bba",
+                  }}
+                  data-testid="redeem-message"
+                >
+                  {redeemMessage.text}
+                </div>
+              )}
+            </div>
           </div>
         </div>
     </PageShell>

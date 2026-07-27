@@ -2,6 +2,8 @@ import { getCollection } from "./mongodb";
 import { ObjectId } from "mongodb";
 import { getProvider } from "./blockchain";
 import { ethers } from "ethers";
+import { generateInvoiceId } from "./invoice";
+import { friendlyTxStatus } from "./status-map";
 
 export type TxStatus = "pending" | "confirmed" | "failed";
 
@@ -70,6 +72,8 @@ export async function updateTransactionStatus(
 
 /**
  * Get transaction status for frontend polling.
+ * Returns invoiceId (human-friendly) instead of raw ObjectId, and friendly status labels.
+ * txHash is NOT exposed — kept internal for on-chain receipt checking only.
  */
 export async function getTransactionStatus(txId: string) {
   const collection = await getCollection("transactions");
@@ -77,9 +81,10 @@ export async function getTransactionStatus(txId: string) {
   if (!tx) return null;
 
   return {
-    id: tx._id.toString(),
-    status: tx.status,
-    txHash: tx.txHash,
+    id: generateInvoiceId(tx._id.toString()),
+    rawId: tx._id.toString(),
+    status: friendlyTxStatus(tx.status),
+    rawStatus: tx.status,
     type: tx.type,
     tokenId: tx.tokenId,
     rarity: tx.rarity,

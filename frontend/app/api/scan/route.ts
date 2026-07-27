@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
+import { friendlyTxStatus, friendlyCardStatus } from "@/lib/status-map";
 
 const STATUS_LABELS = ["Digital", "Vaulted"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
@@ -55,10 +56,32 @@ export async function GET(request: Request) {
       .limit(10)
       .toArray();
 
+    // Lookup semua address unik untuk resolve username
+    const usersCollection = await getCollection("users");
+    const allAddresses = new Set<string>();
+    if (card.ownerAddress) allAddresses.add(card.ownerAddress.toLowerCase());
+    for (const tx of history) {
+      if (tx.fromAddress && tx.fromAddress !== "vault") allAddresses.add(tx.fromAddress.toLowerCase());
+      if (tx.toAddress && tx.toAddress !== "vault") allAddresses.add(tx.toAddress.toLowerCase());
+    }
+
+    const addressToUsername = new Map<string, string>();
+    if (allAddresses.size > 0) {
+      const allUsers = await usersCollection.find({}).toArray();
+      for (const u of allUsers) {
+        if (u.walletAddress) {
+          addressToUsername.set(u.walletAddress.toLowerCase(), `@${u.username}`);
+        }
+      }
+    }
+
     // Data on-chain dari cache (diupdate saat transaksi dikonfirmasi)
-    const statusCode = card.status === "Vaulted" ? 1 : 0;
+    const statusCode = (card.status === "Vaulted" || card.status === "Real") ? 1 : 0;
     const rarityCode = card.rarity ?? 0;
-    const lastOwnerAddress = card.lastOwner || null;
+    const ownerAddress = card.ownerAddress || null;
+    const ownerName = ownerAddress
+      ? addressToUsername.get(ownerAddress.toLowerCase()) || null
+      : null;
     const lastSync = card.lastOnChainSync || null;
 
     // Verification flag — cek apakah cache masih fresh (< 1 jam)
@@ -68,17 +91,17 @@ export async function GET(request: Request) {
     const cacheFresh = cacheAge < 3600000; // 1 jam
 
     const verified = cacheFresh && card.status !== undefined;
-    const statusMatch = STATUS_LABELS[statusCode] === card.status;
+    const statusMatch = STATUS_LABELS[statusCode] === card.status || card.status === "Real";
     const verificationFlag = verified && statusMatch ? "verified" : "warning";
 
     return NextResponse.json({
       tokenId,
       onChain: {
-        status: STATUS_LABELS[statusCode] || "Unknown",
+        status: card.status === "Real" ? "Real" : friendlyCardStatus(STATUS_LABELS[statusCode] || "Unknown"),
         statusCode,
         rarity: RARITY_LABELS[rarityCode] || "Unknown",
         rarityCode,
-        lastOwner: lastOwnerAddress,
+        lastOwner: ownerName,
         lastSync,
       },
       metadata: {
@@ -94,9 +117,9 @@ export async function GET(request: Request) {
       },
       history: history.map((tx) => ({
         type: tx.type,
-        status: tx.status,
-        from: tx.fromAddress,
-        to: tx.toAddress,
+        status: friendlyTxStatus(tx.status),
+        from: tx.fromAddress === "vault" ? "Gachard Vault" : tx.fromAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() ? "Gachard" : addressToUsername.get(tx.fromAddress?.toLowerCase()) || tx.fromAddress,
+        to: tx.toAddress === "vault" ? "Gachard Vault" : tx.toAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() ? "Gachard" : addressToUsername.get(tx.toAddress?.toLowerCase()) || tx.toAddress,
         timestamp: tx.createdAt,
       })),
     });

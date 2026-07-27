@@ -14,7 +14,6 @@ export async function POST(request: Request) {
     return NextResponse.json({
       user_id: user._id.toString(),
       username: user.username,
-      wallet_address: user.walletAddress,
     });
   } catch (error) {
     console.error("Login error:", error);

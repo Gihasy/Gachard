@@ -1,6 +1,7 @@
 import { getCollection } from "./mongodb";
 import { generateCustodialWallet } from "./wallet";
 import { encrypt } from "./crypto";
+import { OAuth2Client } from "google-auth-library";
 
 interface GoogleUserInfo {
   sub: string;
@@ -8,35 +9,20 @@ interface GoogleUserInfo {
   name?: string;
 }
 
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 /**
- * Verify Google OAuth ID token (JWT) and return user info.
- * Google Identity Services returns a JWT ID token, not a Bearer token.
- * We decode the JWT payload directly — Google's SDK already verified the signature.
+ * Verify Google OAuth ID token using google-auth-library.
+ * Performs full cryptographic signature verification against Google's public keys.
  */
 export async function verifyGoogleToken(token: string): Promise<GoogleUserInfo> {
-  // JWT format: header.payload.signature
-  const parts = token.split(".");
-  if (parts.length !== 3) {
-    throw new Error("Invalid token format");
-  }
+  const ticket = await googleClient.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
 
-  // Decode payload (base64url)
-  const payload = JSON.parse(
-    Buffer.from(parts[1], "base64url").toString("utf-8")
-  );
-
-  // Verify audience matches our client ID
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  if (clientId && payload.aud !== clientId) {
-    throw new Error("Token audience mismatch");
-  }
-
-  // Verify token is not expired
-  if (payload.exp && payload.exp * 1000 < Date.now()) {
-    throw new Error("Token expired");
-  }
-
-  if (!payload.sub || !payload.email) {
+  const payload = ticket.getPayload();
+  if (!payload || !payload.sub || !payload.email) {
     throw new Error("Missing required fields in token");
   }
 

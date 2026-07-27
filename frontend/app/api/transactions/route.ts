@@ -23,12 +23,18 @@ export async function GET(request: Request) {
     }
 
     // If still pending, check on-chain receipt and update
-    if (tx.status === "pending" && tx.txHash) {
+    // Use rawStatus for internal logic check
+    if (tx.rawStatus === "pending") {
       await confirmTransaction(txId);
-      tx = await getTransactionStatus(txId);
+      const refreshed = await getTransactionStatus(txId);
+      if (refreshed) {
+        tx = refreshed;
+      }
     }
 
-    return NextResponse.json(tx);
+    // Return only client-safe fields (no rawId, no rawStatus)
+    const { rawId: _ri, rawStatus: _rs, ...safe } = tx;
+    return NextResponse.json(safe);
   } catch (error) {
     console.error("Transaction status error:", error);
     return NextResponse.json(

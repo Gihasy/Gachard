@@ -18,14 +18,12 @@ const TIER_COLOR: Record<string, string> = {
 interface HomeHeroProps {
   onExplore: () => void;
   exploreLoading: boolean;
-  balance: number | null;
   isAuthenticated: boolean;
 }
 
 export default function HomeHero({
   onExplore,
   exploreLoading,
-  balance,
   isAuthenticated,
 }: HomeHeroProps) {
   return (
@@ -73,20 +71,6 @@ export default function HomeHero({
                 Play Now
               </Link>
             </div>
-
-            {isAuthenticated && balance !== null && (
-              <div
-                className="mt-8 inline-flex items-center gap-3 px-5 py-2.5 rounded-full"
-                style={{
-                  background: "rgba(184,172,255,0.08)",
-                  border: "1px solid rgba(184,172,255,0.22)",
-                }}
-                data-testid="hero-balance-chip"
-              >
-                <span className="text-xs uppercase tracking-widest text-white/60">Balance</span>
-                <span className="font-display text-lg" style={{ color: "var(--aurora-gold)" }}>{balance} Credit</span>
-              </div>
-            )}
           </div>
 
           {/* Visual */}
@@ -132,7 +116,7 @@ export default function HomeHero({
                       className="relative overflow-hidden rounded-[18px]"
                       style={{
                         width: i === 1 ? 220 : 190,
-                        height: i === 1 ? 310 : 270,
+                        aspectRatio: "5/7",
                         boxShadow:
                           i === 1
                             ? "0 30px 80px -20px rgba(255,107,186,0.55), 0 0 0 1px rgba(255,255,255,0.15)"
@@ -140,26 +124,7 @@ export default function HomeHero({
                       }}
                       data-testid={`hero-card-${c.name.toLowerCase()}`}
                     >
-                      <Image src={c.img} alt={c.name} fill sizes="220px" className="object-cover" />
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          background: "linear-gradient(180deg, transparent 55%, rgba(11,14,26,0.85) 100%)",
-                        }}
-                      />
-                      <div className="absolute top-3 right-3">
-                        <span
-                          className="text-[0.6rem] font-bold uppercase tracking-widest px-2 py-0.5 rounded"
-                          style={{
-                            background: "rgba(11,14,26,0.65)",
-                            backdropFilter: "blur(6px)",
-                            color: TIER_COLOR[c.tier],
-                            border: `1px solid ${TIER_COLOR[c.tier]}`,
-                          }}
-                        >
-                          {c.tier}
-                        </span>
-                      </div>
+                      <Image src={c.img} alt={c.name} fill sizes="220px" className="object-contain" />
                     </div>
                   </div>
                 </div>
