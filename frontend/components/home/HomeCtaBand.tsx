@@ -37,7 +37,7 @@ export default function HomeCtaBand() {
               className="btn-gold"
               data-testid="cta-collect-cards-btn"
             >
-              Collect Cards
+              Collect Now
             </Link>
           </div>
         </div>
