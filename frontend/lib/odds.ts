@@ -14,8 +14,6 @@ const DEFAULT_ODDS: OddsEntry[] = [
   { rarity: 3, weight: 2, label: "Legendary" },
 ];
 
-const PACK_SIZE = 8;
-
 /**
  * Get odds table from MongoDB or fall back to defaults.
  */
@@ -75,20 +73,27 @@ export async function pickGuaranteedRareOrBetter(): Promise<number> {
 }
 
 /**
- * Build array of 8 rarities for a pack.
- * 7 dari pickRarity() biasa, 1 dari pickGuaranteedRareOrBetter().
+ * Build array of rarities for a pack.
+ * @param packSize - Total kartu dalam pack (default 8)
+ * @param guaranteedCount - Jumlah kartu dijamin Rare+ (default 1)
  * Shuffle sebelum dikembalikan supaya slot jaminan tidak selalu di posisi sama.
  */
-export async function buildPackRarities(): Promise<number[]> {
+export async function buildPackRarities(
+  packSize: number = 8,
+  guaranteedCount: number = 1
+): Promise<number[]> {
   const rarities: number[] = [];
 
-  // 7 kartu random biasa
-  for (let i = 0; i < PACK_SIZE - 1; i++) {
+  // kartu random biasa
+  const randomCount = packSize - guaranteedCount;
+  for (let i = 0; i < randomCount; i++) {
     rarities.push(await pickRarity());
   }
 
-  // 1 kartu dijamin Rare+
-  rarities.push(await pickGuaranteedRareOrBetter());
+  // kartu dijamin Rare+
+  for (let i = 0; i < guaranteedCount; i++) {
+    rarities.push(await pickGuaranteedRareOrBetter());
+  }
 
   // Shuffle (Fisher-Yates)
   for (let i = rarities.length - 1; i > 0; i--) {

@@ -14,9 +14,12 @@ export async function GET() {
       createdAt: u.createdAt,
     }));
 
-    return NextResponse.json({ users: result });
+    return NextResponse.json(
+      { users: result },
+      { headers: { "Cache-Control": "no-store, private" } }
+    );
   } catch (error) {
     console.error("Admin users error:", error);
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return NextResponse.json({ error: "Failed" }, { status: 500, headers: { "Cache-Control": "no-store, private" } });
   }
 }

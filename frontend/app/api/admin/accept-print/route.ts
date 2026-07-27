@@ -40,13 +40,16 @@ export async function POST(request: Request) {
       }
     );
 
-    return NextResponse.json({
-      success: true,
-      tokenId,
-      message: `Card #${tokenId} marked as Real. Redeem code printed on physical card.`,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        tokenId,
+        message: `Card #${tokenId} marked as Real. Redeem code printed on physical card.`,
+      },
+      { headers: { "Cache-Control": "no-store, private" } }
+    );
   } catch (error) {
     console.error("Accept print error:", error);
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return NextResponse.json({ error: "Failed" }, { status: 500, headers: { "Cache-Control": "no-store, private" } });
   }
 }

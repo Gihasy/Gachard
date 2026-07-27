@@ -16,10 +16,11 @@
 **Reason**: User tidak boleh pernah pegang crypto atau tahu konsep gas fee.
 **Known limitation**: satu wallet admin/relayer menjadi titik sentralisasi — perlu multi-sig atau custodian pihak ketiga di tahap produksi.
 
-## ADR-004: State Machine Kartu — Lock & Transfer ke Vault, Bukan Burn
-**Status**: Accepted
-**Decision**: NFT tidak pernah di-burn saat print. Status berubah `Digital → Vaulted` (transfer ke alamat vault, transfer normal ditolak selama status ini) `→ Digital` (redeem, transfer ke pemilik baru).
+## ADR-004: State Machine Kartu — Lock In-Place via Status Flag, Bukan Burn
+**Status**: Accepted (diklarifikasi 28 Juli 2026)
+**Decision**: NFT tidak pernah di-burn saat print. Status berubah `Digital → Vaulted` (transfer ke alamat vault, transfer normal ditolak selama status ini) `→ Digital` (redeem, transfer ke pemilik baru). **Klarifikasi on-chain**: Deployed contract `requestPrint()` melakukan `_update(ownerAddress, address(this))` yang memindahkan NFT ke vault (contract address). `_update()` override memblokir transfer biasa saat `cardStatus == Vaulted`. NFT secara on-chain pindah ke contract saat vault, bukan tetap di wallet user.
 **Reason**: Riwayat/provenance tetap utuh dalam satu token ID, lebih sederhana untuk fitur AI-scan provenance, dan lebih intuitif untuk narasi produk ("dikunci", bukan "dihancurkan").
+**Verified**: 28 Juli 2026 — `safeTransferFrom` pada token Vaulted (tokenId 46) REVERT dengan pesan "Card is vaulted, transfer blocked". Token Digital (tokenId 45) bisa ditransfer normal.
 
 ## ADR-005: Redeem Code — Hash Overwrite per Siklus Print
 **Status**: Accepted

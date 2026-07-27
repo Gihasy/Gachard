@@ -13,7 +13,7 @@ Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru. Jangan membangun 
 Sprint 6 selesai. Semua sprint selesai.
 
 ## Current Goal
-Persiapan Demo Day.
+Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 
 ## Project Status
 - PRD selesai — lihat `docs/00-project-overview.md` (ringkas) dan `PRD-Gachard-Hackathon.md` (lengkap)
@@ -23,8 +23,8 @@ Persiapan Demo Day.
 - **Enkripsi**: Private key + redeem code dienkripsi AES-256-GCM (ADR-020)
 - Kontrak aktif: `0xe62bc7c470eaef3fcad1816b9ac6d63d585b5ee8`
 - Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
-- 12 API routes aktif di Vercel, 22 routes total (8 pages + 12 API + middleware)
-- Deploy: https://frontend-rosy-pi-88.vercel.app
+- **29 file** berubah di sesi terakhir (10 baru, 18 ubah, 1 hapus), commit `3fc40c7`
+- Deploy: https://www.gachard.com (Vercel Production)
 
 ### Sprint 1-6: SEMUA SELESAI
 - Sprint 1: scaffold, login, UI, PWA icons — laporan di `docs/compose/reports/sprint-1-final.md`
@@ -35,6 +35,14 @@ Persiapan Demo Day.
 - Sprint 6: stabilization + pitch deck outline + brand identity (8/8 tasks)
 - Brand Identity: SELESAI — CSS variables, Navbar, Home, PackCard, CardItem, TopUp, Scan, Login, Collection, Marketplace, Profile
 
+### Clean-Slate untuk Demo Day: SELESAI (28 Juli 2026)
+- Database dibersihkan: hapus 41 cards, 12 transactions, 4 redeem_codes, 4 rate_limits
+- 16 kartu baru di-mint (tokenId 47-62) untuk user demo `gigih.hartanto.s`
+- Semua kartu terverifikasi on-chain: status=Digital, balance=1, contractAddress recorded
+- Print flow tested: tokenId 47 berhasil di-vault (status=1, contractBalance=1)
+- Transfer block tested: safeTransferFrom pada token Vaulted REVERT
+- Demo user credit: 4000 (sisa dari 5000 setelah 2 pack)
+
 ### Emergent Design Overhaul: SELESAI + AUDITED
 - 8 commits from Emergent pulled, merged, deployed (+3470/-482 lines)
 - 6-step audit completed: ADR-010 compliant, no credential leak, proxy.ts safe, .emergent/cron inert
@@ -43,25 +51,68 @@ Persiapan Demo Day.
 - `.emergent/cron/` deleted from repo
 - Route renames: `/koleksi` → `/collection`, `/profil` → `/profile`
 
-### Google OAuth: IMPLEMENTED, PERLU VERIFIKASI USER
+### Google OAuth: FIXED, DEPLOYED
 - `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` set di `.env.local` dan Vercel Production
 - Login page menggunakan Google Identity Services SDK (real OAuth, bukan mock)
-- Backend decode JWT ID token langsung (bukan Bearer token ke userinfo endpoint)
+- **Backend menggunakan `google-auth-library` (verifyIdToken) untuk verifikasi signature JWT** (bukan decode manual)
+- `wallet_address` dihapus dari response POST /api/auth/google
 - Authorized JavaScript origin ditambahkan di Google Cloud Console
-- **Status**: Code deployed, user perlu test login + clear cache dulu
+- **Status**: Deployed, terverifikasi
 
 ### Service Worker: FIXED, DEPLOYED
 - sw.js di-fix: cache versioning (`gachard-v2026-07-23-02`), `skipWaiting()`, `activate` event dengan old cache cleanup
 - HTML pages: network-first strategy (selalu fetch fresh)
 - Static assets: cache-first strategy
 - ServiceWorkerRegister.tsx: cache-bust SW registration dengan timestamp
-- **Status**: Deployed, user perlu hard refresh atau Incognito untuk verifikasi
+- **Status**: Deployed, verified
+
+### Blockchain Abstraction: SELESAI (27 Juli 2026)
+- txHash dihapus dari SEMUA user-facing API response (mint, print, redeem, transactions, scan, cards)
+- Invoice ID format `GC-YYYYMMDD-XXXX` menggantikan ObjectId mentah
+- Friendly status: pending→Processing, confirmed→Success, Digital→Digital, Vaulted→Print Requested
+- **Auto-confirm DIHAPUS dari POST handlers** (28 Juli 2026) — endpoint langsung return "pending", frontend polling `/api/transactions` yang panggil `confirmTransaction()`. Ini mencegah refund ter-skip akibat Vercel function timeout.
+- Laporan: `docs/compose/reports/blockchain-abstraction-admin-print-real.md`
+
+### Admin Console: SELESAI (27 Juli 2026)
+- `/admin` page dengan 4 tab: Users, Transactions, Cards, Print Requests
+- HTTP Basic Auth via `proxy.ts` (Next.js 16, bukan middleware.ts)
+- Admin API routes: /api/admin/users, transactions, cards, print-requests, accept-print, confirm-all
+- Credential: `ADMIN_USERNAME=gachard-admin-aaafac`, `ADMIN_PASSWORD=qPBfAqpqYgYheb5T6_w-h1sB`
+- Ter-set di `.env.local` DAN Vercel Production
+
+### Print-to-Real Flow: SELESAI (27 Juli 2026)
+- User klik Print → kartu terkunci (Vaulted) → admin Accept → status "Real"
+- **On-chain verified (28 Juli 2026)**: `requestPrint()` memanggil `_update(ownerAddress, address(this))` → NFT PINDAH ke vault (contract address). `cardStatus=Vaulted`, `contractBalance=1`, `ownerBalance=0`.
+- **Transfer block verified**: `safeTransferFrom` pada token Vaulted REVERT: "Card is vaulted, transfer blocked" (tested on tokenId 46).
+- **Transfer Digital verified**: `safeTransferFrom` pada token Digital SUCCESS (tested on tokenId 45).
+- **3 kontrak pernah di-deploy**: Sprint 2 (`0xc7D37b...`), Sprint 3 (`0x122ace...`), Current (`0xe62bC7...`). TokenId tersebar di kontrak berbeda.
+- **Sebagian besar token lama**: `cardStatus=0` (Digital) di on-chain, tapi MongoDB menunjukkan "Vaulted"/"Print Requested". Ketidaksesuaian karena requestPrint lama mungkin tidak berhasil di-eksekusi on-chain.
+- **`contractAddress` field ditambahkan** ke records `cards` dan `transactions` mulai 28 Juli 2026.
+- Kartu "Real" tetap muncul di collection user (UI), user tetap bisa scan dan lihat stats
+- Redeem: user masukkan Card ID + Redeem Code di halaman Profile → NFT pindah ke penebus
+- QR disembunyikan untuk kartu "Print Requested" dan "Real"
+
+### UI Overhaul: SELESAI (27 Juli 2026)
+- Rarity badge (Common/Rare/Epic/Legendary) DIHAPUS dari semua kartu
+- Stats (ATK/DEF/HP) DIHAPUS dari featured cards
+- Nama kartu: templateId → "Card #X"
+- Status "Ready" → "Digital"
+- Token ID → Card ID
+- Balance DIHAPUS dari homepage (tetap di Profile + Top Up)
+- Season 1 references DIHAPUS dari Profile
+- Kartu image ratio: 3:4 → **5:7** (sesuai 1500x2100px), object-cover → object-contain
+- Show QR button DIHAPUS dari collection cards
+
+### Scan Page Enhancement: SELESAI (27 Juli 2026)
+- Last Owner: wallet address → `@username` (resolved dari MongoDB)
+- Transaction History: from/to tampilkan `@username` (bukan address)
+- Admin wallet address → label "Gachard"
+- Vault address → label "Gachard Vault"
 
 ### Open Items (belum selesai)
 1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: NS1 → ns1.vercel-dns.com + NS2 → ns2.vercel-dns.com
-2. **Google OAuth verification** — code deployed, user perlu test login setelah clear cache
-3. **SW cache verification** — user perlu hard refresh/Incognito untuk verifikasi deployment benar
-4. **Demo Day prep** — video backup, pitch deck, rehearsal
+2. **Demo Day prep** — video backup, pitch deck, rehearsal
+3. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
 
 ### AI Vision (Gemini): DITUNDA
 - **Status**: DITUNDA (bukan gagal/blocked). Kode referensi tetap di `lib/vision.ts`.

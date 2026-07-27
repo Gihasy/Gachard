@@ -25,12 +25,15 @@ export async function POST() {
       }
     }
 
-    return NextResponse.json({
-      processed: results.length,
-      results,
-    });
+    return NextResponse.json(
+      {
+        processed: results.length,
+        results,
+      },
+      { headers: { "Cache-Control": "no-store, private" } }
+    );
   } catch (error) {
     console.error("Confirm-all error:", error);
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return NextResponse.json({ error: "Failed" }, { status: 500, headers: { "Cache-Control": "no-store, private" } });
   }
 }

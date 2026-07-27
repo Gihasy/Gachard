@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { requestPrint, getProvider } from "@/lib/blockchain";
+import { requestPrint } from "@/lib/blockchain";
 import { generateRedeemCode, hashRedeemCode } from "@/lib/redeem-code";
 import { encrypt } from "@/lib/crypto";
 import { generateInvoiceId } from "@/lib/invoice";
 import { friendlyTxStatus } from "@/lib/status-map";
-import { confirmTransaction } from "@/lib/transactions";
 
 export async function POST(request: Request) {
   try {
@@ -27,6 +26,7 @@ export async function POST(request: Request) {
     const txHash = await requestPrint(tokenId, hash, user.walletAddress);
 
     // Simpan transaksi sebagai pending
+    const contractAddress = process.env.CONTRACT_ADDRESS!;
     const txCollection = await getCollection("transactions");
     const result = await txCollection.insertOne({
       userId: user._id.toString(),
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
       tokenId,
       txHash,
       status: "pending",
+      contractAddress,
       fromAddress: user.walletAddress,
       toAddress: "vault",
       createdAt: new Date().toISOString(),
@@ -50,28 +51,10 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     });
 
-    // Tunggu transaksi terkonfirmasi on-chain
-    const txIdStr = result.insertedId.toString();
-    let finalStatus = "pending";
-    try {
-      const provider = getProvider();
-      for (let i = 0; i < 10; i++) {
-        const receipt = await provider.getTransactionReceipt(txHash);
-        if (receipt) {
-          await confirmTransaction(txIdStr);
-          finalStatus = receipt.status === 1 ? "confirmed" : "failed";
-          break;
-        }
-        await new Promise((r) => setTimeout(r, 2000));
-      }
-    } catch (confirmErr) {
-      console.warn("Auto-confirm failed (will retry on next poll):", confirmErr);
-    }
-
+    // Return immediately — frontend polls /api/transactions for confirmation (ADR-018)
     return NextResponse.json({
-      status: friendlyTxStatus(finalStatus),
-      txId: generateInvoiceId(txIdStr),
-      // JANGAN return code ke frontend!
+      status: friendlyTxStatus("pending"),
+      txId: generateInvoiceId(result.insertedId.toString()),
     });
   } catch (error) {
     console.error("Print error:", error);

@@ -15,9 +15,12 @@ export async function GET() {
       createdAt: c.createdAt,
     }));
 
-    return NextResponse.json({ cards: result });
+    return NextResponse.json(
+      { cards: result },
+      { headers: { "Cache-Control": "no-store, private" } }
+    );
   } catch (error) {
     console.error("Admin cards error:", error);
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return NextResponse.json({ error: "Failed" }, { status: 500, headers: { "Cache-Control": "no-store, private" } });
   }
 }

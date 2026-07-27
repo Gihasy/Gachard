@@ -44,9 +44,12 @@ export async function GET() {
       })
     );
 
-    return NextResponse.json({ transactions: result });
+    return NextResponse.json(
+      { transactions: result },
+      { headers: { "Cache-Control": "no-store, private" } }
+    );
   } catch (error) {
     console.error("Admin transactions error:", error);
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return NextResponse.json({ error: "Failed" }, { status: 500, headers: { "Cache-Control": "no-store, private" } });
   }
 }

@@ -80,9 +80,12 @@ export async function GET() {
       })
     );
 
-    return NextResponse.json({ printRequests: results });
+    return NextResponse.json(
+      { printRequests: results },
+      { headers: { "Cache-Control": "no-store, private" } }
+    );
   } catch (error) {
     console.error("Admin print-requests error:", error);
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return NextResponse.json({ error: "Failed" }, { status: 500, headers: { "Cache-Control": "no-store, private" } });
   }
 }
