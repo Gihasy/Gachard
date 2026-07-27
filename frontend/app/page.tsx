@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import HomeHero from "@/components/home/HomeHero";
 import HomeFeaturedCards from "@/components/home/HomeFeaturedCards";
@@ -15,7 +14,6 @@ interface SessionUser {
 }
 
 export default function Home() {
-  const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
 
   useEffect(() => {
@@ -29,25 +27,13 @@ export default function Home() {
     }
   }, []);
 
-  const handleExplore = () => {
-    if (user) {
-      router.push("/packs");
-    } else {
-      router.push("/login");
-    }
-  };
-
   return (
     <div data-testid="home-page">
-      <HomeHero
-        onExplore={handleExplore}
-        exploreLoading={false}
-        isAuthenticated={!!user}
-      />
+      <HomeHero isAuthenticated={!!user} />
       <HomeFeaturedCards />
       <HomeWhyGachard />
       <HomeHowItWorks />
-      <HomeCtaBand onOpenPack={handleExplore} loading={false} />
+      <HomeCtaBand />
     </div>
   );
 }

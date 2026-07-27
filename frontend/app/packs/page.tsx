@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import PageShell from "@/components/PageShell";
 import PackCard from "@/components/PackCard";
 import PackReveal, { type RevealResult } from "@/components/home/PackReveal";
@@ -91,11 +92,18 @@ export default function PacksPage() {
     >
       {/* Balance */}
       {balance !== null && (
-        <div className="text-center mb-8">
+        <div className="flex items-center justify-center gap-4 mb-8">
           <span className="text-sm text-white/60">Your Balance: </span>
           <span className="text-lg font-display" style={{ color: "var(--aurora-gold)" }}>
             {balance.toLocaleString()} Credit
           </span>
+          <Link
+            href="/topup"
+            className="btn-gold !py-1.5 !px-3 !text-xs"
+            data-testid="packs-topup-btn"
+          >
+            Top Up
+          </Link>
         </div>
       )}
 

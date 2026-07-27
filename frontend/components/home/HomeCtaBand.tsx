@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 
-interface HomeCtaBandProps {
-  onOpenPack: () => void;
-  loading: boolean;
-}
-
-export default function HomeCtaBand({ onOpenPack, loading }: HomeCtaBandProps) {
+export default function HomeCtaBand() {
   return (
     <section className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10 py-16">
       <div
@@ -37,16 +32,12 @@ export default function HomeCtaBand({ onOpenPack, loading }: HomeCtaBandProps) {
             </p>
           </div>
           <div className="flex flex-wrap gap-4 justify-start lg:justify-end">
-            <button
-              onClick={onOpenPack}
-              disabled={loading}
-              className="btn-gold disabled:opacity-60"
-              data-testid="cta-open-pack-btn"
+            <Link
+              href="/packs"
+              className="btn-gold"
+              data-testid="cta-collect-cards-btn"
             >
-              {loading ? "Opening…" : "Open First Pack"}
-            </button>
-            <Link href="/marketplace" className="btn-ghost" data-testid="cta-explore-market-btn">
-              Explore Market
+              Collect Cards
             </Link>
           </div>
         </div>

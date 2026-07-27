@@ -16,14 +16,10 @@ const TIER_COLOR: Record<string, string> = {
 };
 
 interface HomeHeroProps {
-  onExplore: () => void;
-  exploreLoading: boolean;
   isAuthenticated: boolean;
 }
 
 export default function HomeHero({
-  onExplore,
-  exploreLoading,
   isAuthenticated,
 }: HomeHeroProps) {
   return (
@@ -53,22 +49,15 @@ export default function HomeHero({
             </p>
 
             <div className="reveal reveal-5 flex flex-wrap items-center gap-4 mb-12" data-testid="hero-cta-row">
-              <button
-                onClick={onExplore}
-                disabled={exploreLoading}
-                className="btn-primary disabled:opacity-60"
-                data-testid="hero-explore-cards-btn"
+              <Link
+                href="/packs"
+                className="btn-primary"
+                data-testid="hero-collect-cards-btn"
               >
-                {exploreLoading ? "Opening…" : "Explore Cards"}
+                Collect Cards
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              </button>
-              <Link href="/marketplace" className="btn-ghost" data-testid="hero-play-now-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Play Now
               </Link>
             </div>
           </div>
