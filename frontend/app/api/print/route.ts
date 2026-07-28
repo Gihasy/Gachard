@@ -51,12 +51,13 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     });
 
-    // Set fulfillmentStatus = "Locked" pada card
+    // Set card status ke Vaulted dan fulfillmentStatus ke "Locked"
     const cardsCollection = await getCollection("cards");
     await cardsCollection.updateOne(
       { tokenId },
       {
         $set: {
+          status: "Vaulted",
           fulfillmentStatus: "Locked",
           updatedAt: new Date().toISOString(),
         },

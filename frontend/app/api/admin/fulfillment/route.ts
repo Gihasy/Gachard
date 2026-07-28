@@ -42,12 +42,27 @@ export async function POST(request: Request) {
       update.trackingNumber = trackingNumber;
     }
 
-    // If status is "Real", also mark as delivered
+    // If status is "Real", also update card status to "Real" (final state)
     if (action === "Real") {
+      update.status = "Real";
       update.deliveredAt = new Date().toISOString();
     }
 
     await cardsCollection.updateOne({ tokenId }, { $set: update });
+
+    // If status is "Real", also mark redeem code as accepted
+    if (action === "Real") {
+      const codesCollection = await getCollection("redeem_codes");
+      await codesCollection.updateMany(
+        { tokenId },
+        {
+          $set: {
+            status: "accepted",
+            acceptedAt: new Date().toISOString(),
+          },
+        }
+      );
+    }
 
     return NextResponse.json({
       success: true,
