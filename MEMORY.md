@@ -36,9 +36,10 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 - Brand Identity: SELESAI — CSS variables, Navbar, Home, PackCard, CardItem, TopUp, Scan, Login, Collection, Marketplace, Profile
 
 ### Clean-Slate untuk Demo Day: SELESAI (28 Juli 2026)
-- Database dibersihkan: hapus 41 cards, 12 transactions, 4 redeem_codes, 4 rate_limits
-- 16 kartu baru di-mint (tokenId 47-62) untuk user demo `gigih.hartanto.s`
+- Database dibersihkan 2x (kontrak lama + kontrak baru)
+- 16 kartu di-mint di kontrak baru `0x0bb3dd543ff752bd15a50cbb3cba059bea6a278a` (tokenId 1-16)
 - Semua kartu terverifikasi on-chain: status=Digital, balance=1, contractAddress recorded
+- tokenId 1: Locked (via script), tokenId 2: Shipping (via admin), tokenId 3-16: Digital (clean)
 - Print flow tested: tokenId 47 berhasil di-vault (status=1, contractBalance=1)
 - Transfer block tested: safeTransferFrom pada token Vaulted REVERT
 - Demo user credit: 4000 (sisa dari 5000 setelah 2 pack)
@@ -111,8 +112,21 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 
 ### Open Items (belum selesai)
 1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: NS1 → ns1.vercel-dns.com + NS2 → ns2.vercel-dns.com
-2. **Demo Day prep** — video backup, pitch deck, rehearsal
+2. **Demo Day prep** — video backup, pitch deck, rehearsal, test full loop dengan alamat sungguhan
 3. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
+
+### Session 28 Juli 2026 — Ringkasan Perubahan
+- 13 commit, 11x deploy, 40+ file berubah
+- Security fixes (auto-confirm, Cache-Control, contractAddress)
+- Pack system redesign (Standard/Booster, flip animation)
+- Play & Trade page (ganti Marketplace)
+- QR camera scanner di /scan
+- Physical fulfillment pipeline (6 parts)
+- Profile page redesign (hapus Quick Actions, collection di kanan)
+- Language cleanup (Indonesia → Inggris)
+- Bug fix display status (fulfillmentStatus → displayStatus)
+- CONTRACT_ADDRESS verified di Vercel production
+- Laporan: `docs/compose/reports/2026-07-28-final-session-report.md`
 
 ### AI Vision (Gemini): DITUNDA
 - **Status**: DITUNDA (bukan gagal/blocked). Kode referensi tetap di `lib/vision.ts`.
