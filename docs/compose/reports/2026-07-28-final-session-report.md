@@ -289,6 +289,23 @@ Card status:
   tokenId=3-16: status=Digital, fulfillment=null
 ```
 
+### Klarifikasi: tokenId 1 (Locked) dan tokenId 2 (Shipping)
+
+**Pertanyaan:** Bagaimana tokenId 1 dan tokenId 2 mencapai status tersebut jika `shipping_addresses` kosong?
+
+**Jawaban:** Keduanya di-set melalui mekanisme bypass UI, BUKAN melalui alur checkout user:
+
+| tokenId | Status | Cara | Alasan shipping_addresses kosong |
+|---------|--------|------|----------------------------------|
+| 1 | Locked | Script `clean-slate-v2.mjs` → direct MongoDB update | Script langsung update DB, tidak melalui `/api/print/checkout` |
+| 2 | Shipping | Admin console → `/api/admin/fulfillment` | Admin API hanya update `fulfillmentStatus`, tidak simpan alamat |
+
+**Ini BUKAN bug.** Alur yang benar adalah:
+1. User klik "Print" → form alamat muncul → user isi → `/api/print/checkout` simpan alamat ke `shipping_addresses`
+2. Admin progression melalui `/api/admin/fulfillment` → tidak perlu alamat lagi (sudah tersimpan di step 1)
+
+**Status saat ini tidak merepresentasikan data produksi.** Untuk Demo Day, perlu test full loop: user isi alamat → checkout → admin progression.
+
 ---
 
 ## 14. Dokumen yang Dihasilkan
@@ -321,9 +338,9 @@ Card status:
 - [ ] Pastikan semua kartu demo di kontrak aktif
 
 ### Post-Hackathon
-- [ ] Redeploy smart contract dengan transfer aktual ke vault (jika diperlukan)
 - [ ] Integrasi Stripe asli (ganti simulated checkout)
 - [ ] Multi-sig admin wallet untuk produksi
+- [ ] Pertimbangkan fitur tambahan: marketplace trading, AI vision
 
 ---
 
