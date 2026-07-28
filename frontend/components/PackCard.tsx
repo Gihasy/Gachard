@@ -56,10 +56,10 @@ export default function PackCard({
           {type === "standard" ? "Standard Pack" : "Booster Pack"}
         </h3>
         <p className="text-sm text-white/60 mb-1">
-          {cardCount} kartu random
+          {cardCount} random cards
         </p>
         <p className="text-xs text-white/40 mb-6">
-          Dijamin {guaranteedRare} Rare+
+          Guaranteed {guaranteedRare} Rare+
         </p>
         <p
           className="text-4xl font-bold mb-6"

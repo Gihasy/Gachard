@@ -90,7 +90,7 @@ export default function Koleksi() {
 
   return (
     <PageShell
-      testId="koleksi-page"
+      testId="collection-page"
       eyebrow="Your Vault"
       title={
         <>
@@ -100,7 +100,7 @@ export default function Koleksi() {
       }
       description="Every card you own — physical, digital, or vaulted. Filter by rarity, request a print, or share via QR."
       actions={
-        <Link href="/" className="btn-primary" data-testid="koleksi-buy-pack-btn">
+        <Link href="/" className="btn-primary" data-testid="collection-buy-pack-btn">
           Buy a Pack
         </Link>
       }
@@ -147,7 +147,7 @@ export default function Koleksi() {
       {loading ? (
         <div
           className="grid grid-cols-2 md:grid-cols-4 gap-5"
-          data-testid="koleksi-loading"
+          data-testid="collection-loading"
         >
           {Array.from({ length: 8 }, (_, i) => `skeleton-${i}`).map((k) => (
             <div
@@ -166,14 +166,14 @@ export default function Koleksi() {
       ) : filtered.length === 0 ? (
         <div
           className="glass p-10 text-center"
-          data-testid="koleksi-empty-filter"
+          data-testid="collection-empty-filter"
         >
           <p className="text-white/70">No cards in this rarity yet.</p>
         </div>
       ) : (
         <div
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"
-          data-testid="koleksi-grid"
+          data-testid="collection-grid"
         >
           {filtered.map((card) => (
             <CardItem
@@ -196,7 +196,7 @@ function EmptyState() {
   return (
     <div
       className="glass p-14 text-center max-w-xl mx-auto"
-      data-testid="koleksi-empty"
+      data-testid="collection-empty"
     >
       <div
         className="w-16 h-16 mx-auto mb-6 rounded-2xl flex items-center justify-center"

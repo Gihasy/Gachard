@@ -133,7 +133,7 @@ export default function Profil() {
 
   return (
     <PageShell
-      testId="profil-page"
+      testId="profile-page"
       eyebrow="Your Account"
       title={
         <>
@@ -143,13 +143,13 @@ export default function Profil() {
       description="Your Gachard identity, credit balance, and collection at a glance."
       actions={
         <>
-          <Link href="/topup" className="btn-primary" data-testid="profil-topup-btn">
+          <Link href="/topup" className="btn-primary" data-testid="profile-topup-btn">
             Top Up
           </Link>
           <button
             onClick={handleLogout}
             className="btn-ghost"
-            data-testid="profil-logout-btn"
+            data-testid="profile-logout-btn"
           >
             Log out
           </button>
@@ -160,7 +160,7 @@ export default function Profil() {
         {/* Left column: Profile + Stats + Redeem */}
         <div className="space-y-6">
           {/* Identity + Balance */}
-          <div className="glass p-8" data-testid="profil-identity">
+          <div className="glass p-8" data-testid="profile-identity">
             <div className="flex items-center gap-5 mb-6">
               <div
                 className="w-20 h-20 rounded-3xl flex items-center justify-center shrink-0 font-display text-3xl text-white"
@@ -169,14 +169,14 @@ export default function Profil() {
                     "linear-gradient(135deg, var(--cosmic-violet-deep), var(--aurora-pink) 60%, var(--electric-blue))",
                   boxShadow: "0 12px 40px -8px rgba(138,92,255,0.5)",
                 }}
-                data-testid="profil-avatar"
+                data-testid="profile-avatar"
               >
                 {user?.username?.charAt(0).toUpperCase() ?? "G"}
               </div>
               <div className="min-w-0">
                 <p
                   className="font-display text-2xl text-white truncate"
-                  data-testid="profil-username"
+                  data-testid="profile-username"
                 >
                   @{user?.username ?? "player"}
                 </p>
@@ -195,7 +195,7 @@ export default function Profil() {
                   "linear-gradient(135deg, rgba(255,196,102,0.12), rgba(255,107,186,0.06))",
                 border: "1px solid rgba(255,196,102,0.3)",
               }}
-              data-testid="profil-balance"
+              data-testid="profile-balance"
             >
               <div>
                 <p className="text-[0.65rem] uppercase tracking-[0.22em] text-white/60 mb-1">
@@ -211,7 +211,7 @@ export default function Profil() {
               <Link
                 href="/topup"
                 className="btn-gold !py-2.5 !px-4 !text-[0.7rem]"
-                data-testid="profil-balance-topup"
+                data-testid="profile-balance-topup"
               >
                 Top Up
               </Link>
@@ -219,7 +219,7 @@ export default function Profil() {
           </div>
 
           {/* Collection Stats */}
-          <div className="glass p-6" data-testid="profil-stats">
+          <div className="glass p-6" data-testid="profile-stats">
             <p
               className="text-[0.72rem] uppercase tracking-[0.22em] mb-4"
               style={{ color: "var(--cosmic-violet)" }}
@@ -239,7 +239,7 @@ export default function Profil() {
           {/* Redeem Card */}
           <div
             className="glass p-6"
-            data-testid="profil-redeem"
+            data-testid="profile-redeem"
             style={{ borderColor: "rgba(0,255,136,0.2)" }}
           >
             <p
@@ -330,7 +330,7 @@ export default function Profil() {
           {cards.length === 0 ? (
             <div
               className="glass p-10 text-center"
-              data-testid="profil-empty"
+              data-testid="profile-empty"
               style={{
                 background:
                   "linear-gradient(135deg, rgba(184,172,255,0.10), rgba(255,107,186,0.05))",
@@ -341,7 +341,7 @@ export default function Profil() {
                 You haven't opened any packs yet. Your journey starts with your
                 first card.
               </p>
-              <Link href="/packs" className="btn-primary" data-testid="profil-first-pack">
+              <Link href="/packs" className="btn-primary" data-testid="profile-first-pack">
                 Open First Pack
               </Link>
             </div>
@@ -354,7 +354,7 @@ export default function Profil() {
                     key={card.tokenId ?? `card-${i}`}
                     className={`glass glass-hover overflow-hidden p-2.5 ${RARITY_GLOW[rarity]}`}
                     style={{ borderColor: RARITY_COLORS[rarity] }}
-                    data-testid={`profile-card-${card.tokenId}`}
+                    data-testid={`profilee-card-${card.tokenId}`}
                   >
                     <div
                       className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5"
