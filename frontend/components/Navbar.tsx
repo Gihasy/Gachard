@@ -8,7 +8,7 @@ import Logo from "@/components/Logo";
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/packs", label: "Packs" },
-  { href: "/marketplace", label: "Marketplace" },
+  { href: "/play-trade", label: "Play & Trade" },
   { href: "/datacards", label: "Datacards" },
   { href: "/scan", label: "Scan" },
   { href: "/profile", label: "Profile" },

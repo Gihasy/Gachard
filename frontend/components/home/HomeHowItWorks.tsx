@@ -4,7 +4,7 @@ const STEPS = [
   { n: "01", title: "Register", desc: "Create your account and enter the universe." },
   { n: "02", title: "Collect",  desc: "Open packs and collect rare cards." },
   { n: "03", title: "Play",     desc: "Build your deck and battle in arenas." },
-  { n: "04", title: "Trade",    desc: "Trade cards in the open marketplace." },
+  { n: "04", title: "Trade",    desc: "Buy, sell, and auction your cards." },
   { n: "05", title: "Grow",     desc: "Level up your bond and unlock more." },
 ] as const;
 

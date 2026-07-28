@@ -87,7 +87,7 @@ export default function TopUp() {
           Top up <span className="text-gradient-gold">credit</span>
         </>
       }
-      description="Instant top-ups. Credits are used to buy card packs, request prints, and settle marketplace trades."
+      description="Instant top-ups. Credits are used to buy card packs, request prints, and settle trades."
     >
       <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] max-w-5xl mx-auto lg:mx-0">
         {/* Left: presets + CTA */}
@@ -233,7 +233,7 @@ export default function TopUp() {
               />
               <InfoItem
                 title="Trade in the Marketplace"
-                desc="Settle peer-to-peer trades instantly."
+                desc="Buy, sell, and auction your cards."
               />
             </ul>
           </div>

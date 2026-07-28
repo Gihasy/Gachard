@@ -215,7 +215,7 @@ export default function Profil() {
                 <QuickAction href="/collection" label="Collection" />
                 <QuickAction href="/topup" label="Top Up" />
                 <QuickAction href="/scan" label="Scan Card" />
-                <QuickAction href="/marketplace" label="Marketplace" />
+                <QuickAction href="/play-trade" label="Play & Trade" />
               </div>
             </div>
           </div>

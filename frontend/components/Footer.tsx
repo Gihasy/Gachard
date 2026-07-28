@@ -9,7 +9,7 @@ const columns = [
     links: [
       { label: "Cards", href: "/collection" },
       { label: "Play", href: "/" },
-      { label: "Marketplace", href: "/marketplace" },
+      { label: "Play & Trade", href: "/play-trade" },
       { label: "Scan", href: "/scan" },
     ],
   },
