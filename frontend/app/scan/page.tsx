@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import PageShell from "@/components/PageShell";
+import QRScanner from "@/components/QRScanner";
 
 const RARITY_COLORS = [
   "var(--rarity-common)",
@@ -41,10 +42,20 @@ interface ScanData {
 
 function ScanContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const tokenId = searchParams.get("tokenId");
   const [data, setData] = useState<ScanData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
+
+  const handleScan = useCallback(
+    (scannedTokenId: string) => {
+      setShowScanner(false);
+      router.push(`/scan?tokenId=${scannedTokenId}`);
+    },
+    [router]
+  );
 
   useEffect(() => {
     if (!tokenId) return;
@@ -72,21 +83,26 @@ function ScanContent() {
   // Landing state — no token yet
   if (!tokenId) {
     return (
-      <PageShell
-        testId="scan-page"
-        eyebrow="Verify Authenticity"
-        title={
-          <>
-            Scan a <span className="text-gradient-aurora">card</span>
-          </>
-        }
-        description="Every Gachard card carries a unique on-chain signature. Scan its QR code with your camera or enter the Card ID below to verify ownership, rarity, and history."
-      >
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] items-start">
-          <ScanInstructions />
-          <ManualInput />
-        </div>
-      </PageShell>
+      <>
+        {showScanner && (
+          <QRScanner onScan={handleScan} onClose={() => setShowScanner(false)} />
+        )}
+        <PageShell
+          testId="scan-page"
+          eyebrow="Verify Authenticity"
+          title={
+            <>
+              Scan a <span className="text-gradient-aurora">card</span>
+            </>
+          }
+          description="Every Gachard card carries a unique on-chain signature. Scan its QR code with your camera or enter the Card ID below to verify ownership, rarity, and history."
+        >
+          <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] items-start">
+            <ScanInstructions onOpenCamera={() => setShowScanner(true)} />
+            <ManualInput />
+          </div>
+        </PageShell>
+      </>
     );
   }
 
@@ -363,15 +379,15 @@ function MetaRow({
   );
 }
 
-function ScanInstructions() {
+function ScanInstructions({ onOpenCamera }: { onOpenCamera: () => void }) {
   const steps = [
     {
       t: "Locate the QR",
       d: "Every Gachard card has a QR code on the bottom-right corner.",
     },
     {
-      t: "Point your camera",
-      d: "Use your phone camera or a QR reader app to scan.",
+      t: "Scan with your camera",
+      d: "Tap the button below to open your device camera and scan instantly.",
     },
     {
       t: "Get instant proof",
@@ -383,7 +399,7 @@ function ScanInstructions() {
       <p className="text-[0.72rem] uppercase tracking-[0.22em] mb-4" style={{ color: "var(--cosmic-violet)" }}>
         How to scan
       </p>
-      <div className="space-y-5">
+      <div className="space-y-5 mb-6">
         {steps.map((s, i) => (
           <div key={s.t} className="flex gap-4">
             <span
@@ -399,6 +415,24 @@ function ScanInstructions() {
           </div>
         ))}
       </div>
+      <button
+        onClick={onOpenCamera}
+        className="w-full py-3.5 rounded-2xl text-sm font-medium transition-all hover:scale-[1.02]"
+        style={{
+          background: "linear-gradient(135deg, var(--cosmic-violet), var(--electric-blue))",
+          color: "#fff",
+          boxShadow: "0 8px 24px rgba(138,92,255,0.3)",
+        }}
+        data-testid="scan-camera-btn"
+      >
+        <span className="flex items-center justify-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+          Open Camera
+        </span>
+      </button>
     </div>
   );
 }
