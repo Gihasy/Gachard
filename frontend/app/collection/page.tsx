@@ -18,7 +18,7 @@ type Card = {
   tokenId: number | null;
   rarity: number;
   artworkUrl?: string;
-  status?: string;
+  displayStatus?: string;
 };
 
 export default function Koleksi() {
@@ -182,7 +182,7 @@ export default function Koleksi() {
               templateId={card.templateId}
               rarity={card.rarity}
               artworkUrl={card.artworkUrl || ""}
-              status={card.status || "Digital"}
+              status={card.displayStatus || "Digital"}
               userId={user.user_id}
             />
           ))}

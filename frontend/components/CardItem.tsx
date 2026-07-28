@@ -44,6 +44,8 @@ export default function CardItem({
   const [formError, setFormError] = useState<string | null>(null);
 
   const canPrint = status === "Digital" && tokenId !== null;
+  const isInProgress = status === "In Progress";
+  const isReal = status === "Real";
 
   const isFormValid =
     form.recipientName.trim() &&
@@ -143,17 +145,21 @@ export default function CardItem({
             <span
               className="text-[0.62rem] uppercase tracking-widest px-2 py-0.5 rounded"
               style={{
-                background:
-                  (status === "Print Requested" || status === "Real")
-                    ? "rgba(255,107,186,0.15)"
-                    : "rgba(0,204,255,0.15)",
-                color:
-                  (status === "Print Requested" || status === "Real")
-                    ? "var(--aurora-pink)"
-                    : "var(--electric-blue)",
+                background: isReal
+                  ? "rgba(0,255,136,0.15)"
+                  : isInProgress
+                  ? "rgba(255,196,102,0.15)"
+                  : "rgba(0,204,255,0.15)",
+                color: isReal
+                  ? "#00ff88"
+                  : isInProgress
+                  ? "var(--aurora-gold)"
+                  : "var(--electric-blue)",
                 border: `1px solid ${
-                  (status === "Print Requested" || status === "Real")
-                    ? "rgba(255,107,186,0.35)"
+                  isReal
+                    ? "rgba(0,255,136,0.35)"
+                    : isInProgress
+                    ? "rgba(255,196,102,0.35)"
                     : "rgba(0,204,255,0.35)"
                 }`,
               }}
@@ -173,14 +179,22 @@ export default function CardItem({
                 {printing ? "…" : "Print"}
               </button>
             )}
-            {(status === "Print Requested" || status === "Real") && (
+            {isInProgress && (
               <div
-                className="text-center text-[0.65rem] text-white/40 py-1"
+                className="text-center text-[0.65rem] py-1"
+                style={{ color: "var(--aurora-gold)" }}
                 data-testid={`printed-notice-${tokenId}`}
               >
-                {status === "Real"
-                  ? "Physical card — redeem code on card"
-                  : "Print in progress"}
+                In Progress
+              </div>
+            )}
+            {isReal && (
+              <div
+                className="text-center text-[0.65rem] py-1"
+                style={{ color: "#00ff88" }}
+                data-testid={`printed-notice-${tokenId}`}
+              >
+                Physical card — redeem code on card
               </div>
             )}
           </div>

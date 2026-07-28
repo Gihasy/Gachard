@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { friendlyCardStatus } from "@/lib/status-map";
+
+/**
+ * Derive user-facing display status from fulfillmentStatus.
+ * fulfillmentStatus drives the label — not the on-chain card.status.
+ */
+function getDisplayStatus(fulfillmentStatus: string | null | undefined): string {
+  if (!fulfillmentStatus) return "Digital";
+  if (["Locked", "Processing", "Printed", "Shipping"].includes(fulfillmentStatus)) return "In Progress";
+  if (fulfillmentStatus === "Real") return "Real";
+  return "Digital";
+}
 
 export async function GET(request: Request) {
   try {
@@ -34,7 +44,7 @@ export async function GET(request: Request) {
         tokenId: card.tokenId,
         templateId: card.templateId,
         rarity: card.rarity,
-        status: friendlyCardStatus(card.status || "Digital"),
+        displayStatus: getDisplayStatus(card.fulfillmentStatus),
         artworkUrl: template?.artworkUrl || "",
         templateName: template?.name || card.templateId,
       };
