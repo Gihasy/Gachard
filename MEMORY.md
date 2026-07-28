@@ -21,7 +21,7 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 - Hosting: Vercel (frontend + backend via API routes) + MongoDB Atlas (database), semua free tier
 - **Arsitektur final**: Next.js API routes sebagai SATU-SATUNYA backend (lihat ADR-017). FastAPI sudah dihapus.
 - **Enkripsi**: Private key + redeem code dienkripsi AES-256-GCM (ADR-020)
-- Kontrak aktif: `0xe62bc7c470eaef3fcad1816b9ac6d63d585b5ee8`
+- Kontrak aktif: `0x0bb3dd543ff752bd15a50cbb3cba059bea6a278a` (28 Juli 2026 — tanpa vault transfer)
 - Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
 - **29 file** berubah di sesi terakhir (10 baru, 18 ubah, 1 hapus), commit `3fc40c7`
 - Deploy: https://www.gachard.com (Vercel Production)

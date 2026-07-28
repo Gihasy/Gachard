@@ -6,7 +6,7 @@ import Link from "next/link";
 import PageShell from "@/components/PageShell";
 
 type SessionUser = { user_id: string; username: string; email?: string };
-type Card = { rarity: number; status?: string };
+type Card = { rarity: number; status?: string; fulfillmentStatus?: string };
 
 export default function Profil() {
   const router = useRouter();
@@ -68,7 +68,9 @@ export default function Profil() {
     epic: cards.filter((c) => c.rarity === 2).length,
     rare: cards.filter((c) => c.rarity === 1).length,
     common: cards.filter((c) => c.rarity === 0).length,
-    vaulted: cards.filter((c) => c.status === "Print Requested" || c.status === "Real").length,
+    digital: cards.filter((c) => !c.fulfillmentStatus).length,
+    inProgress: cards.filter((c) => c.fulfillmentStatus && ["Locked", "Processing", "Printed", "Shipping"].includes(c.fulfillmentStatus)).length,
+    real: cards.filter((c) => c.fulfillmentStatus === "Real").length,
   };
 
   const handleLogout = () => {
@@ -232,11 +234,11 @@ export default function Profil() {
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                 <StatBlock label="Total Cards" value={stats.total} color="#FFFFFF" />
+                <StatBlock label="Digital" value={stats.digital} color="var(--electric-blue)" />
+                <StatBlock label="In Progress" value={stats.inProgress} color="var(--aurora-gold)" />
+                <StatBlock label="Real" value={stats.real} color="#00ff88" />
                 <StatBlock label="Legendary" value={stats.legendary} color="var(--aurora-gold)" />
                 <StatBlock label="Epic" value={stats.epic} color="var(--cosmic-violet)" />
-                <StatBlock label="Rare" value={stats.rare} color="var(--electric-blue)" />
-                <StatBlock label="Common" value={stats.common} color="#9CA3AF" />
-                <StatBlock label="Vaulted" value={stats.vaulted} color="var(--aurora-pink)" />
               </div>
             </div>
 

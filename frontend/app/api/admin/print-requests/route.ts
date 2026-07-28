@@ -12,6 +12,7 @@ export async function GET() {
     const codesCollection = await getCollection("redeem_codes");
     const usersCollection = await getCollection("users");
     const cardsCollection = await getCollection("cards");
+    const shippingCollection = await getCollection("shipping_addresses");
 
     // Get all print transactions
     const printTxs = await txCollection
@@ -46,6 +47,12 @@ export async function GET() {
         // Get card info
         const card = await cardsCollection.findOne({ tokenId: tx.tokenId });
 
+        // Get shipping address
+        const shipping = await shippingCollection.findOne({
+          userId: tx.userId,
+          tokenId: tx.tokenId,
+        });
+
         // Check if already accepted
         const accepted = await codesCollection.findOne({
           txId: tx._id.toString(),
@@ -59,6 +66,17 @@ export async function GET() {
           redeemCode,
           codeStatus,
           accepted: !!accepted,
+          fulfillmentStatus: card?.fulfillmentStatus || null,
+          shippingAddress: shipping
+            ? {
+                recipientName: shipping.recipientName,
+                addressLine1: shipping.addressLine1,
+                addressLine2: shipping.addressLine2 || "",
+                city: shipping.city,
+                postalCode: shipping.postalCode,
+                phone: shipping.phone,
+              }
+            : null,
           user: user
             ? {
                 email: user.email,
@@ -71,6 +89,7 @@ export async function GET() {
                 status: card.status,
                 rarity: card.rarity,
                 templateId: card.templateId,
+                fulfillmentStatus: card.fulfillmentStatus || null,
               }
             : null,
           txStatus: tx.status,

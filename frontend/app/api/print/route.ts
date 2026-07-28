@@ -51,6 +51,18 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     });
 
+    // Set fulfillmentStatus = "Locked" pada card
+    const cardsCollection = await getCollection("cards");
+    await cardsCollection.updateOne(
+      { tokenId },
+      {
+        $set: {
+          fulfillmentStatus: "Locked",
+          updatedAt: new Date().toISOString(),
+        },
+      }
+    );
+
     // Return immediately — frontend polls /api/transactions for confirmation (ADR-018)
     return NextResponse.json({
       status: friendlyTxStatus("pending"),

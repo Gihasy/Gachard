@@ -11,6 +11,7 @@ export async function GET() {
       templateId: c.templateId,
       rarity: c.rarity,
       status: c.status || "pending",
+      fulfillmentStatus: c.fulfillmentStatus || null,
       ownerAddress: c.ownerAddress,
       createdAt: c.createdAt,
     }));

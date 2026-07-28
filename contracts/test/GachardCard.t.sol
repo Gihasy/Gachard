@@ -168,15 +168,15 @@ contract GachardCardTest is Test {
         assertEq(card.storedHash(tokenId), hash);
     }
 
-    function test_requestPrint_transfers_to_vault() public {
+    function test_requestPrint_keeps_card_with_user() public {
         uint256 tokenId = card.mintCard(user1, 0);
         bytes32 hash = keccak256("testcode123");
 
         card.requestPrint(tokenId, hash, user1);
 
-        // Vault = address(this) karena kontrak menyimpan token-nya sendiri
-        assertEq(card.balanceOf(address(card), tokenId), 1);
-        assertEq(card.balanceOf(user1, tokenId), 0);
+        // Kartu TETAP di wallet user, tidak dipindah ke vault
+        assertEq(card.balanceOf(user1, tokenId), 1);
+        assertEq(card.balanceOf(address(card), tokenId), 0);
     }
 
     function test_requestPrint_updates_last_owner() public {

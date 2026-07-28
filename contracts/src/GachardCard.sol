@@ -76,6 +76,8 @@ contract GachardCard is ERC1155, Ownable {
     /**
      * @notice Kunci kartu untuk cetak fisik — generate hash baru, overwrite hash lama
      * @dev onlyOwner — backend yang memanggil, bukan wallet user (ADR-007)
+     * @dev Kartu TETAP di wallet user, hanya cardStatus berubah ke Vaulted.
+     *      Proteksi dari _update() override yang blokir transfer selama Vaulted.
      * @param tokenId ID kartu yang akan di-print
      * @param redeemHash Hash dari redeem code yang baru (backend generate, kirim hash-nya saja)
      * @param ownerAddress Alamat pemilik kartu saat ini (untuk update lastOwner)
@@ -83,20 +85,14 @@ contract GachardCard is ERC1155, Ownable {
     function requestPrint(uint256 tokenId, bytes32 redeemHash, address ownerAddress) external onlyOwner {
         require(cardStatus[tokenId] == CardStatus.Digital, "Card is not digital");
 
-        // Simpan owner sebelum transfer
+        // Simpan owner
         lastOwner[tokenId] = ownerAddress;
 
         // Overwrite hash lama (ADR-005)
         storedHash[tokenId] = redeemHash;
 
-        // Transfer ke vault DULU (selagi status masih Digital, supaya _update() tidak memblokir)
-        uint256[] memory ids = new uint256[](1);
-        ids[0] = tokenId;
-        uint256[] memory values = new uint256[](1);
-        values[0] = 1;
-        _update(ownerAddress, address(this), ids, values);
-
-        // Baru ubah status ke Vaulted SETELAH transfer berhasil
+        // Ubah status ke Vaulted — kartu TETAP di wallet user
+        // _update() override akan blokir transfer biasa selama Vaulted
         cardStatus[tokenId] = CardStatus.Vaulted;
 
         emit CardStatusChanged(tokenId, CardStatus.Digital, CardStatus.Vaulted);
@@ -113,18 +109,21 @@ contract GachardCard is ERC1155, Ownable {
         require(cardStatus[tokenId] == CardStatus.Vaulted, "Card is not vaulted");
         require(storedHash[tokenId] == redeemHash, "Invalid redeem code");
 
+        // Simpan owner lama untuk transfer
+        address previousOwner = lastOwner[tokenId];
+
         // Ubah status dulu, SEBELUM transfer — supaya _update() tidak memblokir
         cardStatus[tokenId] = CardStatus.Digital;
 
         // Update last owner
         lastOwner[tokenId] = recipientAddress;
 
-        // Transfer dari vault ke recipient — pakai _update dengan array
+        // Transfer dari owner lama ke recipient
         uint256[] memory ids = new uint256[](1);
         ids[0] = tokenId;
         uint256[] memory values = new uint256[](1);
         values[0] = 1;
-        _update(address(this), recipientAddress, ids, values);
+        _update(previousOwner, recipientAddress, ids, values);
 
         emit CardStatusChanged(tokenId, CardStatus.Vaulted, CardStatus.Digital);
     }
