@@ -1,8 +1,8 @@
-# Laporan Sesi 28 Juli 2026 — Security, Clean-Slate, Pack Redesign
+# Laporan Sesi 28 Juli 2026 — Security, Clean-Slate, Pack Redesign, Play & Trade, QR Scanner
 
 ## Ringkasan Eksekutif
 
-Sesi ini mencakup 4 area utama: (1) perbaikan keamanan dan reliabilitas, (2) investigasi root cause on-chain, (3) clean-slate database untuk Demo Day, dan (4) redesign pack system dengan opening animation. Total 4 commit, 19+ file berubah, 3x deploy ke production.
+Sesi ini mencakup 6 area utama: (1) perbaikan keamanan dan reliabilitas, (2) investigasi root cause on-chain, (3) clean-slate database untuk Demo Day, (4) redesign pack system dengan opening animation, (5) halaman Play & Trade menggantikan Marketplace, dan (6) QR camera scanner di halaman Scan. Total 7 commit, 25+ file berubah, 6x deploy ke production.
 
 ---
 
@@ -204,13 +204,100 @@ buildPackRarities(packSize: number = 8, guaranteedCount: number = 1)
 
 ---
 
-## 5. Deploy History
+## 5. Play & Trade Page (Menggantikan Marketplace)
+
+### 5.1 Perubahan Navigasi
+
+| Item | Sebelum | Sesudah |
+|------|---------|---------|
+| Navbar | Marketplace `/marketplace` | Play & Trade `/play-trade` |
+| Footer | Marketplace `/marketplace` | Play & Trade `/play-trade` |
+| Profile quick action | Marketplace | Play & Trade |
+| How It Works step 4 | "Trade cards in the open marketplace" | "Buy, sell, and auction your cards" |
+| Top Up description | "...settle marketplace trades" | "...settle trades" |
+
+### 5.2 Konten Halaman `/play-trade`
+
+**File:** `app/play-trade/page.tsx` (baru)
+
+Halaman terdiri dari 3 bagian:
+
+**Coming Soon Banner:**
+- Chip "Coming Soon"
+- Headline: "The arena is almost ready."
+- Deskripsi singkat tentang ekosistem yang sedang dibangun
+
+**Section 01 — Play:**
+- **Free to Play**: Play Cards gratis, bisa dimainkan siapa saja, di mana saja. Tidak perlu pembelian atau wallet.
+- **Competitive Edge**: Collect Card (Digital atau Real dari Card Pack) bisa di-level up dan di-evolve untuk competitive play.
+
+**Section 02 — Trade:**
+- **Buy & Sell**: Harga tetap, pembayaran dengan credit
+- **Auction**: Lelang untuk kartu langka
+- **Verified**: Setiap listing punya on-chain rarity signature
+
+### 5.3 File yang Berubah
+
+| File | Perubahan |
+|------|-----------|
+| `app/play-trade/page.tsx` | Baru: halaman Play & Trade |
+| `components/Navbar.tsx` | Marketplace → Play & Trade |
+| `components/Footer.tsx` | Marketplace → Play & Trade |
+| `app/profile/page.tsx` | Quick action Marketplace → Play & Trade |
+| `components/home/HomeHowItWorks.tsx` | Update deskripsi step 4 |
+| `app/topup/page.tsx` | Update deskripsi dan info item |
+
+---
+
+## 6. QR Camera Scanner di Halaman Scan
+
+### 6.1 Fitur Baru
+
+**File:** `components/QRScanner.tsx` (baru), `app/scan/page.tsx` (modifikasi)
+
+Sebelumnya halaman `/scan` hanya menampilkan instruksi untuk scan QR dengan kamera HP secara manual. Sekarang ada tombol "Open Camera" yang membuka QR scanner langsung di browser.
+
+### 6.2 Cara Kerja
+
+1. User klik "Open Camera" di halaman `/scan`
+2. Modal scanner muncul, meminta izin kamera
+3. Kamera belakang aktif, menampilkan viewfinder 250x250px
+4. QR code ter-scan otomatis (10 fps)
+5. Jika QR berisi URL dengan `?tokenId=X`, extract tokenId
+6. Jika QR berisi Card ID langsung, gunakan sebagai-is
+7. Redirect ke `/scan?tokenId=X` untuk menampilkan hasil
+
+### 6.3 Library
+
+- `html5-qrcode` — library QR scanning untuk browser
+- Menggunakan `getUserMedia` API untuk akses kamera
+- Support `facingMode: "environment"` untuk kamera belakang (mobile)
+
+### 6.4 Error Handling
+
+- Izin kamera ditolak → tampilkan pesan error + saran pakai manual input
+- Kamera tidak tersedia → tampilkan pesan error
+- QR tidak terdeteksi → scanner tetap aktif, menunggu
+
+### 6.5 File yang Berubah
+
+| File | Perubahan |
+|------|-----------|
+| `components/QRScanner.tsx` | Baru: komponen QR scanner modal |
+| `app/scan/page.tsx` | Tambah "Open Camera" button + integrasi scanner |
+| `package.json` | Tambah dependency `html5-qrcode` |
+
+---
+
+## 7. Deploy History
 
 | # | Commit | Message | Deploy |
 |---|--------|---------|--------|
 | 1 | `969d761` | Security fixes, clean-slate, pack system redesign | ✅ Production |
 | 2 | `05fcd49` | Remove Play Now, Explore Cards → Collect Cards → /packs, Top Up | ✅ Production |
 | 3 | `5a6a75e` | Collect Cards → Collect Now | ✅ Production |
+| 4 | `a7cfd59` | Marketplace → Play & Trade page with Play and Trade sections | ✅ Production |
+| 5 | `93e4d66` | Add QR camera scanner to /scan page | ✅ Production |
 
 ---
 
@@ -219,7 +306,7 @@ buildPackRarities(packSize: number = 8, guaranteedCount: number = 1)
 | Item | Status | Bukti |
 |------|--------|-------|
 | TypeScript | ✅ Pass | `npx tsc --noEmit` — no errors |
-| Build | ✅ Pass | `npm run build` — 30 pages generated |
+| Build | ✅ Pass | `npm run build` — 31 pages generated |
 | Auto-confirm removed | ✅ Verified | Code review — no polling loops |
 | Cache-Control headers | ✅ Verified | Code review — all 6 admin routes |
 | contractAddress field | ✅ Verified | Code review — all 3 API routes |
@@ -228,10 +315,13 @@ buildPackRarities(packSize: number = 8, guaranteedCount: number = 1)
 | New cards minted | ✅ Verified | 16 cards, all on-chain Digital |
 | Pack system | ✅ Verified | Build pass, deploy success |
 | Collect Now text | ✅ Verified | Deploy success |
+| Play & Trade page | ✅ Verified | Build pass, 31 pages, deploy success |
+| QR Scanner | ✅ Verified | `html5-qrcode` installed, build pass, deploy success |
+| Navbar/Footer links | ✅ Verified | All marketplace refs → play-trade |
 
 ---
 
-## 7. Dokumen yang Dihasilkan
+## 8. Dokumen yang Dihasilkan
 
 | File | Tipe | Keterangan |
 |------|------|------------|
@@ -242,7 +332,7 @@ buildPackRarities(packSize: number = 8, guaranteedCount: number = 1)
 
 ---
 
-## 8. Perubahan pada Dokumen Project
+## 9. Perubahan pada Dokumen Project
 
 | File | Perubahan |
 |------|-----------|
@@ -251,4 +341,18 @@ buildPackRarities(packSize: number = 8, guaranteedCount: number = 1)
 
 ---
 
-*Laporan ini disusun pada 28 Juli 2026, mencakup semua pembaharuan dari awal sesi hingga deploy terakhir.*
+## 10. Ringkasan Perubahan File
+
+| Kategori | File Baru | File Dimodifikasi | Total |
+|----------|-----------|-------------------|-------|
+| Keamanan | 0 | 9 | 9 |
+| Clean-slate | 0 | 0 (script temporer) | 0 |
+| Pack System | 0 | 7 | 7 |
+| Play & Trade | 1 | 5 | 6 |
+| QR Scanner | 1 | 1 + package.json | 3 |
+| Dokumentasi | 4 | 2 | 6 |
+| **Total** | **6** | **24** | **30** |
+
+---
+
+*Laporan ini disusun pada 28 Juli 2026, mencakup semua pembaharuan dari awal sesi hingga deploy terakhir (commit `93e4d66`).*
