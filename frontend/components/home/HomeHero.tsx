@@ -63,9 +63,9 @@ export default function HomeHero({
           </div>
 
           {/* Visual */}
-          <div className="relative h-[440px] sm:h-[520px] lg:h-[560px]" data-testid="hero-visual">
+          <div className="relative h-[300px] sm:h-[520px] lg:h-[560px]" data-testid="hero-visual">
             <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full pulse-glow"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] sm:w-[420px] sm:h-[420px] rounded-full pulse-glow"
               aria-hidden
               style={{
                 background:
@@ -74,7 +74,7 @@ export default function HomeHero({
               }}
             />
             <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] h-[260px] sm:w-[380px] sm:h-[380px] rounded-full"
               aria-hidden
               style={{
                 border: "1px dashed rgba(184,172,255,0.25)",
@@ -83,7 +83,7 @@ export default function HomeHero({
             />
             <style>{`@keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }`}</style>
 
-            <div className="absolute inset-0">
+            <div className="absolute inset-0 origin-center scale-[0.58] min-[480px]:scale-75 sm:scale-100">
               {HERO_CARDS.map((c, i) => (
                 <div
                   key={c.name}
