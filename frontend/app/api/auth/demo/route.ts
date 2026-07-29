@@ -1,31 +1,34 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { getOrCreateUser } from "@/lib/auth";
 import { getCreditBalance, addCredits } from "@/lib/credits";
 
 /**
- * Development / testing demo login.
+ * Generate a demo / sandbox account.
  *
- * Creates (or reuses) a real custodial-wallet user in MongoDB and grants
- * starter credits so every gated page + function can be exercised WITHOUT
- * configuring Google OAuth. Sets up the same session the app already uses
- * (client stores `user` in localStorage + `gachard_uid` cookie).
+ * Creates a fresh custodial-wallet user in MongoDB and grants starter credits
+ * so anyone can try every gated page + function WITHOUT Google OAuth. Each
+ * click spins up an isolated account (unique id) so concurrent testers never
+ * collide. Establishes the app's standard session on the client
+ * (localStorage `user` + `gachard_uid` cookie).
  *
- * Gated by the ENABLE_DEMO_LOGIN env flag so it can never be reached in a
- * real production build unless explicitly turned on.
+ * Gated by the ENABLE_DEMO_LOGIN env flag so it can be turned off in a real
+ * production build.
  */
-const DEMO_GOOGLE_USER = {
-  sub: "demo-user",
-  email: "demo@gachard.io",
-  name: "CosmicPlayer",
-};
-
 export async function POST() {
   if (process.env.ENABLE_DEMO_LOGIN !== "true") {
-    return NextResponse.json({ error: "Demo login is disabled" }, { status: 403 });
+    return NextResponse.json({ error: "Demo accounts are disabled" }, { status: 403 });
   }
 
   try {
-    const user = await getOrCreateUser(DEMO_GOOGLE_USER);
+    const suffix = randomBytes(4).toString("hex");
+    const demoUser = {
+      sub: `demo-${suffix}`,
+      email: `demo-${suffix}@gachard.io`,
+      name: `Demo ${suffix}`,
+    };
+
+    const user = await getOrCreateUser(demoUser);
     const userId = user._id.toString();
 
     // Grant a one-time starter balance so packs / topup / redeem can be tested.
@@ -40,7 +43,7 @@ export async function POST() {
       email: user.email,
     });
   } catch (error) {
-    console.error("Demo login error:", error);
-    return NextResponse.json({ error: "Demo login failed" }, { status: 500 });
+    console.error("Demo account error:", error);
+    return NextResponse.json({ error: "Could not generate demo account" }, { status: 500 });
   }
 }

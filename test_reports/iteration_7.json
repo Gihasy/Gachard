@@ -1,0 +1,23 @@
+{
+  "summary": "Frontend-only verification of Gachard 'Generate Demo Account' flow + infra reverse-proxy fix. All 7 requested behaviors pass. Login page renders Google OAuth section (with the expected 'Google OAuth not configured' notice — intentionally NOT removed) plus a primary GENERATE DEMO ACCOUNT button (data-testid=login-demo-btn). Clicking it hits POST /api/auth/demo (200), sets gachard_uid cookie, and redirects to home. Each POST /api/auth/demo returns a unique username (verified demo-8e5e9f7c vs demo-4b1a567d in same session). /profile loads authenticated as @demo-2ebd3453 with Credit Balance 10,000, Collection Stats and data-testid=profile-rarity-bar visible. /packs shows 'Your Balance: 10,000 Credit'; clicking pack-buy-standard produces expected graceful error 'Mint failed, credit refunded' (POST /api/mint 500 due to blockchain env not configured — treated as EXPECTED per spec), app does not crash and balance stays at 10,000. Infra: /api/health = 200, /api/admin/users (Basic auth) = 200 via public URL (previous 502 resolved). /play-trade demo pack-open flow works end-to-end: open-pack-cta -> card-reveal-0..4 visible -> reveal-view-collection and pack-demo-reset present. /admin (Basic auth) returns 200 and admin users API returns data via preview URL.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_7.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "POST /api/mint returns HTTP 500 on blockchain absence; consider returning 503/422 with structured JSON error instead of 500 so that server logs stay clean and clients can distinguish infra-not-configured from real errors. UI-level 'Mint failed, credit refunded' handling is already graceful.",
+    "Login form does not surface a client-side loading state on the demo button during POST /api/auth/demo (button remains active). Low priority — request completes within ~1s in this env."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (infra + demo endpoint, mint 500 is expected)", "frontend": "100%"},
+  "test_credentials": "Demo account auto-generated via login-demo-btn. Admin: admin / gachard123 (Basic auth).",
+  "seed_data_creation": "3 demo users auto-created during test (demo-2ebd3453, demo-8e5e9f7c, demo-4b1a567d).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Reverse-proxy FastAPI on 8001 -> Next 3000 is working; all /api/* reachable through preview host. ENABLE_DEMO_LOGIN=true. Google OAuth intentionally not configured; the 'Google OAuth not configured' info box on /login is expected. /api/mint returns 500 by design when blockchain env vars are missing — UI handles it via 'Mint failed, credit refunded' and full credit refund; do not flag as bug. Cookie name for auth is gachard_uid.",
+  "rca of the issue": "N/A — no issues reproduced. Previous iteration_6 failures were caused by ingress /api/* -> dead 8001; now fixed by FastAPI reverse-proxy in backend/server.py."
+}
