@@ -290,7 +290,7 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
                   data-testid={`card-reveal-${i}`}
                 >
                   <div
-                    className={`shine-sweep relative rounded-2xl overflow-hidden ${AURA[rarity]}`}
+                    className={`relative rounded-2xl overflow-hidden ${rarity >= 2 ? "shine-sweep " + AURA[rarity] : ""}`}
                     style={{ aspectRatio: "5/7", border: `2px solid ${RARITY_COLORS[rarity]}` }}
                   >
                     {card.template?.artworkUrl ? (
@@ -308,14 +308,6 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
                         <span className="text-4xl" style={{ color: RARITY_COLORS[rarity] }}>◆</span>
                       </div>
                     )}
-                    <div className="absolute bottom-0 inset-x-0 p-2.5 text-center bg-gradient-to-t from-black/85 via-black/40 to-transparent">
-                      <p className="text-xs font-medium text-white truncate">
-                        {card.template?.name ?? "Unknown"}
-                      </p>
-                      <span className={`tag tag-${RARITY_LABELS[rarity].toLowerCase()} mt-1 inline-block text-[0.6rem]`}>
-                        {RARITY_LABELS[rarity]}
-                      </span>
-                    </div>
                   </div>
                 </div>
               );
