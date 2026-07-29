@@ -114,6 +114,7 @@ body {
 }
 
 /* ─── BUTTONS ───────────────────────────────────────── */
+@layer components {
 .btn-primary {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -180,6 +181,7 @@ body {
   transition: background 200ms ease;
 }
 .btn-secondary:hover { background: rgba(255,255,255,0.08); }
+}
 
 /* ─── GLASS SURFACES ────────────────────────────────── */
 .glass {
