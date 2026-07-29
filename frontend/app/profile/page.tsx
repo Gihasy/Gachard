@@ -234,6 +234,38 @@ export default function Profil() {
               <StatBlock label="Legendary" value={stats.legendary} color="var(--aurora-gold)" />
               <StatBlock label="Epic" value={stats.epic} color="var(--cosmic-violet)" />
             </div>
+
+            {/* Rarity distribution bar */}
+            <div className="mt-5">
+              <p className="text-[0.6rem] uppercase tracking-widest text-white/40 mb-2">Rarity Mix</p>
+              <div className="flex h-2.5 rounded-full overflow-hidden bg-white/[0.05]" data-testid="profile-rarity-bar">
+                {stats.total > 0 ? (
+                  [
+                    { v: stats.common, c: "var(--rarity-common)" },
+                    { v: stats.rare, c: "var(--rarity-rare)" },
+                    { v: stats.epic, c: "var(--rarity-epic)" },
+                    { v: stats.legendary, c: "var(--rarity-legendary)" },
+                  ].map((seg, i) => (
+                    <div key={i} style={{ width: `${(seg.v / stats.total) * 100}%`, background: seg.c }} />
+                  ))
+                ) : (
+                  <div className="w-full" style={{ background: "rgba(255,255,255,0.05)" }} />
+                )}
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
+                {[
+                  { label: "Common", v: stats.common, c: "var(--rarity-common)" },
+                  { label: "Rare", v: stats.rare, c: "var(--rarity-rare)" },
+                  { label: "Epic", v: stats.epic, c: "var(--rarity-epic)" },
+                  { label: "Legendary", v: stats.legendary, c: "var(--rarity-legendary)" },
+                ].map((seg) => (
+                  <span key={seg.label} className="inline-flex items-center gap-1.5 text-[0.65rem] text-white/55">
+                    <span className="w-2 h-2 rounded-full" style={{ background: seg.c }} />
+                    {seg.label} · {seg.v}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Redeem Card */}

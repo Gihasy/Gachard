@@ -19,6 +19,7 @@ export default function PacksPage() {
   const [balance, setBalance] = useState<number | null>(null);
   const [reveal, setReveal] = useState<RevealResult | null>(null);
   const [loadingType, setLoadingType] = useState<"standard" | "booster" | null>(null);
+  const [lastPack, setLastPack] = useState<"standard" | "booster">("standard");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -50,6 +51,7 @@ export default function PacksPage() {
         return;
       }
       setLoadingType(packType);
+      setLastPack(packType);
       setReveal(null);
       try {
         const res = await fetch("/api/mint", {
@@ -127,8 +129,34 @@ export default function PacksPage() {
         />
       </div>
 
+      {/* Drop rates */}
+      <div className="mt-12 max-w-3xl mx-auto">
+        <p className="text-center text-[0.72rem] uppercase tracking-[0.22em] mb-4" style={{ color: "var(--cosmic-violet)" }}>
+          Drop Rates
+        </p>
+        <div className="glass p-5 flex flex-wrap items-center justify-center gap-3">
+          {[
+            { label: "Common", color: "var(--rarity-common)", pct: "60%" },
+            { label: "Rare", color: "var(--rarity-rare)", pct: "27%" },
+            { label: "Epic", color: "var(--rarity-epic)", pct: "10%" },
+            { label: "Legendary", color: "var(--rarity-legendary)", pct: "3%" },
+          ].map((r) => (
+            <div key={r.label} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: r.color, boxShadow: `0 0 10px ${r.color}` }} />
+              <span className="text-xs text-white/70">{r.label}</span>
+              <span className="text-xs font-display" style={{ color: r.color }}>{r.pct}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Reveal */}
-      {reveal && <PackReveal result={reveal} />}
+      {reveal && (
+        <PackReveal
+          result={reveal}
+          packLabel={lastPack === "booster" ? "Booster Pack" : "Standard Pack"}
+        />
+      )}
     </PageShell>
   );
 }

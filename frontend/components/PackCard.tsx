@@ -5,20 +5,28 @@ interface PackCardProps {
   price: number;
   cardCount: number;
   guaranteedRare: number;
-  onBuy: () => Promise<void>;
+  onBuy: () => Promise<void> | void;
   loading?: boolean;
 }
 
 const PACK_STYLES = {
   standard: {
-    gradient: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+    label: "Standard Pack",
+    tagline: "The essential starter drop",
     accent: "var(--electric-blue)",
-    icon: "🎴",
+    accentRgb: "0,204,255",
+    surface: "linear-gradient(160deg, #101a33 0%, #0f2447 55%, #0b1730 100%)",
+    stackA: "linear-gradient(135deg, #123, #0f3460)",
+    stackB: "linear-gradient(135deg, #1a1a2e, #16213e)",
   },
   booster: {
-    gradient: "linear-gradient(135deg, #2d1b69 0%, #11001c 50%, #4a0e4e 100%)",
+    label: "Booster Pack",
+    tagline: "Higher odds. Bigger legends.",
     accent: "var(--aurora-gold)",
-    icon: "🚀",
+    accentRgb: "255,196,102",
+    surface: "linear-gradient(160deg, #221345 0%, #2d1b69 50%, #1a0b33 100%)",
+    stackA: "linear-gradient(135deg, #3a1d5c, #4a0e4e)",
+    stackB: "linear-gradient(135deg, #2d1b69, #11001c)",
   },
 } as const;
 
@@ -30,53 +38,92 @@ export default function PackCard({
   onBuy,
   loading = false,
 }: PackCardProps) {
-  const style = PACK_STYLES[type];
+  const s = PACK_STYLES[type];
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl p-8 text-center transition-all hover:scale-[1.02] hover:shadow-2xl"
+      className="glass glass-hover relative overflow-hidden p-8 text-center"
       style={{
-        background: style.gradient,
-        border: `1px solid ${style.accent}33`,
-        boxShadow: `0 8px 32px ${style.accent}22`,
+        background: s.surface,
+        borderColor: `rgba(${s.accentRgb},0.28)`,
+        boxShadow: `0 20px 60px -24px rgba(${s.accentRgb},0.4)`,
       }}
+      data-testid={`pack-card-${type}`}
     >
-      {/* Decorative glow */}
+      {/* corner glow */}
       <div
-        className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-20"
-        style={{ background: style.accent }}
+        className="absolute -top-24 -right-24 w-56 h-56 rounded-full blur-3xl opacity-25 pointer-events-none"
+        style={{ background: s.accent }}
       />
+      <span className="grid-lines opacity-30" />
 
       <div className="relative z-10">
-        <div className="text-6xl mb-4">{style.icon}</div>
-        <h3
-          className="font-display text-2xl font-bold mb-2 uppercase"
-          style={{ color: style.accent }}
-        >
-          {type === "standard" ? "Standard Pack" : "Booster Pack"}
+        {/* Pack visual — fanned card stack */}
+        <div className="relative mx-auto mb-6" style={{ height: 132, width: 150 }}>
+          <div
+            className="absolute left-1/2 top-2 -translate-x-1/2 rounded-xl"
+            style={{
+              width: 78, height: 108, background: s.stackB,
+              border: "1px solid rgba(255,255,255,0.08)",
+              transform: "rotate(-14deg) translateX(-28px)",
+              boxShadow: "0 12px 30px -12px rgba(0,0,0,0.7)",
+            }}
+          />
+          <div
+            className="absolute left-1/2 top-2 -translate-x-1/2 rounded-xl"
+            style={{
+              width: 78, height: 108, background: s.stackA,
+              border: "1px solid rgba(255,255,255,0.08)",
+              transform: "rotate(14deg) translateX(28px)",
+              boxShadow: "0 12px 30px -12px rgba(0,0,0,0.7)",
+            }}
+          />
+          <div
+            className="absolute left-1/2 top-0 -translate-x-1/2 rounded-xl flex items-center justify-center floaty"
+            style={{
+              width: 82, height: 116,
+              background: `linear-gradient(160deg, rgba(${s.accentRgb},0.25), rgba(${s.accentRgb},0.05))`,
+              border: `1.5px solid rgba(${s.accentRgb},0.5)`,
+              boxShadow: `0 16px 40px -14px rgba(${s.accentRgb},0.7)`,
+            }}
+          >
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke={s.accent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 15 8.5 22 9.3 17 14 18.3 21 12 17.5 5.7 21 7 14 2 9.3 9 8.5 12 2" />
+            </svg>
+          </div>
+        </div>
+
+        <h3 className="font-display text-2xl uppercase mb-1" style={{ color: s.accent }}>
+          {s.label}
         </h3>
-        <p className="text-sm text-white/60 mb-1">
-          {cardCount} random cards
-        </p>
-        <p className="text-xs text-white/40 mb-6">
-          Guaranteed {guaranteedRare} Rare+
-        </p>
-        <p
-          className="text-4xl font-bold mb-6"
-          style={{ color: "var(--aurora-gold)" }}
-        >
-          {price} Credit
-        </p>
+        <p className="text-xs text-white/50 mb-6">{s.tagline}</p>
+
+        {/* stat row */}
+        <div className="flex items-stretch justify-center gap-3 mb-6">
+          <div className="flex-1 rounded-xl py-3 bg-white/[0.04] border border-white/[0.07]">
+            <p className="font-display text-xl text-white">{cardCount}</p>
+            <p className="text-[0.6rem] uppercase tracking-widest text-white/45 mt-0.5">Cards</p>
+          </div>
+          <div className="flex-1 rounded-xl py-3 bg-white/[0.04] border border-white/[0.07]">
+            <p className="font-display text-xl" style={{ color: s.accent }}>{guaranteedRare}</p>
+            <p className="text-[0.6rem] uppercase tracking-widest text-white/45 mt-0.5">Rare+</p>
+          </div>
+        </div>
+
+        <div className="flex items-baseline justify-center gap-1.5 mb-6">
+          <span className="font-display text-4xl" style={{ color: "var(--aurora-gold)" }}>
+            {price.toLocaleString()}
+          </span>
+          <span className="text-sm text-white/50 uppercase tracking-widest">Credit</span>
+        </div>
+
         <button
           onClick={onBuy}
           disabled={loading}
-          className="w-full py-3 px-6 rounded-2xl text-sm font-medium transition-all disabled:opacity-50"
-          style={{
-            background: `linear-gradient(135deg, ${style.accent}, ${style.accent}88)`,
-            color: "#fff",
-          }}
+          className={`w-full ${type === "booster" ? "btn-gold" : "btn-primary"} disabled:opacity-50`}
+          data-testid={`pack-buy-${type}`}
         >
-          {loading ? "Opening..." : "Buy & Open"}
+          {loading ? "Opening…" : "Buy & Open"}
         </button>
       </div>
     </div>

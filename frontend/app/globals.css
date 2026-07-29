@@ -293,3 +293,142 @@ body {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(184,172,255,0.4), transparent);
 }
+
+/* ─── PACK OPENING — DRAMATIC REVEAL ────────────────── */
+
+/* Pack idle float + breathing glow */
+@keyframes packBreathe {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%     { transform: translateY(-10px) scale(1.015); }
+}
+.pack-breathe { animation: packBreathe 3.2s ease-in-out infinite; will-change: transform; }
+
+/* Pack pre-burst shake (intensifying) */
+@keyframes packShake {
+  0%   { transform: translate(0,0) rotate(0deg); }
+  20%  { transform: translate(-3px,2px) rotate(-1.5deg); }
+  40%  { transform: translate(4px,-2px) rotate(1.5deg); }
+  60%  { transform: translate(-5px,3px) rotate(-2deg) scale(1.02); }
+  80%  { transform: translate(6px,-3px) rotate(2.5deg) scale(1.03); }
+  100% { transform: translate(0,0) rotate(0deg) scale(1.06); }
+}
+.pack-shake { animation: packShake 900ms cubic-bezier(.36,.07,.19,.97) forwards; }
+
+/* Rotating light rays behind pack */
+@keyframes raysSpin { to { transform: rotate(360deg); } }
+.pack-rays {
+  position: absolute; inset: -60%;
+  background:
+    conic-gradient(from 0deg,
+      transparent 0deg, rgba(255,196,102,0.16) 12deg, transparent 24deg,
+      transparent 60deg, rgba(184,172,255,0.16) 72deg, transparent 84deg,
+      transparent 120deg, rgba(0,204,255,0.16) 132deg, transparent 144deg,
+      transparent 180deg, rgba(255,107,186,0.16) 192deg, transparent 204deg,
+      transparent 240deg, rgba(255,196,102,0.16) 252deg, transparent 264deg,
+      transparent 300deg, rgba(184,172,255,0.16) 312deg, transparent 324deg,
+      transparent 360deg);
+  animation: raysSpin 18s linear infinite;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+/* White flash on burst */
+@keyframes burstFlash {
+  0%   { opacity: 0; transform: scale(0.2); }
+  30%  { opacity: 0.95; }
+  100% { opacity: 0; transform: scale(2.6); }
+}
+.burst-flash {
+  position: absolute; left: 50%; top: 50%;
+  width: 320px; height: 320px; margin: -160px 0 0 -160px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #ffffff 0%, rgba(184,172,255,0.7) 35%, transparent 70%);
+  animation: burstFlash 700ms ease-out forwards;
+  pointer-events: none;
+}
+
+/* Expanding ring shockwave */
+@keyframes burstRing {
+  0%   { opacity: 0.9; transform: scale(0.1); }
+  100% { opacity: 0; transform: scale(3.2); }
+}
+.burst-ring {
+  position: absolute; left: 50%; top: 50%;
+  width: 260px; height: 260px; margin: -130px 0 0 -130px;
+  border-radius: 999px;
+  border: 3px solid rgba(255,196,102,0.85);
+  box-shadow: 0 0 40px rgba(255,196,102,0.6);
+  animation: burstRing 900ms cubic-bezier(.16,.8,.3,1) forwards;
+  pointer-events: none;
+}
+.burst-ring.delay-1 { animation-delay: 120ms; border-color: rgba(184,172,255,0.8); box-shadow: 0 0 40px rgba(184,172,255,0.5); }
+
+/* Particle sparkles flying out */
+@keyframes sparkFly {
+  0%   { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2); }
+}
+.spark {
+  position: absolute; left: 50%; top: 50%;
+  width: 8px; height: 8px; border-radius: 999px;
+  animation: sparkFly var(--dur,1000ms) cubic-bezier(.16,.7,.3,1) forwards;
+  pointer-events: none;
+}
+
+/* Card entrance: pop + rise into place */
+@keyframes cardPop {
+  0%   { opacity: 0; transform: translateY(40px) scale(0.6) rotateY(180deg); }
+  55%  { opacity: 1; transform: translateY(-8px) scale(1.06) rotateY(0deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotateY(0deg); }
+}
+.card-pop { animation: cardPop 650ms cubic-bezier(.2,.9,.3,1) both; transform-style: preserve-3d; }
+
+/* Holo shine sweep across revealed card */
+@keyframes shineSweep {
+  0%   { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  25%  { opacity: 0.9; }
+  60%,100% { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+}
+.shine-sweep::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+  animation: shineSweep 1200ms ease-out 250ms both;
+  pointer-events: none;
+}
+
+/* Legendary aura pulse ring behind card */
+@keyframes auraPulse {
+  0%,100% { opacity: 0.5; transform: scale(1); }
+  50%     { opacity: 0.95; transform: scale(1.06); }
+}
+.aura-legendary {
+  box-shadow: 0 0 0 1px rgba(255,196,102,0.6), 0 0 30px rgba(255,196,102,0.55), 0 0 70px rgba(255,196,102,0.4);
+  animation: auraPulse 2.4s ease-in-out infinite;
+}
+.aura-epic {
+  box-shadow: 0 0 0 1px rgba(184,172,255,0.55), 0 0 26px rgba(184,172,255,0.5), 0 0 60px rgba(184,172,255,0.32);
+  animation: auraPulse 2.6s ease-in-out infinite;
+}
+.aura-rare {
+  box-shadow: 0 0 0 1px rgba(0,204,255,0.5), 0 0 22px rgba(0,204,255,0.42), 0 0 50px rgba(0,204,255,0.28);
+  animation: auraPulse 2.8s ease-in-out infinite;
+}
+
+/* Rarity label text pop */
+@keyframes labelPop {
+  0% { opacity: 0; transform: translateY(8px) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.label-pop { animation: labelPop 400ms ease-out 400ms both; }
+
+/* Pack idle sheen (on the closed pack surface) */
+@keyframes packSheen {
+  0% { transform: translateX(-150%) rotate(8deg); }
+  100% { transform: translateX(250%) rotate(8deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pack-breathe, .pack-rays, .card-pop, .shine-sweep::after,
+  .aura-legendary, .aura-epic, .aura-rare, .label-pop { animation: none !important; }
+  .card-pop { opacity: 1 !important; transform: none !important; }
+}
