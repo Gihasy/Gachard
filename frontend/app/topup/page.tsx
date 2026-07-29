@@ -225,7 +225,7 @@ export default function TopUp() {
             <ul className="space-y-3">
               <InfoItem
                 title="Buy Card Packs"
-                desc="Open packs to discover rare cards and build your on-chain collection."
+                desc="Open packs to discover rare cards and build your collection."
               />
               <InfoItem
                 title="Request a physical print"
