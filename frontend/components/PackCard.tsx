@@ -14,14 +14,12 @@ interface PackCardProps {
 const PACK_STYLES = {
   standard: {
     label: "Standard Pack",
-    tagline: "The essential starter drop",
     accent: "var(--electric-blue)",
     accentRgb: "0,204,255",
     surface: "linear-gradient(160deg, #101a33 0%, #0f2447 55%, #0b1730 100%)",
   },
   booster: {
     label: "Booster Pack",
-    tagline: "Higher odds. Bigger legends.",
     accent: "var(--aurora-gold)",
     accentRgb: "255,196,102",
     surface: "linear-gradient(160deg, #221345 0%, #2d1b69 50%, #1a0b33 100%)",
@@ -40,7 +38,7 @@ export default function PackCard({
 
   return (
     <div
-      className="glass glass-hover relative overflow-hidden p-8 text-center"
+      className="glass glass-hover relative overflow-hidden flex flex-col"
       style={{
         background: s.surface,
         borderColor: `rgba(${s.accentRgb},0.28)`,
@@ -55,43 +53,44 @@ export default function PackCard({
       />
       <span className="grid-lines opacity-30" />
 
-      <div className="relative z-10">
-        {/* Pack visual */}
-        <div className="relative mx-auto mb-6" style={{ height: 160, width: 130 }}>
-          <Image
-            src={`/packs/${type}.png`}
-            alt={s.label}
-            fill
-            className="object-contain drop-shadow-lg"
-            sizes="130px"
-            data-testid={`pack-image-${type}`}
-          />
-        </div>
+      {/* Full pack image */}
+      <div className="relative w-full aspect-[3/4]" data-testid={`pack-image-${type}`}>
+        <Image
+          src={`/packs/${type}.png`}
+          alt={s.label}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 384px"
+        />
+      </div>
 
-        <h3 className="font-display text-2xl uppercase mb-1" style={{ color: s.accent }}>
+      {/* Info section */}
+      <div className="relative z-10 p-6 pt-5 text-center">
+        <h3 className="font-display text-xl uppercase mb-3" style={{ color: s.accent }}>
           {s.label}
         </h3>
-        <p className="text-xs text-white/50 mb-6">{s.tagline}</p>
 
         {/* stat row */}
-        <div className="flex items-stretch justify-center gap-3 mb-6">
-          <div className="flex-1 rounded-xl py-3 bg-white/[0.04] border border-white/[0.07]">
-            <p className="font-display text-xl text-white">{cardCount}</p>
-            <p className="text-[0.6rem] uppercase tracking-widest text-white/45 mt-0.5">Cards</p>
+        <div className="flex items-stretch justify-center gap-3 mb-4">
+          <div className="flex-1 rounded-xl py-2.5 bg-white/[0.04] border border-white/[0.07]">
+            <p className="font-display text-lg text-white">{cardCount}</p>
+            <p className="text-[0.6rem] uppercase tracking-widest text-white/45">Cards</p>
           </div>
-          <div className="flex-1 rounded-xl py-3 bg-white/[0.04] border border-white/[0.07]">
-            <p className="font-display text-xl" style={{ color: s.accent }}>{guaranteedRare}</p>
-            <p className="text-[0.6rem] uppercase tracking-widest text-white/45 mt-0.5">Rare+</p>
+          <div className="flex-1 rounded-xl py-2.5 bg-white/[0.04] border border-white/[0.07]">
+            <p className="font-display text-lg" style={{ color: s.accent }}>{guaranteedRare}</p>
+            <p className="text-[0.6rem] uppercase tracking-widest text-white/45">Rare+</p>
           </div>
         </div>
 
-        <div className="flex items-baseline justify-center gap-1.5 mb-6">
-          <span className="font-display text-4xl" style={{ color: "var(--aurora-gold)" }}>
+        {/* Price */}
+        <div className="flex items-baseline justify-center gap-1.5 mb-4">
+          <span className="font-display text-3xl" style={{ color: "var(--aurora-gold)" }}>
             {price.toLocaleString()}
           </span>
-          <span className="text-sm text-white/50 uppercase tracking-widest">Credit</span>
+          <span className="text-xs text-white/50 uppercase tracking-widest">Credit</span>
         </div>
 
+        {/* Buy button */}
         <button
           onClick={onBuy}
           disabled={loading}
