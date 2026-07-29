@@ -7,7 +7,6 @@ export default function PlayTradePage() {
   return (
     <PageShell
       testId="play-trade-page"
-      eyebrow="Play & Trade"
       title={
         <>
           <span className="text-gradient-aurora">Play & Trade</span>
