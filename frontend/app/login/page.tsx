@@ -198,7 +198,7 @@ function LoginInner() {
             className="btn-primary w-full !justify-center disabled:opacity-50"
             data-testid="login-demo-btn"
           >
-            {loading ? "Generating…" : "Generate Demo Account"}
+            {loading ? "Preparing…" : "Demo Account"}
           </button>
         ) : (
           <Link href="/" className="btn-ghost w-full !justify-center" data-testid="login-explore-guest">
@@ -208,7 +208,7 @@ function LoginInner() {
 
         {demoEnabled && (
           <p className="mt-3 text-center text-[0.68rem] text-white/45">
-            Instantly spins up a sandbox account with starter credits — perfect for testing.
+            Spins up a real sandbox account (on-chain wallet + starter credits) — perfect for testing.
           </p>
         )}
 
