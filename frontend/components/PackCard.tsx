@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface PackCardProps {
   type: "standard" | "booster";
   price: number;
@@ -16,8 +18,6 @@ const PACK_STYLES = {
     accent: "var(--electric-blue)",
     accentRgb: "0,204,255",
     surface: "linear-gradient(160deg, #101a33 0%, #0f2447 55%, #0b1730 100%)",
-    stackA: "linear-gradient(135deg, #123, #0f3460)",
-    stackB: "linear-gradient(135deg, #1a1a2e, #16213e)",
   },
   booster: {
     label: "Booster Pack",
@@ -25,8 +25,6 @@ const PACK_STYLES = {
     accent: "var(--aurora-gold)",
     accentRgb: "255,196,102",
     surface: "linear-gradient(160deg, #221345 0%, #2d1b69 50%, #1a0b33 100%)",
-    stackA: "linear-gradient(135deg, #3a1d5c, #4a0e4e)",
-    stackB: "linear-gradient(135deg, #2d1b69, #11001c)",
   },
 } as const;
 
@@ -58,39 +56,16 @@ export default function PackCard({
       <span className="grid-lines opacity-30" />
 
       <div className="relative z-10">
-        {/* Pack visual — fanned card stack */}
-        <div className="relative mx-auto mb-6" style={{ height: 132, width: 150 }}>
-          <div
-            className="absolute left-1/2 top-2 -translate-x-1/2 rounded-xl"
-            style={{
-              width: 78, height: 108, background: s.stackB,
-              border: "1px solid rgba(255,255,255,0.08)",
-              transform: "rotate(-14deg) translateX(-28px)",
-              boxShadow: "0 12px 30px -12px rgba(0,0,0,0.7)",
-            }}
+        {/* Pack visual */}
+        <div className="relative mx-auto mb-6" style={{ height: 160, width: 130 }}>
+          <Image
+            src={`/packs/${type}.png`}
+            alt={s.label}
+            fill
+            className="object-contain drop-shadow-lg"
+            sizes="130px"
+            data-testid={`pack-image-${type}`}
           />
-          <div
-            className="absolute left-1/2 top-2 -translate-x-1/2 rounded-xl"
-            style={{
-              width: 78, height: 108, background: s.stackA,
-              border: "1px solid rgba(255,255,255,0.08)",
-              transform: "rotate(14deg) translateX(28px)",
-              boxShadow: "0 12px 30px -12px rgba(0,0,0,0.7)",
-            }}
-          />
-          <div
-            className="absolute left-1/2 top-0 -translate-x-1/2 rounded-xl flex items-center justify-center floaty"
-            style={{
-              width: 82, height: 116,
-              background: `linear-gradient(160deg, rgba(${s.accentRgb},0.25), rgba(${s.accentRgb},0.05))`,
-              border: `1.5px solid rgba(${s.accentRgb},0.5)`,
-              boxShadow: `0 16px 40px -14px rgba(${s.accentRgb},0.7)`,
-            }}
-          >
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke={s.accent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="12 2 15 8.5 22 9.3 17 14 18.3 21 12 17.5 5.7 21 7 14 2 9.3 9 8.5 12 2" />
-            </svg>
-          </div>
         </div>
 
         <h3 className="font-display text-2xl uppercase mb-1" style={{ color: s.accent }}>
