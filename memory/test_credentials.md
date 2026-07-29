@@ -1,10 +1,12 @@
 # Test Credentials
 
-## Demo / test-mode login (bypasses Google OAuth, Google login still available)
-- On `/login`, the "Explore as guest" action is replaced by a **"Generate Demo Account"** button (data-testid=`login-demo-btn`) whenever `ENABLE_DEMO_LOGIN=true`. Google OAuth is NOT removed — it stays as the primary sign-in when `GOOGLE_CLIENT_ID` is set.
-- Backend: `POST /api/auth/demo` (gated by `ENABLE_DEMO_LOGIN=true`). Each click creates a UNIQUE sandbox user (`demo-<hex>@gachard.io`) with a custodial wallet + 10,000 starter credits, and sets the standard session (localStorage `user` + `gachard_uid` cookie). Unlocks /profile, /collection, /topup, /packs.
-- Requires `ENCRYPTION_SECRET_KEY` (≥32 chars) in env for user creation. Disable in prod by unsetting `ENABLE_DEMO_LOGIN`.
-- On-chain functions (real pack mint on /packs, redeem, print) need blockchain env (`BSC_TESTNET_RPC`, `CONTRACT_ADDRESS`, `ADMIN_PRIVATE_KEY`, `ADMIN_WALLET_ADDRESS`). Absent here, so "Buy & Open" deducts then auto-refunds credits and shows an error. The client-side pack-opening DEMO on /play-trade works fully without any blockchain.
+## Demo Account (real BNB Testnet account, Google login still available)
+- On `/login`, when `ENABLE_DEMO_LOGIN=true`, the guest action becomes a **"Demo Account"** button (data-testid=`login-demo-btn`). Google OAuth stays as primary sign-in when `GOOGLE_CLIENT_ID` is set.
+- `POST /api/auth/demo` creates a REAL custodial-wallet user (BNB Testnet), assigns a sequential handle **@DemoN** (via `counters` collection), grants 10,000 starter credits, and sets the session (localStorage `user` + `gachard_uid` cookie).
+- Real on-chain minting works: "Buy & Open" on /packs calls `mintBatch` on the active contract via the admin wallet (verified mined on BNB Testnet, iteration_8).
+- Wallet address & blockchain data are hidden from the user (not on /profile or /packs); visible ONLY in the Admin console (Users → walletAddress, Transactions → txHash to testnet.bscscan.com).
+- Blockchain config in `frontend/.env` (gitignored): `BSC_TESTNET_RPC` (public), `CONTRACT_ADDRESS=0x0bb3dd543ff752bd15a50cbb3cba059bea6a278a` (active), `ADMIN_WALLET_ADDRESS=0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`, `ADMIN_PRIVATE_KEY` (SECRET — testnet only, do NOT commit), `ENCRYPTION_SECRET_KEY`. For Vercel, set these same env vars in project settings.
+- After a mint (status pending/Processing), `POST /api/admin/confirm-all` (admin) polls receipts and populates on-chain tokenIds.
 
 ## Preview ingress reverse proxy (backend/server.py)
 - This is a Next.js-only app; APIs live on port 3000. The platform ingress forwards `/api/*` to port 8001. `backend/server.py` is a FastAPI reverse proxy on 8001 that forwards ALL requests to `http://localhost:3000`, so `/api/*` (incl. `/api/auth/demo`, `/api/admin/*`) works from the public preview URL. NOTE: on Vercel this is not needed — Next.js serves API routes natively.
