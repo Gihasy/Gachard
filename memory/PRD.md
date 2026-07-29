@@ -72,3 +72,14 @@ Gachard is a next-generation collectible card ecosystem that bridges the physica
 - Supervisor `frontend` program runs `yarn dev` (updated from `yarn start`) so hot reload works in the preview.
 - Auth guard is enforced at the edge via `frontend/proxy.ts` (Next.js 16 "proxy" convention — formerly `middleware.ts`). Cookie name: `gachard_uid`.
 - Service worker registration is gated to production (`NODE_ENV === 'production'`) so it doesn't cache dev-mode error pages.
+
+## Brand alignment pass — /packs, /play-trade, /profile, /admin (2026-07-29)
+- **globals.css**: added a dramatic pack-opening animation kit (pack-breathe, pack-shake, pack-rays conic light rays, burst-flash, burst-ring shockwaves, spark particles, card-pop entrance, shine-sweep holo, aura-rare/epic/legendary glow rings) + prefers-reduced-motion guards.
+- **PackReveal.tsx** (rewritten): cinematic 4-phase reveal — ready (sealed glowing pack + rotating rays) → bursting (shake + white flash + shockwave rings + 26 particle sparks) → revealing (staggered card-pop + shine sweep, rarity aura) → done (best-pull banner for Epic/Legendary + View in Collection CTA).
+- **PackCard.tsx** (rewritten): removed emoji, now a glass card with a fanned card-stack visual, star emblem, stat blocks (cards / rare+), brand buttons (btn-primary / btn-gold).
+- **PackDemo.tsx** (new): fully client-side interactive pack-opening demo (5 mock cards, guaranteed 1 Rare+, weighted rarity) with a "Try Another Pack" re-roll — embedded on /play-trade "Feel the Pull" section so users can experience the reveal without a backend.
+- **/packs**: passes pack label to reveal + added a Drop Rates legend.
+- **/profile**: added a Rarity Mix distribution bar (Common/Rare/Epic/Legendary) with legend.
+- **/admin** (rewritten): now uses PageShell (CONTROL ROOM / ADMIN CONSOLE), four clickable summary cards, pill-style tabs with icons, a Refresh button, and glass tables with styled headers/hover/pills — replacing the old plain console.
+- **Testing**: iteration_5 — 100% frontend pass (all 5 spec bullets, all data-testids resolve, animation reaches done state). Homepage untouched.
+- **Known pre-existing infra issue**: `/api/admin/*` returns 502 via the preview/prod ingress (Authorization Basic header stripped); works on localhost. Not caused by this pass. Fix = migrate admin auth to token/session cookie.
