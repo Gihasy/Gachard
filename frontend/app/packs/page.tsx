@@ -24,16 +24,14 @@ export default function PacksPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem("user");
-    if (!stored) {
-      window.location.replace("/login");
-      return;
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored));
+      } catch {
+        window.localStorage.removeItem("user");
+      }
     }
-    try {
-      setUser(JSON.parse(stored));
-      setReady(true);
-    } catch {
-      window.location.replace("/login");
-    }
+    setReady(true);
   }, []);
 
   useEffect(() => {
@@ -47,7 +45,7 @@ export default function PacksPage() {
   const handleBuy = useCallback(
     async (packType: "standard" | "booster") => {
       if (!user) {
-        router.push("/login");
+        router.push("/login?next=/packs");
         return;
       }
       setLoadingType(packType);
@@ -79,7 +77,7 @@ export default function PacksPage() {
     [user, router]
   );
 
-  if (!ready || !user) return null;
+  if (!ready) return null;
 
   return (
     <PageShell
