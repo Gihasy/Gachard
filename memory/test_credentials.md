@@ -1,10 +1,13 @@
 # Test Credentials
 
-## Demo / test-mode login (NEW — bypasses Google OAuth)
-- On `/login`, click **"Continue as Demo (test mode)"** (data-testid=`login-demo-btn`).
-- Backend: `POST /api/auth/demo` (gated by env `ENABLE_DEMO_LOGIN=true`). Creates/reuses a real MongoDB user (custodial wallet) `demo@gachard.io`, grants 10,000 starter credits (once), and sets the standard session (localStorage `user` + `gachard_uid` cookie). This unlocks /profile, /collection, /topup, /packs.
-- To disable in production: set `ENABLE_DEMO_LOGIN` to anything other than `true` (or remove it). Requires `ENCRYPTION_SECRET_KEY` (≥32 chars) in env for user creation.
-- NOTE: On-chain functions (real pack mint on /packs, redeem, print) require blockchain env vars (`BSC_TESTNET_RPC`, `CONTRACT_ADDRESS`, `ADMIN_PRIVATE_KEY`, `ADMIN_WALLET_ADDRESS`). Without them, "Buy & Open" deducts then auto-refunds credits and shows an error — the client-side pack-opening DEMO on /play-trade works fully without any blockchain.
+## Demo / test-mode login (bypasses Google OAuth, Google login still available)
+- On `/login`, the "Explore as guest" action is replaced by a **"Generate Demo Account"** button (data-testid=`login-demo-btn`) whenever `ENABLE_DEMO_LOGIN=true`. Google OAuth is NOT removed — it stays as the primary sign-in when `GOOGLE_CLIENT_ID` is set.
+- Backend: `POST /api/auth/demo` (gated by `ENABLE_DEMO_LOGIN=true`). Each click creates a UNIQUE sandbox user (`demo-<hex>@gachard.io`) with a custodial wallet + 10,000 starter credits, and sets the standard session (localStorage `user` + `gachard_uid` cookie). Unlocks /profile, /collection, /topup, /packs.
+- Requires `ENCRYPTION_SECRET_KEY` (≥32 chars) in env for user creation. Disable in prod by unsetting `ENABLE_DEMO_LOGIN`.
+- On-chain functions (real pack mint on /packs, redeem, print) need blockchain env (`BSC_TESTNET_RPC`, `CONTRACT_ADDRESS`, `ADMIN_PRIVATE_KEY`, `ADMIN_WALLET_ADDRESS`). Absent here, so "Buy & Open" deducts then auto-refunds credits and shows an error. The client-side pack-opening DEMO on /play-trade works fully without any blockchain.
+
+## Preview ingress reverse proxy (backend/server.py)
+- This is a Next.js-only app; APIs live on port 3000. The platform ingress forwards `/api/*` to port 8001. `backend/server.py` is a FastAPI reverse proxy on 8001 that forwards ALL requests to `http://localhost:3000`, so `/api/*` (incl. `/api/auth/demo`, `/api/admin/*`) works from the public preview URL. NOTE: on Vercel this is not needed — Next.js serves API routes natively.
 
 ## Mock user (used by all frontend automated tests)
 
