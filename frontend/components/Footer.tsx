@@ -7,10 +7,11 @@ const columns = [
   {
     title: "Product",
     links: [
-      { label: "Cards", href: "/collection" },
-      { label: "Play", href: "/" },
-      { label: "Play & Trade", href: "/play-trade" },
+      { label: "Collect", href: "/collection" },
+      { label: "Play", href: "/play-trade" },
+      { label: "Trade", href: "/play-trade" },
       { label: "Scan", href: "/scan" },
+      { label: "Redeem", href: "/profile" },
     ],
   },
   {
