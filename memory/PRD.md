@@ -83,3 +83,8 @@ Gachard is a next-generation collectible card ecosystem that bridges the physica
 - **/admin** (rewritten): now uses PageShell (CONTROL ROOM / ADMIN CONSOLE), four clickable summary cards, pill-style tabs with icons, a Refresh button, and glass tables with styled headers/hover/pills — replacing the old plain console.
 - **Testing**: iteration_5 — 100% frontend pass (all 5 spec bullets, all data-testids resolve, animation reaches done state). Homepage untouched.
 - **Known pre-existing infra issue**: `/api/admin/*` returns 502 via the preview/prod ingress (Authorization Basic header stripped); works on localhost. Not caused by this pass. Fix = migrate admin auth to token/session cookie.
+
+## Bug follow-up: "Demo Account cannot access profile" (2026-07-29)
+- NOT reproducible in preview (iteration_9 & iteration_10 both green): Demo Account -> /profile works fully (cookie + localStorage set, @DemoN, 10,000 credits, APIs 200, no console errors).
+- Hardening applied to app/profile/page.tsx: logged-out gate now redirects to `/login?next=/profile` (was `/login`) and clears corrupt localStorage before redirect, so re-login returns to profile instead of home.
+- Likely real-world cause for the report: testing on the Vercel deploy with UN-PUSHED old code (no Demo Account feature yet), or a stale localStorage session from a DB reset. Resolution: Save to GitHub -> redeploy Vercel with env vars, then use Demo Account fresh.

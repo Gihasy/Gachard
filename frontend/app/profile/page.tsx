@@ -41,14 +41,15 @@ export default function Profil() {
     if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem("user");
     if (!stored) {
-      window.location.replace("/login");
+      window.location.replace("/login?next=/profile");
       return;
     }
     try {
       setUser(JSON.parse(stored));
       setReady(true);
     } catch {
-      window.location.replace("/login");
+      window.localStorage.removeItem("user");
+      window.location.replace("/login?next=/profile");
     }
   }, []);
 

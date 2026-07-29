@@ -474,7 +474,7 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
                 ) : <p className="text-xs text-white/40">No token ID</p>}
               </div>
 
-              <div className="ml-auto min-w-[210px] text-right">
+              <div className="w-full sm:ml-auto sm:w-auto sm:min-w-[210px] text-left sm:text-right">
                 <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-2">Fulfillment</p>
                 {fs && (
                   <span className="text-[0.68rem] uppercase tracking-widest px-3 py-1 rounded-full inline-block mb-3"

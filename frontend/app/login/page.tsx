@@ -26,6 +26,31 @@ function LoginInner() {
   const [error, setError] = useState<string | null>(null);
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
+  const [demoEnabled, setDemoEnabled] = useState(false);
+
+  useEffect(() => {
+    const flag = document.querySelector('meta[name="demo-login-enabled"]')?.getAttribute("content");
+    setDemoEnabled(flag === "true");
+  }, []);
+
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/demo", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Could not generate demo account");
+      }
+      const result = await res.json();
+      localStorage.setItem("user", JSON.stringify(result));
+      document.cookie = `gachard_uid=${encodeURIComponent(result.user_id)}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+      window.location.href = next;
+    } catch (err) {
+      setError((err as Error).message || "Could not generate demo account");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (initialized.current) return;
@@ -165,9 +190,27 @@ function LoginInner() {
           <div className="flex-1 h-px bg-white/10" />
         </div>
 
-        <Link href="/" className="btn-ghost w-full !justify-center" data-testid="login-explore-guest">
-          Explore as guest
-        </Link>
+        {/* Demo account — lets anyone try the full app without Google */}
+        {demoEnabled ? (
+          <button
+            onClick={handleDemoLogin}
+            disabled={loading}
+            className="btn-primary w-full !justify-center disabled:opacity-50"
+            data-testid="login-demo-btn"
+          >
+            {loading ? "Preparing…" : "Demo Account"}
+          </button>
+        ) : (
+          <Link href="/" className="btn-ghost w-full !justify-center" data-testid="login-explore-guest">
+            Explore as guest
+          </Link>
+        )}
+
+        {demoEnabled && (
+          <p className="mt-3 text-center text-[0.68rem] text-white/45">
+            Spins up a real sandbox account (on-chain wallet + starter credits) — perfect for testing.
+          </p>
+        )}
 
         <p className="mt-6 text-center text-[0.7rem] text-white/45 leading-relaxed">
           By continuing you agree to Gachard&apos;s{" "}

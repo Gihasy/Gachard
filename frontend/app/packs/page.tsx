@@ -84,7 +84,6 @@ export default function PacksPage() {
   return (
     <PageShell
       testId="packs-page"
-      eyebrow="Packs"
       title={
         <>
           <span className="text-gradient-aurora">Choose Your Pack</span>
