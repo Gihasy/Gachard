@@ -152,6 +152,7 @@ export default function PacksPage() {
         <PackReveal
           result={reveal}
           packLabel={lastPack === "booster" ? "Booster Pack" : "Standard Pack"}
+          packType={lastPack}
         />
       )}
     </PageShell>
