@@ -17,6 +17,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Verify card ownership — user hanya bisa print kartu milik sendiri
+    const cardsCollection = await getCollection("cards");
+    const card = await cardsCollection.findOne({ tokenId });
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
+    if (card.ownerAddress !== user.walletAddress) {
+      return NextResponse.json({ error: "Card does not belong to this user" }, { status: 403 });
+    }
+
     // Generate redeem code (plaintext TIDAK pernah ke frontend atau on-chain)
     const code = generateRedeemCode();
     const hash = hashRedeemCode(code);
@@ -51,7 +61,6 @@ export async function POST(request: Request) {
     });
 
     // Set card status ke Vaulted dan fulfillmentStatus ke "Locked"
-    const cardsCollection = await getCollection("cards");
     await cardsCollection.updateOne(
       { tokenId },
       {
