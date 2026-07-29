@@ -187,3 +187,17 @@ Semua diverifikasi oleh testing agent (laporan: `/app/test_reports/iteration_5.j
 ---
 
 *Dokumen dibuat otomatis sebagai ringkasan sesi. Silakan review, lalu gunakan "Save to GitHub" untuk mem-publish perubahan.*
+
+---
+
+## 11. Perbaikan Tampilan Mobile (iPhone 12 Pro 390px & Galaxy S8+ 360px)
+
+Audit responsif di dua ukuran diverifikasi testing agent (`iteration_11` & `iteration_12`).
+
+- **Home hero (utama)** — kartu kipas (fanned cards) dulu tumpang tindih/keluar layar di bawah ~560px. Diperbaiki: cluster kartu di-scale responsif (`scale-[0.58] min-[480px]:scale-75 sm:scale-100`), glow & ring ikut diperkecil, tinggi visual 300px di mobile. Kini tidak tumpang tindih dengan judul & tidak ada scroll horizontal.
+- **Bug HIGH: tombol LOGIN nutup hamburger di 360px** — kelas `.btn-primary/.btn-ghost/.btn-gold` didefinisikan di luar `@layer components`, sehingga utility Tailwind `hidden` kalah cascade → pil LOGIN tetap tampil di mobile & mendorong tombol hamburger keluar layar (menu mobile tak bisa dibuka di Galaxy S8+ saat belum login). Diperbaiki: base tombol dibungkus `@layer components` → `hidden sm:inline-flex` berfungsi. Diverifikasi: pil LOGIN tersembunyi, hamburger reachable, `scrollWidth === 360`, dan menu mobile terbuka.
+- **Footer subscribe** — input email diberi `min-w-0` agar pil tidak melewati tepi layar (~4px) di 360px.
+- **Admin — Print Requests** — blok aksi Fulfillment kini `w-full` (kiri) di mobile, tidak lagi mengambang ke kanan.
+- Regresi desktop (≥640px) aman: pil LOGIN muncul lagi, nav desktop utuh.
+
+Hasil akhir: **12/12 kombinasi halaman×viewport lolos**.
