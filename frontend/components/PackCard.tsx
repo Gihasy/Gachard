@@ -16,13 +16,13 @@ const PACK_STYLES = {
     label: "Standard Pack",
     accent: "var(--electric-blue)",
     accentRgb: "0,204,255",
-    surface: "linear-gradient(160deg, #101a33 0%, #0f2447 55%, #0b1730 100%)",
+    gradient: "linear-gradient(135deg, rgba(0,204,255,0.08), rgba(0,204,255,0.02))",
   },
   booster: {
     label: "Booster Pack",
     accent: "var(--aurora-gold)",
     accentRgb: "255,196,102",
-    surface: "linear-gradient(160deg, #221345 0%, #2d1b69 50%, #1a0b33 100%)",
+    gradient: "linear-gradient(135deg, rgba(255,196,102,0.08), rgba(255,196,102,0.02))",
   },
 } as const;
 
@@ -38,67 +38,63 @@ export default function PackCard({
 
   return (
     <div
-      className="glass glass-hover relative overflow-hidden flex flex-col"
+      className="group relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
       style={{
-        background: s.surface,
-        borderColor: `rgba(${s.accentRgb},0.28)`,
-        boxShadow: `0 20px 60px -24px rgba(${s.accentRgb},0.4)`,
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.06)",
       }}
       data-testid={`pack-card-${type}`}
     >
-      {/* corner glow */}
+      {/* Hover glow */}
       <div
-        className="absolute -top-24 -right-24 w-56 h-56 rounded-full blur-3xl opacity-25 pointer-events-none"
-        style={{ background: s.accent }}
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{ background: s.gradient }}
       />
-      <span className="grid-lines opacity-30" />
 
-      {/* Full pack image */}
-      <div className="relative w-full aspect-[3/4]" data-testid={`pack-image-${type}`}>
+      {/* Image */}
+      <div className="relative w-full aspect-[3/4] bg-black/20" data-testid={`pack-image-${type}`}>
         <Image
           src={`/packs/${type}.png`}
           alt={s.label}
           fill
           className="object-cover"
-          sizes="(max-width: 768px) 100vw, 384px"
+          sizes="(max-width: 640px) 100vw, 320px"
         />
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
       </div>
 
-      {/* Info section */}
-      <div className="relative z-10 p-6 pt-5 text-center">
-        <h3 className="font-display text-xl uppercase mb-3" style={{ color: s.accent }}>
-          {s.label}
-        </h3>
-
-        {/* stat row */}
-        <div className="flex items-stretch justify-center gap-3 mb-4">
-          <div className="flex-1 rounded-xl py-2.5 bg-white/[0.04] border border-white/[0.07]">
-            <p className="font-display text-lg text-white">{cardCount}</p>
-            <p className="text-[0.6rem] uppercase tracking-widest text-white/45">Cards</p>
-          </div>
-          <div className="flex-1 rounded-xl py-2.5 bg-white/[0.04] border border-white/[0.07]">
-            <p className="font-display text-lg" style={{ color: s.accent }}>{guaranteedRare}</p>
-            <p className="text-[0.6rem] uppercase tracking-widest text-white/45">Rare+</p>
+      {/* Content */}
+      <div className="relative z-10 p-5 flex flex-col gap-4">
+        {/* Title + Stats */}
+        <div className="flex items-center justify-between">
+          <h3 className="font-display text-base uppercase tracking-wider" style={{ color: s.accent }}>
+            {s.label}
+          </h3>
+          <div className="flex items-center gap-3 text-xs text-white/50">
+            <span>{cardCount} cards</span>
+            <span className="w-px h-3 bg-white/10" />
+            <span style={{ color: s.accent }}>{guaranteedRare} rare+</span>
           </div>
         </div>
 
-        {/* Price */}
-        <div className="flex items-baseline justify-center gap-1.5 mb-4">
-          <span className="font-display text-3xl" style={{ color: "var(--aurora-gold)" }}>
-            {price.toLocaleString()}
-          </span>
-          <span className="text-xs text-white/50 uppercase tracking-widest">Credit</span>
+        {/* Price + Button */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-baseline gap-1">
+            <span className="font-display text-2xl" style={{ color: "var(--aurora-gold)" }}>
+              {price.toLocaleString()}
+            </span>
+            <span className="text-[0.65rem] text-white/40 uppercase tracking-widest">cr</span>
+          </div>
+          <button
+            onClick={onBuy}
+            disabled={loading}
+            className={`flex-1 ${type === "booster" ? "btn-gold" : "btn-primary"} !py-2.5 !text-sm disabled:opacity-50`}
+            data-testid={`pack-buy-${type}`}
+          >
+            {loading ? "Opening…" : "Buy & Open"}
+          </button>
         </div>
-
-        {/* Buy button */}
-        <button
-          onClick={onBuy}
-          disabled={loading}
-          className={`w-full ${type === "booster" ? "btn-gold" : "btn-primary"} disabled:opacity-50`}
-          data-testid={`pack-buy-${type}`}
-        >
-          {loading ? "Opening…" : "Buy & Open"}
-        </button>
       </div>
     </div>
   );
