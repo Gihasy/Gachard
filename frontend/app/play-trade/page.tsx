@@ -44,28 +44,10 @@ export default function PlayTradePage() {
       {/* PLAY Section */}
       <section className="mb-20" data-testid="play-section">
         <div className="flex items-center gap-4 mb-10">
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center"
-            style={{
-              background: "linear-gradient(135deg, var(--electric-blue), var(--cosmic-violet))",
-              boxShadow: "0 8px 24px rgba(0,204,255,0.3)",
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-          </div>
-          <div>
-            <p
-              className="text-[0.72rem] uppercase tracking-[0.22em]"
-              style={{ color: "var(--electric-blue)" }}
-            >
-              Section 01
-            </p>
-            <h3 className="font-display uppercase text-2xl sm:text-3xl text-white">
-              Play
-            </h3>
-          </div>
+          <SectionIcon variant="play" />
+          <h3 className="font-display uppercase text-2xl sm:text-3xl text-white">
+            Play
+          </h3>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
@@ -156,29 +138,10 @@ export default function PlayTradePage() {
       {/* TRADE Section */}
       <section data-testid="trade-section">
         <div className="flex items-center gap-4 mb-10">
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center"
-            style={{
-              background: "linear-gradient(135deg, var(--aurora-gold), var(--aurora-pink))",
-              boxShadow: "0 8px 24px rgba(255,196,102,0.3)",
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M7 16V4M7 4L3 8M7 4L11 8" />
-              <path d="M17 8V20M17 20L21 16M17 20L13 16" />
-            </svg>
-          </div>
-          <div>
-            <p
-              className="text-[0.72rem] uppercase tracking-[0.22em]"
-              style={{ color: "var(--aurora-gold)" }}
-            >
-              Section 02
-            </p>
-            <h3 className="font-display uppercase text-2xl sm:text-3xl text-white">
-              Trade
-            </h3>
-          </div>
+          <SectionIcon variant="trade" />
+          <h3 className="font-display uppercase text-2xl sm:text-3xl text-white">
+            Trade
+          </h3>
         </div>
 
         <div
@@ -240,6 +203,66 @@ export default function PlayTradePage() {
         </div>
       </section>
     </PageShell>
+  );
+}
+
+function SectionIcon({ variant }: { variant: "play" | "trade" }) {
+  const cfg =
+    variant === "play"
+      ? {
+          grad: "linear-gradient(150deg, var(--electric-blue), var(--cosmic-violet))",
+          glow: "rgba(0,204,255,0.55)",
+          ring: "rgba(0,204,255,0.5)",
+          icon: (
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="6 3 20 12 6 21 6 3" fill="rgba(255,255,255,0.15)" />
+            </svg>
+          ),
+        }
+      : {
+          grad: "linear-gradient(150deg, var(--aurora-gold), var(--aurora-pink))",
+          glow: "rgba(255,196,102,0.55)",
+          ring: "rgba(255,196,102,0.5)",
+          icon: (
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 17V5M7 5L3.5 8.5M7 5l3.5 3.5" />
+              <path d="M17 7v12m0 0l3.5-3.5M17 19l-3.5-3.5" />
+            </svg>
+          ),
+        };
+
+  return (
+    <div className="relative shrink-0 floaty" aria-hidden>
+      {/* soft outer glow */}
+      <div
+        className="absolute -inset-2 rounded-[1.4rem] blur-lg opacity-70"
+        style={{ background: cfg.grad }}
+      />
+      {/* gradient ring */}
+      <div
+        className="relative w-16 h-16 rounded-2xl p-[1.5px]"
+        style={{ background: `linear-gradient(150deg, ${cfg.ring}, rgba(255,255,255,0.15))` }}
+      >
+        <div
+          className="relative w-full h-full rounded-2xl flex items-center justify-center overflow-hidden"
+          style={{
+            background: cfg.grad,
+            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.35), 0 14px 34px -10px ${cfg.glow}`,
+          }}
+        >
+          {/* animated diagonal sheen */}
+          <span
+            className="absolute inset-y-0 w-1/2 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
+              animation: "packSheen 3.2s ease-in-out infinite",
+            }}
+          />
+          <span className="relative z-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)]">{cfg.icon}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
