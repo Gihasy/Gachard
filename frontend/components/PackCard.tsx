@@ -52,7 +52,7 @@ export default function PackCard({
       />
 
       {/* Image */}
-      <div className="relative w-full aspect-[3/4] bg-black/20" data-testid={`pack-image-${type}`}>
+      <div className="relative w-full aspect-[4/5] bg-black/20" data-testid={`pack-image-${type}`}>
         <Image
           src={`/packs/${type}.png`}
           alt={s.label}
