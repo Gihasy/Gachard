@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
-import PackDemo from "@/components/PackDemo";
 
 export default function PlayTradePage() {
   return (
@@ -41,51 +40,6 @@ export default function PlayTradePage() {
           </p>
         </div>
       </div>
-
-      {/* Interactive Pack Opening Demo */}
-      <section className="mb-20" data-testid="pack-demo-section">
-        <div className="flex items-center gap-4 mb-8">
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center"
-            style={{
-              background: "linear-gradient(135deg, var(--aurora-gold), var(--aurora-pink))",
-              boxShadow: "0 8px 24px rgba(255,196,102,0.3)",
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="12 2 15 8.5 22 9.3 17 14 18.3 21 12 17.5 5.7 21 7 14 2 9.3 9 8.5 12 2" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-[0.72rem] uppercase tracking-[0.22em]" style={{ color: "var(--aurora-gold)" }}>
-              Live Preview
-            </p>
-            <h3 className="font-display uppercase text-2xl sm:text-3xl text-white">
-              Feel the Pull
-            </h3>
-          </div>
-        </div>
-
-        <div
-          className="glass relative overflow-hidden"
-          style={{ borderColor: "rgba(184,172,255,0.22)" }}
-        >
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse at 30% 0%, rgba(255,196,102,0.12), transparent 55%), radial-gradient(ellipse at 80% 100%, rgba(184,172,255,0.12), transparent 55%)",
-            }}
-          />
-          <div className="relative z-10 pt-8">
-            <p className="text-center text-white/60 max-w-xl mx-auto px-6">
-              Every pack is a moment. Open one below and experience the
-              cinematic reveal — sealed pack, burst, and rarity shine.
-            </p>
-            <PackDemo />
-          </div>
-        </div>
-      </section>
 
       {/* PLAY Section */}
       <section className="mb-20" data-testid="play-section">
