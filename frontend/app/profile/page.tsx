@@ -278,10 +278,10 @@ export default function Profil() {
               className="text-[0.72rem] uppercase tracking-[0.22em] mb-3"
               style={{ color: "#00ff88" }}
             >
-              Redeem a Physical Card
+              Redeem a Real Card
             </p>
             <p className="text-xs text-white/50 mb-4">
-              Got a physical Gachard card? Enter the Card ID and redeem code to claim it.
+              Got a real Gachard card? Enter the Card ID and redeem code to claim it as Digital — so your ownership is recorded on-chain and you fully own it.
             </p>
             <div className="space-y-3">
               <div>
