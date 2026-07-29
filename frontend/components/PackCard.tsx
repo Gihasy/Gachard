@@ -89,7 +89,7 @@ export default function PackCard({
           <button
             onClick={onBuy}
             disabled={loading}
-            className={`flex-1 ${type === "booster" ? "btn-gold" : "btn-primary"} !py-2.5 !text-sm disabled:opacity-50`}
+            className="flex-1 btn-gold !py-3 !text-sm disabled:opacity-50"
             data-testid={`pack-buy-${type}`}
           >
             {loading ? "Opening…" : "Buy & Open"}
