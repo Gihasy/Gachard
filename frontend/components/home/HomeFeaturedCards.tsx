@@ -34,16 +34,26 @@ export default function HomeFeaturedCards() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {FEATURED_CARDS.map((c) => (
-          <div key={c.id} className="glass glass-hover group overflow-hidden" data-testid={`featured-card-${c.name.toLowerCase()}`}>
-            <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
+          <div
+            key={c.id}
+            className="group relative rounded-2xl overflow-hidden transition-shadow duration-500 hover:shadow-[0_0_30px_-5px_var(--glow)]"
+            style={{ "--glow": c.color } as React.CSSProperties}
+            data-testid={`featured-card-${c.name.toLowerCase()}`}
+          >
+            <div className="relative w-full" style={{ aspectRatio: "5/7", background: "rgba(255,255,255,0.02)" }}>
               <Image
                 src={c.img}
                 alt={c.name}
                 fill
                 sizes="(max-width: 1024px) 45vw, 25vw"
-                className="object-contain transition-transform duration-700 group-hover:scale-105"
+                className="object-contain"
               />
             </div>
+            {/* Glow border on hover */}
+            <div
+              className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+              style={{ border: `1.5px solid ${c.color}`, boxShadow: `inset 0 0 20px rgba(255,255,255,0.05)` }}
+            />
           </div>
         ))}
       </div>
