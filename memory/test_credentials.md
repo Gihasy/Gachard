@@ -1,5 +1,11 @@
 # Test Credentials
 
+## Demo / test-mode login (NEW — bypasses Google OAuth)
+- On `/login`, click **"Continue as Demo (test mode)"** (data-testid=`login-demo-btn`).
+- Backend: `POST /api/auth/demo` (gated by env `ENABLE_DEMO_LOGIN=true`). Creates/reuses a real MongoDB user (custodial wallet) `demo@gachard.io`, grants 10,000 starter credits (once), and sets the standard session (localStorage `user` + `gachard_uid` cookie). This unlocks /profile, /collection, /topup, /packs.
+- To disable in production: set `ENABLE_DEMO_LOGIN` to anything other than `true` (or remove it). Requires `ENCRYPTION_SECRET_KEY` (≥32 chars) in env for user creation.
+- NOTE: On-chain functions (real pack mint on /packs, redeem, print) require blockchain env vars (`BSC_TESTNET_RPC`, `CONTRACT_ADDRESS`, `ADMIN_PRIVATE_KEY`, `ADMIN_WALLET_ADDRESS`). Without them, "Buy & Open" deducts then auto-refunds credits and shows an error — the client-side pack-opening DEMO on /play-trade works fully without any blockchain.
+
 ## Mock user (used by all frontend automated tests)
 
 - **localStorage.user** (set on the client):

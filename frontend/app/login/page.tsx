@@ -26,6 +26,31 @@ function LoginInner() {
   const [error, setError] = useState<string | null>(null);
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
+  const [demoEnabled, setDemoEnabled] = useState(false);
+
+  useEffect(() => {
+    const flag = document.querySelector('meta[name="demo-login-enabled"]')?.getAttribute("content");
+    setDemoEnabled(flag === "true");
+  }, []);
+
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/demo", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Demo login failed");
+      }
+      const result = await res.json();
+      localStorage.setItem("user", JSON.stringify(result));
+      document.cookie = `gachard_uid=${encodeURIComponent(result.user_id)}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+      window.location.href = next;
+    } catch (err) {
+      setError((err as Error).message || "Demo login failed");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (initialized.current) return;
@@ -34,7 +59,10 @@ function LoginInner() {
     const clientId = document.querySelector('meta[name="google-client-id"]')?.getAttribute("content");
 
     if (!clientId || clientId === "your-google-client-id") {
-      setError("Google OAuth not configured. Please set GOOGLE_CLIENT_ID.");
+      const demoFlag = document.querySelector('meta[name="demo-login-enabled"]')?.getAttribute("content");
+      if (demoFlag !== "true") {
+        setError("Google OAuth not configured. Please set GOOGLE_CLIENT_ID.");
+      }
       return;
     }
 
@@ -164,6 +192,18 @@ function LoginInner() {
           <span className="text-[0.65rem] uppercase tracking-widest text-white/40">or</span>
           <div className="flex-1 h-px bg-white/10" />
         </div>
+
+        {/* Demo / test-mode login (flag-gated) */}
+        {demoEnabled && (
+          <button
+            onClick={handleDemoLogin}
+            disabled={loading}
+            className="btn-primary w-full !justify-center mb-3 disabled:opacity-50"
+            data-testid="login-demo-btn"
+          >
+            {loading ? "Entering…" : "Continue as Demo (test mode)"}
+          </button>
+        )}
 
         <Link href="/" className="btn-ghost w-full !justify-center" data-testid="login-explore-guest">
           Explore as guest

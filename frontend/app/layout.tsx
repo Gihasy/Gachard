@@ -52,6 +52,7 @@ export default function RootLayout({
     >
       <head>
         <meta name="google-client-id" content={process.env.GOOGLE_CLIENT_ID || ""} />
+        <meta name="demo-login-enabled" content={process.env.ENABLE_DEMO_LOGIN === "true" ? "true" : ""} />
       </head>
       <body
         className="min-h-full flex flex-col"
