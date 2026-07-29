@@ -5,8 +5,16 @@ export async function POST(request: Request) {
   try {
     const { userId, amountCents } = await request.json();
 
-    if (!userId || !amountCents) {
-      return NextResponse.json({ error: "userId and amountCents required" }, { status: 400 });
+    if (!userId || typeof userId !== "string") {
+      return NextResponse.json({ error: "userId required" }, { status: 400 });
+    }
+
+    if (!amountCents || typeof amountCents !== "number" || amountCents <= 0 || !Number.isFinite(amountCents)) {
+      return NextResponse.json({ error: "amountCents must be a positive number" }, { status: 400 });
+    }
+
+    if (amountCents > 100000) {
+      return NextResponse.json({ error: "Maximum top-up is $1,000" }, { status: 400 });
     }
 
     const newBalance = await addCredits(userId, amountCents);

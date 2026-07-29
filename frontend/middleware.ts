@@ -15,7 +15,7 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 const PROTECTED = ["/collection", "/profile", "/topup"];
 
-export function proxy(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Admin routes: HTTP Basic Auth (covers /admin pages AND /api/admin endpoints)

@@ -5,7 +5,10 @@ export async function POST(request: Request) {
   try {
     const { token } = await request.json();
 
-    // Verify Google token (real verification, not mock)
+    if (!token || typeof token !== "string") {
+      return NextResponse.json({ error: "token required" }, { status: 400 });
+    }
+
     const googleUser = await verifyGoogleToken(token);
 
     // Get or create user with real custodial wallet

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCollection } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
+import { getCollection, parseObjectId } from "@/lib/mongodb";
 import { mintBatch } from "@/lib/blockchain";
 import { buildPackRarities } from "@/lib/odds";
 import { pickCardTemplate, seedCardTemplates } from "@/lib/card-templates";
@@ -16,6 +15,10 @@ const PACK_TYPES: Record<string, { price: number; cards: number; guaranteed: num
 export async function POST(request: Request) {
   const { userId, packType = "standard" } = await request.json();
 
+  if (!userId) {
+    return NextResponse.json({ error: "userId required" }, { status: 400 });
+  }
+
   const pack = PACK_TYPES[packType];
   if (!pack) {
     return NextResponse.json(
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
 
   // Get user from DB
   const usersCollection = await getCollection("users");
-  const user = await usersCollection.findOne({ _id: new ObjectId(userId) } as Record<string, unknown>);
+  const user = await usersCollection.findOne({ _id: parseObjectId(userId) } as Record<string, unknown>);
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }

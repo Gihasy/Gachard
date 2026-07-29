@@ -387,7 +387,7 @@ export default function Profil() {
                     key={card.tokenId ?? `card-${i}`}
                     className={`glass glass-hover overflow-hidden p-2.5 ${RARITY_GLOW[rarity]}`}
                     style={{ borderColor: RARITY_COLORS[rarity] }}
-                    data-testid={`profilee-card-${card.tokenId}`}
+                    data-testid={`profile-card-${card.tokenId}`}
                   >
                     <div
                       className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5"

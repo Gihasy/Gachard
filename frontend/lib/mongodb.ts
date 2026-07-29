@@ -1,4 +1,4 @@
-import { MongoClient, Db } from "mongodb";
+import { MongoClient, Db, ObjectId } from "mongodb";
 
 const MONGODB_URL = process.env.MONGODB_URL || "";
 const DATABASE_NAME = process.env.DATABASE_NAME || "gachard";
@@ -25,4 +25,11 @@ export async function connectToDatabase(): Promise<Db> {
 export async function getCollection(name: string) {
   const database = await connectToDatabase();
   return database.collection(name);
+}
+
+export function parseObjectId(id: string): ObjectId {
+  if (!ObjectId.isValid(id)) {
+    throw new Error("Invalid ID format");
+  }
+  return new ObjectId(id);
 }

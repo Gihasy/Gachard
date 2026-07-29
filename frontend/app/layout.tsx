@@ -47,7 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="id"
+      lang="en"
       className={`${inter.variable} ${unbounded.variable} ${poppins.variable} h-full antialiased`}
     >
       <head>

@@ -19,9 +19,16 @@ declare global {
   }
 }
 
+function safeNext(raw: string | null): string {
+  if (!raw) return "/";
+  // Only allow relative paths — block protocol-relative URLs and absolute URLs
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/";
+}
+
 function LoginInner() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/";
+  const next = safeNext(searchParams.get("next"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const googleButtonRef = useRef<HTMLDivElement>(null);
