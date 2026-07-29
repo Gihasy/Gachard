@@ -225,7 +225,7 @@ export default function TopUp() {
             <ul className="space-y-3">
               <InfoItem
                 title="Buy Card Packs"
-                desc="500 Credit / pack. 8 cards, at least 1 Rare+."
+                desc="Open packs to discover rare cards and build your on-chain collection."
               />
               <InfoItem
                 title="Request a physical print"
@@ -246,8 +246,7 @@ export default function TopUp() {
               Payment
             </p>
             <p className="text-sm text-white/70 leading-relaxed">
-              This is a demo top-up. In production, payments are settled via
-              Stripe / on-chain. Your credit balance updates instantly.
+              This is a demo top-up. In production, payments are settled via Stripe. Your credit balance updates instantly.
             </p>
           </div>
 
