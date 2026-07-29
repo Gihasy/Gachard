@@ -36,6 +36,8 @@ export default function Profil() {
   const [redeemCode, setRedeemCode] = useState("");
   const [redeemLoading, setRedeemLoading] = useState(false);
   const [redeemMessage, setRedeemMessage] = useState<{ text: string; ok: boolean } | null>(null);
+  const [page, setPage] = useState(0);
+  const CARDS_PER_PAGE = 6;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -376,69 +378,110 @@ export default function Profil() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {cards.map((card, i) => {
-                const rarity = Math.max(0, Math.min(3, card.rarity)) as 0 | 1 | 2 | 3;
-                return (
-                  <div
-                    key={card.tokenId ?? `card-${i}`}
-                    className={`glass glass-hover overflow-hidden p-2.5 ${RARITY_GLOW[rarity]}`}
-                    style={{ borderColor: RARITY_COLORS[rarity] }}
-                    data-testid={`profile-card-${card.tokenId}`}
-                  >
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {cards.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE).map((card, i) => {
+                  const rarity = Math.max(0, Math.min(3, card.rarity)) as 0 | 1 | 2 | 3;
+                  return (
                     <div
-                      className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5"
-                      style={{ aspectRatio: "5/7" }}
+                      key={card.tokenId ?? `card-${i}`}
+                      className={`glass glass-hover overflow-hidden p-2.5 ${RARITY_GLOW[rarity]}`}
+                      style={{ borderColor: RARITY_COLORS[rarity] }}
+                      data-testid={`profile-card-${card.tokenId}`}
                     >
-                      {card.artworkUrl ? (
-                        <Image
-                          src={card.artworkUrl}
-                          alt={card.templateName || card.templateId}
-                          fill
-                          sizes="(max-width:768px) 40vw, 20vw"
-                          className="object-contain"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-3xl text-white/30">◆</span>
+                      <div
+                        className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5"
+                        style={{ aspectRatio: "5/7" }}
+                      >
+                        {card.artworkUrl ? (
+                          <Image
+                            src={card.artworkUrl}
+                            alt={card.templateName || card.templateId}
+                            fill
+                            sizes="(max-width:768px) 40vw, 20vw"
+                            className="object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-3xl text-white/30">◆</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="px-1 pb-1">
+                        <p className="text-xs font-medium text-white truncate">
+                          {card.tokenId !== null ? `Card #${card.tokenId}` : card.templateId}
+                        </p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span
+                            className={`tag tag-${RARITY_LABELS[rarity].toLowerCase()} text-[0.55rem]`}
+                          >
+                            {RARITY_LABELS[rarity]}
+                          </span>
+                          <span
+                            className="text-[0.55rem] uppercase tracking-widest px-1.5 py-0.5 rounded"
+                            style={{
+                              background:
+                                card.status === "Real"
+                                  ? "rgba(0,255,136,0.15)"
+                                  : card.status === "Vaulted"
+                                  ? "rgba(255,107,186,0.15)"
+                                  : "rgba(0,204,255,0.15)",
+                              color:
+                                card.status === "Real"
+                                  ? "#00ff88"
+                                  : card.status === "Vaulted"
+                                  ? "#ff6bba"
+                                  : "#00ccff",
+                            }}
+                          >
+                            {card.status}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                    <div className="px-1 pb-1">
-                      <p className="text-xs font-medium text-white truncate">
-                        {card.tokenId !== null ? `Card #${card.tokenId}` : card.templateId}
-                      </p>
-                      <div className="flex items-center justify-between mt-1">
-                        <span
-                          className={`tag tag-${RARITY_LABELS[rarity].toLowerCase()} text-[0.55rem]`}
-                        >
-                          {RARITY_LABELS[rarity]}
-                        </span>
-                        <span
-                          className="text-[0.55rem] uppercase tracking-widest px-1.5 py-0.5 rounded"
-                          style={{
-                            background:
-                              card.status === "Real"
-                                ? "rgba(0,255,136,0.15)"
-                                : card.status === "Vaulted"
-                                ? "rgba(255,107,186,0.15)"
-                                : "rgba(0,204,255,0.15)",
-                            color:
-                              card.status === "Real"
-                                ? "#00ff88"
-                                : card.status === "Vaulted"
-                                ? "#ff6bba"
-                                : "#00ccff",
-                          }}
-                        >
-                          {card.status}
-                        </span>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+
+              {/* Pagination */}
+              {cards.length > CARDS_PER_PAGE && (
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <button
+                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    disabled={page === 0}
+                    className="w-9 h-9 rounded-lg flex items-center justify-center text-sm transition-colors disabled:opacity-30"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    data-testid="profile-prev-page"
+                  >
+                    ‹
+                  </button>
+                  {Array.from({ length: Math.ceil(cards.length / CARDS_PER_PAGE) }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPage(i)}
+                      className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-medium transition-colors"
+                      style={{
+                        background: i === page ? "rgba(184,172,255,0.2)" : "rgba(255,255,255,0.05)",
+                        border: `1px solid ${i === page ? "rgba(184,172,255,0.4)" : "rgba(255,255,255,0.08)"}`,
+                        color: i === page ? "white" : "rgba(255,255,255,0.5)",
+                      }}
+                      data-testid={`profile-page-${i + 1}`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setPage((p) => Math.min(Math.ceil(cards.length / CARDS_PER_PAGE) - 1, p + 1))}
+                    disabled={page >= Math.ceil(cards.length / CARDS_PER_PAGE) - 1}
+                    className="w-9 h-9 rounded-lg flex items-center justify-center text-sm transition-colors disabled:opacity-30"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    data-testid="profile-next-page"
+                  >
+                    ›
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
