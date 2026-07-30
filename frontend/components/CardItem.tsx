@@ -3,6 +3,15 @@
 import { useState } from "react";
 import Image from "next/image";
 
+const RARITY_COLORS = [
+  "var(--rarity-common)",
+  "var(--rarity-rare)",
+  "var(--rarity-epic)",
+  "var(--rarity-legendary)",
+];
+const RARITY_GLOW = ["", "glow-rare", "glow-epic", "glow-legendary"];
+const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
+
 interface CardItemProps {
   tokenId: number | null;
   templateId: string;
@@ -35,6 +44,7 @@ export default function CardItem({
   tokenId,
   templateId,
   templateName,
+  rarity,
   artworkUrl,
   status,
   userId,
@@ -116,36 +126,43 @@ export default function CardItem({
     }
   };
 
+  const rarityLevel = Math.max(0, Math.min(3, rarity)) as 0 | 1 | 2 | 3;
+
   return (
     <>
       <div
-        className="glass glass-hover overflow-hidden p-3"
-        style={{ borderColor: "rgba(255,255,255,0.1)" }}
+        className={`glass glass-hover overflow-hidden p-2 sm:p-2.5 ${RARITY_GLOW[rarityLevel]}`}
+        style={{ borderColor: RARITY_COLORS[rarityLevel] }}
         data-testid={`card-item-${tokenId ?? templateId}`}
       >
-        <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-white/5" style={{ aspectRatio: "5/7" }}>
+        <div className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5" style={{ aspectRatio: "5/7" }}>
           {artworkUrl ? (
             <Image
               src={artworkUrl}
               alt={templateId}
               fill
-              sizes="(max-width:768px) 45vw, 25vw"
+              sizes="(max-width:768px) 40vw, 20vw"
               className="object-contain"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-4xl text-white/40">◆</span>
+              <span className="text-3xl text-white/30">◆</span>
             </div>
           )}
         </div>
 
-        <div className="px-1.5 pb-1.5">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-medium text-white truncate">
-              {tokenId !== null ? `Card #${tokenId}` : templateId}
-            </p>
+        <div className="px-1 pb-1">
+          <p className="text-xs font-medium text-white truncate">
+            {tokenId !== null ? `Card #${tokenId}` : templateId}
+          </p>
+          <div className="flex flex-wrap items-center justify-between gap-1 mt-1">
             <span
-              className="text-[0.62rem] uppercase tracking-widest px-2 py-0.5 rounded"
+              className={`tag tag-${RARITY_LABELS[rarityLevel].toLowerCase()} text-[0.55rem]`}
+            >
+              {RARITY_LABELS[rarityLevel]}
+            </span>
+            <span
+              className="text-[0.55rem] uppercase tracking-widest px-1.5 py-0.5 rounded whitespace-nowrap"
               style={{
                 background: isReal
                   ? "rgba(0,255,136,0.15)"
@@ -156,21 +173,15 @@ export default function CardItem({
                   ? "#00ff88"
                   : isInProgress
                   ? "var(--aurora-gold)"
-                  : "var(--electric-blue)",
-                border: `1px solid ${
-                  isReal
-                    ? "rgba(0,255,136,0.35)"
-                    : isInProgress
-                    ? "rgba(255,196,102,0.35)"
-                    : "rgba(0,204,255,0.35)"
-                }`,
+                  : "#00ccff",
               }}
             >
               {status}
             </span>
           </div>
 
-          <div>
+          {/* Action buttons */}
+          <div className="mt-2">
             {canPrint && (
               <button
                 onClick={() => setShowForm(true)}
