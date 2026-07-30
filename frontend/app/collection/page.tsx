@@ -192,6 +192,13 @@ export default function Koleksi() {
               status={card.displayStatus || "Digital"}
               requestedAt={card.requestedAt}
               deliveredAt={card.deliveredAt}
+              onStatusChange={(tokenId, newStatus) => {
+                setCards((prev) =>
+                  prev.map((c) =>
+                    c.tokenId === tokenId ? { ...c, displayStatus: newStatus } : c
+                  )
+                );
+              }}
               claimId={card.claimId}
               userId={user.user_id}
             />

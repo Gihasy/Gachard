@@ -25,6 +25,7 @@ interface CardItemProps {
   deliveredAt?: string | null;
   claimId?: string | null;
   userId: string;
+  onStatusChange?: (tokenId: number, newStatus: string) => void;
 }
 
 interface ShippingForm {
@@ -57,6 +58,7 @@ export default function CardItem({
   deliveredAt,
   claimId,
   userId,
+  onStatusChange,
 }: CardItemProps) {
   const [printing, setPrinting] = useState(false);
   const [printStatus, setPrintStatus] = useState<string | null>(null);
@@ -66,11 +68,12 @@ export default function CardItem({
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);
   const [showClaimScanner, setShowClaimScanner] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(status);
 
-  const canPrint = status === "Digital" && tokenId !== null;
-  const isInProgress = status === "In Progress";
-  const isShipping = status === "Shipping";
-  const isReal = status === "Real";
+  const canPrint = currentStatus === "Digital" && tokenId !== null;
+  const isInProgress = currentStatus === "In Progress";
+  const isShipping = currentStatus === "Shipping";
+  const isReal = currentStatus === "Real";
 
   const isFormValid =
     form.recipientName.trim() &&
@@ -100,7 +103,8 @@ export default function CardItem({
       });
       const data = await res.json();
       if (res.ok) {
-        window.location.reload();
+        setCurrentStatus("Real");
+        if (tokenId) onStatusChange?.(tokenId, "Real");
       } else {
         setClaimError(data.error || "Claim failed");
       }
@@ -153,9 +157,10 @@ export default function CardItem({
       });
       const printData = await printRes.json();
       if (printRes.ok) {
-        setPrintStatus("Print confirmed! Refreshing...");
+        setPrintStatus("Print confirmed!");
         setShowForm(false);
-        setTimeout(() => window.location.reload(), 1000);
+        setCurrentStatus("In Progress");
+        if (tokenId) onStatusChange?.(tokenId, "In Progress");
       } else {
         setPrintStatus(printData.error || "Print failed");
       }
@@ -220,7 +225,7 @@ export default function CardItem({
                   : "#00ccff",
               }}
             >
-              {status}
+              {currentStatus}
             </span>
           </div>
 
