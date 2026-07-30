@@ -207,15 +207,6 @@ export default function CardItem({
                 </div>
               )
             )}
-            {isInProgress && (
-              <div
-                className="text-center text-[0.65rem] py-1"
-                style={{ color: "var(--aurora-gold)" }}
-                data-testid={`printed-notice-${tokenId}`}
-              >
-                In Progress
-              </div>
-            )}
             {isReal && (
               <div
                 className="text-center text-[0.65rem] py-1"
