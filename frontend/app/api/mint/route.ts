@@ -125,7 +125,7 @@ export async function POST(request: Request) {
 
             await cardsCollection.updateOne(
               { txId: txResult.insertedId.toString(), pickIndex: mintIndex },
-              { $set: { tokenId, status: "Digital", rarity } }
+              { $set: { tokenId, status: "Digital", rarity, lastOnChainSync: new Date().toISOString() } }
             );
             mintIndex++;
           }

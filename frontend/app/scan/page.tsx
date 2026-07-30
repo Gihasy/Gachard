@@ -308,7 +308,7 @@ function ScanContent() {
 
             {/* Metadata */}
             <div className="glass p-5">
-              <MetaRow label="Card ID" value={`#${data.tokenId}`} mono />
+              <MetaRow label="Card ID" value={`#${data.cardId || data.tokenId}`} mono />
               <MetaRow
                 label="Name"
                 value={data.metadata.templateName || "Unknown"}
