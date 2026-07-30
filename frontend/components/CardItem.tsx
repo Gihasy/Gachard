@@ -22,6 +22,7 @@ interface CardItemProps {
   artworkUrl: string;
   status: string;
   requestedAt?: string | null;
+  deliveredAt?: string | null;
   claimId?: string | null;
   userId: string;
 }
@@ -53,6 +54,7 @@ export default function CardItem({
   artworkUrl,
   status,
   requestedAt,
+  deliveredAt,
   claimId,
   userId,
 }: CardItemProps) {
@@ -287,11 +289,15 @@ export default function CardItem({
             )}
             {isReal && (
               <div
-                className="text-center text-[0.65rem] py-1"
-                style={{ color: "#00ff88" }}
-                data-testid={`printed-notice-${tokenId}`}
+                className="text-center text-[0.6rem] py-1.5 rounded-lg"
+                style={{
+                  background: "rgba(0,255,136,0.06)",
+                  border: "1px solid rgba(0,255,136,0.15)",
+                  color: "#00ff88",
+                }}
+                data-testid={`real-card-${tokenId}`}
               >
-                Physical card — redeem code on card
+                Real Card{deliveredAt ? ` — ${new Date(deliveredAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}
               </div>
             )}
           </div>

@@ -49,6 +49,7 @@ export async function GET(request: Request) {
         artworkUrl: template?.artworkUrl || "",
         templateName: template?.name || card.templateId,
         requestedAt: card.fulfillmentStatus ? card.updatedAt || null : null,
+        deliveredAt: card.deliveredAt || null,
         claimId: card.claimId || null,
       };
     });
