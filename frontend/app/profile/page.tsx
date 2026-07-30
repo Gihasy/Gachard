@@ -11,8 +11,7 @@ type Card = {
   tokenId: number | null;
   templateId: string;
   rarity: number;
-  status: string;
-  fulfillmentStatus?: string;
+  displayStatus?: string;
   artworkUrl?: string;
   templateName?: string;
 };
@@ -85,9 +84,9 @@ export default function Profil() {
     epic: cards.filter((c) => c.rarity === 2).length,
     rare: cards.filter((c) => c.rarity === 1).length,
     common: cards.filter((c) => c.rarity === 0).length,
-    digital: cards.filter((c) => !c.fulfillmentStatus).length,
-    inProgress: cards.filter((c) => c.fulfillmentStatus && ["Locked", "Processing", "Printed", "Shipping"].includes(c.fulfillmentStatus)).length,
-    real: cards.filter((c) => c.fulfillmentStatus === "Real").length,
+    digital: cards.filter((c) => (c.displayStatus ?? "Digital") === "Digital").length,
+    inProgress: cards.filter((c) => c.displayStatus === "In Progress").length,
+    real: cards.filter((c) => c.displayStatus === "Real").length,
   };
 
   const handleLogout = () => {
@@ -411,30 +410,30 @@ export default function Profil() {
                         <p className="text-xs font-medium text-white truncate">
                           {card.tokenId !== null ? `Card #${card.tokenId}` : card.templateId}
                         </p>
-                        <div className="flex items-center justify-between mt-1">
+                        <div className="flex flex-wrap items-center justify-between gap-1 mt-1">
                           <span
                             className={`tag tag-${RARITY_LABELS[rarity].toLowerCase()} text-[0.55rem]`}
                           >
                             {RARITY_LABELS[rarity]}
                           </span>
                           <span
-                            className="text-[0.55rem] uppercase tracking-widest px-1.5 py-0.5 rounded"
+                            className="text-[0.55rem] uppercase tracking-widest px-1.5 py-0.5 rounded whitespace-nowrap"
                             style={{
                               background:
-                                card.status === "Real"
+                                card.displayStatus === "Real"
                                   ? "rgba(0,255,136,0.15)"
-                                  : card.status === "Vaulted"
-                                  ? "rgba(255,107,186,0.15)"
+                                  : card.displayStatus === "In Progress"
+                                  ? "rgba(255,196,102,0.15)"
                                   : "rgba(0,204,255,0.15)",
                               color:
-                                card.status === "Real"
+                                card.displayStatus === "Real"
                                   ? "#00ff88"
-                                  : card.status === "Vaulted"
-                                  ? "#ff6bba"
+                                  : card.displayStatus === "In Progress"
+                                  ? "var(--aurora-gold)"
                                   : "#00ccff",
                             }}
                           >
-                            {card.status}
+                            {card.displayStatus ?? "Digital"}
                           </span>
                         </div>
                       </div>

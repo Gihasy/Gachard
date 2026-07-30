@@ -1,90 +1,23 @@
-# Gachard — PRD
+# Gachard — PRD / Working Notes
 
-## Problem Statement (verbatim)
-> I've imported my project from GitHub. I want you to audit the current UI/UX and modernize it. Focus on making the navigation more intuitive, improving the spacing/typography, and applying a consistent [mention your style, e.g., clean/minimal/dark] aesthetic using the Gachard brand colors. Start with the home page.
-
-## Product
-Gachard is a next-generation collectible card ecosystem that bridges the physical and digital worlds. Users collect rare cards, play matches, and trade in an open marketplace.
+## Original Problem Statement (this session)
+Buat tampilan https://www.gachard.com/profile menyesuaikan ukuran iPhone 12 Pro (390x844) dan Samsung Galaxy S8+ (360x740) — serta semua dimensi responsive standar di F12 — dengan commit terbaru di repo Gachard. Masalah utama: elemen terpotong. Login via demo account (tanpa Google).
 
 ## Stack
-- Next.js 16 (App Router, Turbopack) + React 19
-- Tailwind CSS v4
-- MongoDB (via Next API routes under `/app/api/*`)
-- Runs under supervisor as `yarn dev` on port 3000
+- Next.js 16 (App Router) frontend on port 3000; FastAPI reverse-proxy on 8001 (forwards /api/* → :3000).
+- MongoDB (local). Supervisor runs `next start` (PRODUCTION build) → must `yarn build` after code changes, then `supervisorctl restart frontend`.
+- Demo login: `/login` → "Demo Account" button (ENABLE_DEMO_LOGIN=true). Creates @DemoN user with 10k credits.
 
-## Brand Identity (source of truth)
-- Colors: Cosmic Violet `#B8ACFF`, Aurora Pink `#FF6BBA`, Electric Blue `#00CCFF`, Aurora Gold `#FFC466`, Deep Navy `#0B0E1A`, Silver Mist `#E6E8F0`
-- Fonts: `Unbounded` (display) + `Inter` (body) — loaded via `next/font/google`
-- Aesthetic: dark cosmic / premium editorial with vibrant gradient accents
+## Work done (June 2026 — responsive profile)
+- Verified `/profile` layout across 320/360/375/390/414/540/768/820px: NO horizontal overflow at any width.
+- Fixed real cutoff: collection card meta row used `justify-between` (no wrap) → long status badge "IN PROGRESS" was clipped by card's overflow-hidden at 360px 2-col grid. Changed to `flex flex-wrap justify-between gap-1` so badge wraps below the rarity tag instead of clipping.
+- Fixed data mismatch on profile cards: `/api/cards` returns `displayStatus`, but page read non-existent `status`/`fulfillmentStatus`. Result was an empty status pill and wrong stats (all counted "Digital"). Updated Card type + stats + badge to use `displayStatus` ("Digital"/"In Progress"/"Real").
+- File changed: `frontend/app/profile/page.tsx` only.
 
-## User Personas
-- **Collector** — hunts rare cards, values ownership + rarity signals
-- **Player** — competitive, wants clear onboarding + battle stats
-- **Trader** — needs an open marketplace, prices, activity feed
-- **New Visitor** — needs immediate clarity on what Gachard is + a compelling CTA
+## Verification
+- Screenshotted iPhone 12 Pro (390) & Galaxy S8+ (360) with empty and 15-card collections (incl. pagination page 2 with all rarities/statuses). All elements fit, badges readable, no cutoff. (Test cards seeded into Demo2 then removed — DB restored.)
 
-## What's been implemented — 2026-01-23
-
-### Home page modernization (session 1)
-- **Global**: cosmic backdrop (radial nebula + star drift + noise overlay), fresh brand tokens in `globals.css`, custom scrollbar, selection color, gradient hr, glass utility, three button variants (primary/ghost/gold), reveal + floaty animations, `prefers-reduced-motion` support.
-- **Layout** (`app/layout.tsx`): loads Unbounded + Inter as CSS variables, injects `cosmic-bg` and new `<Footer />`, PWA metadata updated with brand tagline. Service worker registration is now gated to `NODE_ENV === 'production'` to avoid dev-mode cache issues.
-- **Navbar** (`components/Navbar.tsx`): sticky glass bar with backdrop-blur, brand logo mark + wordmark, six re-labelled links (Home / Collection / Scan / Marketplace / Top Up / Profile), gradient active-underline, user chip when signed-in, animated hamburger + slide-down drawer on mobile, scroll-based opacity.
-- **Home** (`app/page.tsx`): Hero (Season chip + gradient-stacked headline + stats + fanned card visual), Featured Cards grid, Why Gachard (4 feature tiles), How It Works (5 steps), CTA band, Footer.
-
-### Design system applied to remaining pages (session 2)
-- **New shared `PageShell`** (`components/PageShell.tsx`) — reusable eyebrow + gradient title + description + actions + body container that every page now uses.
-- **`/login`** — glass card with glowing logo tile, ENTER THE UNIVERSE gradient headline, "Continue with Google" white button, "Explore as guest" ghost, terms/privacy footer. Now reads `?next=<path>` from the URL and returns the user there after login.
-- **`/koleksi`** — MY COLLECTION headline with "Buy a Pack" action. Rarity filter tabs with per-tier counts. 8-tile skeleton loader (times out after 6s) → empty state OR card grid with `CardItem` (also refreshed).
-- **`/marketplace`** — "Launching Season 1 — Coming Soon" gradient banner with 3 feature rows (Verified rarity / Atomic escrow / Global liquidity), 6-card sneak-peek grid pulling from the local card artwork set.
-- **`/scan`** — landing view shows 2-panel (HOW TO SCAN steps + MANUAL Token ID form). Result view (with `?tokenId=`) shows the card artwork, verification banner, metadata block, and transaction history in rarity-tinted glass panels.
-- **`/topup`** — TOP UP CREDIT gradient title, balance card, 4 preset cards (500 / 1000-POPULAR / 2000 / 5000 with +bonuses in gold), main CTA reflects selection, info panel (what credits do + payment note + collection link).
-- **`/profil`** — PROFILE title with Top Up + Log Out actions. Left: gradient avatar + username chip + credit balance + Quick Actions grid. Right: 6 stat blocks + Season 1 progress bar + empty-state CTA when 0 cards.
-- **`CardItem`** (`components/CardItem.tsx`) — rebuilt with rarity glow variants, tier chips, status pills (Digital / Vaulted), Print + QR actions.
-
-### Auth guard (session 2)
-- Client-side useEffect redirects proved unreliable across Next.js 16 dev bundles.
-- Fix: **Next.js proxy** (`frontend/proxy.ts`, formerly middleware.ts) enforces the auth guard at the edge. A `gachard_uid` cookie is set on Google login and cleared on logout; any request to `/koleksi`, `/profil`, or `/topup` without it returns 307 → `/login?next=<encoded-path>`.
-- Verified via curl AND `page.request.fetch(max_redirects=0)`: 307 with the correct location header.
-
-### Testing
-- iteration_1: home page — 100% pass.
-- iteration_2: 6 pages — surfaced the client-redirect regression, now fixed.
-- iteration_3: middleware auth + design consistency — **100% pass** (all 6 spec bullets).
-
-## Backlog (Next Action Items)
-### P0 — not started
-- (none)
-
-### P1 — data & real integrations
-- Wire the Featured Cards row (home page) + Marketplace preview to real MongoDB data (`/api/cards/featured`, `/api/marketplace/preview`).
-- Real Google OAuth (currently mocked via `googleLogin` in `lib/api.ts`) — see integration playbook.
-- Real Stripe / credit purchase flow on `/topup` (currently uses the mock `/api/credits/topup` endpoint).
-- Real card scan verification pipeline on `/scan` (works today when backend + MongoDB are seeded).
-
-### P2 — polish / enhancements
-- Split large pages (`app/page.tsx`, `app/scan/page.tsx`) into per-section components under `/components/*` for maintainability.
-- Bundle the Gachard logo mark as a local SVG (removes external CDN dependency).
-- Add scroll-triggered reveal animations via IntersectionObserver instead of CSS-only delays.
-- Add Lighthouse pass + font subsetting for LCP.
-- Add a global toast provider for topup / login success messages (currently inlined).
-
-## Notes
-- Supervisor `frontend` program runs `yarn dev` (updated from `yarn start`) so hot reload works in the preview.
-- Auth guard is enforced at the edge via `frontend/proxy.ts` (Next.js 16 "proxy" convention — formerly `middleware.ts`). Cookie name: `gachard_uid`.
-- Service worker registration is gated to production (`NODE_ENV === 'production'`) so it doesn't cache dev-mode error pages.
-
-## Brand alignment pass — /packs, /play-trade, /profile, /admin (2026-07-29)
-- **globals.css**: added a dramatic pack-opening animation kit (pack-breathe, pack-shake, pack-rays conic light rays, burst-flash, burst-ring shockwaves, spark particles, card-pop entrance, shine-sweep holo, aura-rare/epic/legendary glow rings) + prefers-reduced-motion guards.
-- **PackReveal.tsx** (rewritten): cinematic 4-phase reveal — ready (sealed glowing pack + rotating rays) → bursting (shake + white flash + shockwave rings + 26 particle sparks) → revealing (staggered card-pop + shine sweep, rarity aura) → done (best-pull banner for Epic/Legendary + View in Collection CTA).
-- **PackCard.tsx** (rewritten): removed emoji, now a glass card with a fanned card-stack visual, star emblem, stat blocks (cards / rare+), brand buttons (btn-primary / btn-gold).
-- **PackDemo.tsx** (new): fully client-side interactive pack-opening demo (5 mock cards, guaranteed 1 Rare+, weighted rarity) with a "Try Another Pack" re-roll — embedded on /play-trade "Feel the Pull" section so users can experience the reveal without a backend.
-- **/packs**: passes pack label to reveal + added a Drop Rates legend.
-- **/profile**: added a Rarity Mix distribution bar (Common/Rare/Epic/Legendary) with legend.
-- **/admin** (rewritten): now uses PageShell (CONTROL ROOM / ADMIN CONSOLE), four clickable summary cards, pill-style tabs with icons, a Refresh button, and glass tables with styled headers/hover/pills — replacing the old plain console.
-- **Testing**: iteration_5 — 100% frontend pass (all 5 spec bullets, all data-testids resolve, animation reaches done state). Homepage untouched.
-- **Known pre-existing infra issue**: `/api/admin/*` returns 502 via the preview/prod ingress (Authorization Basic header stripped); works on localhost. Not caused by this pass. Fix = migrate admin auth to token/session cookie.
-
-## Bug follow-up: "Demo Account cannot access profile" (2026-07-29)
-- NOT reproducible in preview (iteration_9 & iteration_10 both green): Demo Account -> /profile works fully (cookie + localStorage set, @DemoN, 10,000 credits, APIs 200, no console errors).
-- Hardening applied to app/profile/page.tsx: logged-out gate now redirects to `/login?next=/profile` (was `/login`) and clears corrupt localStorage before redirect, so re-login returns to profile instead of home.
-- Likely real-world cause for the report: testing on the Vercel deploy with UN-PUSHED old code (no Demo Account feature yet), or a stale localStorage session from a DB reset. Resolution: Save to GitHub -> redeploy Vercel with env vars, then use Demo Account fresh.
+## Backlog / Next
+- P2: `/api/cards` no longer returns raw `status`; if any other page relies on `status`, align to `displayStatus`.
+- P2: Consider truncating/abbreviating very long badge text on ultra-narrow screens instead of wrapping, if design prefers single-line.
+- Deploy latest commit so production gachard.com/profile reflects the responsive fixes.
