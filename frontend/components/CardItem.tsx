@@ -292,7 +292,7 @@ export default function CardItem({
                 )}
               </div>
             )}
-            {isReal && (
+            {isReal && deliveredAt && (
               <div
                 className="text-center text-[0.6rem] py-1.5 rounded-lg"
                 style={{
@@ -302,7 +302,7 @@ export default function CardItem({
                 }}
                 data-testid={`real-card-${tokenId}`}
               >
-                Real Card{deliveredAt ? ` — ${new Date(deliveredAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}
+                {new Date(deliveredAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
               </div>
             )}
           </div>
