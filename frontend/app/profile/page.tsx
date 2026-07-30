@@ -15,6 +15,7 @@ type Card = {
   displayStatus?: string;
   artworkUrl?: string;
   templateName?: string;
+  requestedAt?: string | null;
 };
 
 export default function Profil() {
@@ -400,6 +401,7 @@ export default function Profil() {
                     rarity={card.rarity}
                     artworkUrl={card.artworkUrl || ""}
                     status={card.displayStatus || "Digital"}
+                    requestedAt={card.requestedAt}
                     userId={user.user_id}
                   />
                 ))}

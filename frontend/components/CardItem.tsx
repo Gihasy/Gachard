@@ -20,6 +20,7 @@ interface CardItemProps {
   rarity: number;
   artworkUrl: string;
   status: string;
+  requestedAt?: string | null;
   userId: string;
 }
 
@@ -49,6 +50,7 @@ export default function CardItem({
   rarity,
   artworkUrl,
   status,
+  requestedAt,
   userId,
 }: CardItemProps) {
   const [printing, setPrinting] = useState(false);
@@ -206,6 +208,19 @@ export default function CardItem({
                   Pending…
                 </div>
               )
+            )}
+            {isInProgress && requestedAt && (
+              <div
+                className="text-center text-[0.6rem] py-1.5 rounded-lg"
+                style={{
+                  background: "rgba(255,196,102,0.06)",
+                  border: "1px solid rgba(255,196,102,0.15)",
+                  color: "var(--aurora-gold)",
+                }}
+                data-testid={`requested-at-${tokenId}`}
+              >
+                Requested {new Date(requestedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </div>
             )}
             {isReal && (
               <div

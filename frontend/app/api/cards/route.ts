@@ -47,6 +47,7 @@ export async function GET(request: Request) {
         displayStatus: getDisplayStatus(card.fulfillmentStatus),
         artworkUrl: template?.artworkUrl || "",
         templateName: template?.name || card.templateId,
+        requestedAt: card.fulfillmentStatus ? card.updatedAt || null : null,
       };
     });
 

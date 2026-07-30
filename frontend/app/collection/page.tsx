@@ -21,6 +21,7 @@ type Card = {
   rarity: number;
   artworkUrl?: string;
   displayStatus?: string;
+  requestedAt?: string | null;
 };
 
 export default function Koleksi() {
@@ -187,6 +188,7 @@ export default function Koleksi() {
               rarity={card.rarity}
               artworkUrl={card.artworkUrl || ""}
               status={card.displayStatus || "Digital"}
+              requestedAt={card.requestedAt}
               userId={user.user_id}
             />
           ))}
