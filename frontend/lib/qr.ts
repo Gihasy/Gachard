@@ -4,17 +4,17 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://gachard.vercel.app"
 
 /**
  * Generate QR data URL untuk kartu.
- * QR berisi URL ke halaman scan dengan tokenId.
+ * QR berisi URL ke halaman scan dengan cardId.
  */
-export function generateQRData(tokenId: number): string {
-  return `${BASE_URL}/scan?tokenId=${tokenId}`;
+export function generateQRData(cardId: string): string {
+  return `${BASE_URL}/scan?cardId=${cardId}`;
 }
 
 /**
  * Generate QR code sebagai data URL (base64 PNG).
  */
-export async function generateQRCode(tokenId: number): Promise<string> {
-  const data = generateQRData(tokenId);
+export async function generateQRCode(cardId: string): Promise<string> {
+  const data = generateQRData(cardId);
   return QRCode.toDataURL(data, {
     width: 256,
     margin: 2,
@@ -25,8 +25,8 @@ export async function generateQRCode(tokenId: number): Promise<string> {
 /**
  * Generate QR code sebagai PNG buffer.
  */
-export async function generateQRCodeBuffer(tokenId: number): Promise<Buffer> {
-  const data = generateQRData(tokenId);
+export async function generateQRCodeBuffer(cardId: string): Promise<Buffer> {
+  const data = generateQRData(cardId);
   return QRCode.toBuffer(data, {
     width: 256,
     margin: 2,

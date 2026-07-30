@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateQRCodeBuffer } from "@/lib/qr";
+import { getCollection } from "@/lib/mongodb";
 
 export async function GET(
   request: Request,
@@ -12,7 +13,12 @@ export async function GET(
       return NextResponse.json({ error: "Invalid tokenId" }, { status: 400 });
     }
 
-    const buffer = await generateQRCodeBuffer(tokenId);
+    // Look up cardId from tokenId
+    const cardsCollection = await getCollection("cards");
+    const card = await cardsCollection.findOne({ tokenId });
+    const cardId = card?.cardId || tokenIdStr;
+
+    const buffer = await generateQRCodeBuffer(cardId);
 
     return new NextResponse(new Uint8Array(buffer), {
       headers: {

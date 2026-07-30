@@ -465,7 +465,7 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
               </div>
 
               <div>
-                <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-1">QR Code</p>
+                <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-1">Scan & Verify QR</p>
                 {pr.tokenId !== null ? (
                   <div className="bg-white p-2 rounded-lg inline-block">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
