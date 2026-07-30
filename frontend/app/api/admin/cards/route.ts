@@ -7,6 +7,7 @@ export async function GET() {
     const cards = await cardsCollection.find({}).toArray();
 
     const result = cards.map((c) => ({
+      cardId: c.cardId || null,
       tokenId: c.tokenId,
       templateId: c.templateId,
       rarity: c.rarity,

@@ -29,6 +29,7 @@ type AdminTx = {
 };
 
 type AdminCard = {
+  cardId: string | null;
   tokenId: number | null;
   templateId: string;
   rarity: number;
@@ -57,7 +58,7 @@ type PrintRequest = {
   fulfillmentStatus: string | null;
   shippingAddress: ShippingAddress | null;
   user: { email: string; username: string; walletAddress: string } | null;
-  card: { status: string; rarity: number; templateId: string; fulfillmentStatus: string | null } | null;
+  card: { cardId: string | null; status: string; rarity: number; templateId: string; fulfillmentStatus: string | null } | null;
   txStatus: string;
   createdAt: string;
   updatedAt: string;
@@ -348,7 +349,7 @@ function CardsTable({ cards }: { cards: AdminCard[] }) {
       ) : (
         cards.map((c, i) => (
           <tr key={c.tokenId ?? `card-${i}`} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
-            <td className="px-4 py-3.5 font-mono text-white/90">{c.tokenId !== null ? `#${c.tokenId}` : "pending"}</td>
+            <td className="px-4 py-3.5 font-mono text-white/90">{c.cardId ? `#${c.cardId}` : c.tokenId !== null ? `#${c.tokenId}` : "pending"}</td>
             <td className="px-4 py-3.5 text-white/80">{c.templateId}</td>
             <td className="px-4 py-3.5">
               <span className={`tag tag-${(RARITY_LABELS[c.rarity] ?? "common").toLowerCase()}`}>{RARITY_LABELS[c.rarity] ?? `?${c.rarity}`}</span>
@@ -418,7 +419,7 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
             <div className="flex flex-wrap gap-6 items-start">
               <div className="min-w-[140px]">
                 <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-1">Card</p>
-                <p className="font-display text-xl">#{pr.tokenId ?? "?"}</p>
+                <p className="font-display text-xl">#{pr.card?.cardId || pr.tokenId || "?"}</p>
                 {pr.card && (
                   <>
                     <p className="text-xs text-white/60">{pr.card.templateId}</p>
