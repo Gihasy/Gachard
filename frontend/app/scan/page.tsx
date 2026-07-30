@@ -145,17 +145,19 @@ function ScanContent() {
               Error
             </p>
             <p className="text-white/70 mb-6">{error}</p>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowScanner(true)}
-                className="flex-1 py-3 rounded-2xl text-sm font-medium transition-all"
+                className="py-3 px-5 rounded-2xl text-sm font-medium transition-all"
                 style={{
                   background: "linear-gradient(135deg, var(--cosmic-violet), var(--electric-blue))",
                   color: "#fff",
                 }}
                 data-testid="scan-retry-camera"
               >
-                Scan Again
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="3" height="3" /><path d="M20 14v3h3" /><path d="M14 20h3v3" /><path d="M14 17h3" /><path d="M17 14v3" />
+                </svg>
               </button>
               <form
                 onSubmit={(e) => {
@@ -182,7 +184,7 @@ function ScanContent() {
                   }}
                   data-testid="scan-retry-submit"
                 >
-                  Verify
+                  Scan
                 </button>
               </form>
             </div>
