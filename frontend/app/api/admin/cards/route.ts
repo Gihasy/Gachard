@@ -4,7 +4,17 @@ import { getCollection } from "@/lib/mongodb";
 export async function GET() {
   try {
     const cardsCollection = await getCollection("cards");
+    const usersCollection = await getCollection("users");
     const cards = await cardsCollection.find({}).toArray();
+
+    // Build address → username map
+    const users = await usersCollection.find({}).toArray();
+    const addressToUsername = new Map<string, string>();
+    for (const u of users) {
+      if (u.walletAddress) {
+        addressToUsername.set(u.walletAddress.toLowerCase(), `@${u.username}`);
+      }
+    }
 
     const result = cards.map((c) => ({
       cardId: c.cardId || null,
@@ -14,6 +24,7 @@ export async function GET() {
       status: c.status || "pending",
       fulfillmentStatus: c.fulfillmentStatus || null,
       ownerAddress: c.ownerAddress,
+      ownerUsername: c.ownerAddress ? addressToUsername.get(c.ownerAddress.toLowerCase()) || null : null,
       createdAt: c.createdAt,
     }));
 

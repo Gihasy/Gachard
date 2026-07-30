@@ -36,6 +36,7 @@ type AdminCard = {
   status: string;
   fulfillmentStatus: string | null;
   ownerAddress: string;
+  ownerUsername: string | null;
   createdAt: string;
 };
 
@@ -105,35 +106,29 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(() => {
+  const fetchAll = useCallback(() => {
     setLoading(true);
     setError(null);
 
-    const endpoints: Record<TabKey, string> = {
-      users: "/api/admin/users",
-      transactions: "/api/admin/transactions",
-      cards: "/api/admin/cards",
-      prints: "/api/admin/print-requests",
-    };
-
-    fetch(endpoints[tab])
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        if (tab === "users") setUsers(data.users ?? []);
-        if (tab === "transactions") setTxs(data.transactions ?? []);
-        if (tab === "cards") setCards(data.cards ?? []);
-        if (tab === "prints") setPrints(data.printRequests ?? []);
+    Promise.all([
+      fetch("/api/admin/users").then((r) => r.json()),
+      fetch("/api/admin/transactions").then((r) => r.json()),
+      fetch("/api/admin/cards").then((r) => r.json()),
+      fetch("/api/admin/print-requests").then((r) => r.json()),
+    ])
+      .then(([usersData, txsData, cardsData, printsData]) => {
+        setUsers(usersData.users ?? []);
+        setTxs(txsData.transactions ?? []);
+        setCards(cardsData.cards ?? []);
+        setPrints(printsData.printRequests ?? []);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [tab]);
+  }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchAll();
+  }, [fetchAll]);
 
   const count =
     tab === "users" ? users.length :
@@ -151,10 +146,10 @@ export default function AdminPage() {
     >
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <SummaryCard label="Users" value={tab === "users" ? users.length : "—"} color="var(--electric-blue)" active={tab === "users"} onClick={() => setTab("users")} />
-        <SummaryCard label="Transactions" value={tab === "transactions" ? txs.length : "—"} color="var(--cosmic-violet)" active={tab === "transactions"} onClick={() => setTab("transactions")} />
-        <SummaryCard label="Cards" value={tab === "cards" ? cards.length : "—"} color="var(--aurora-pink)" active={tab === "cards"} onClick={() => setTab("cards")} />
-        <SummaryCard label="Pending Prints" value={tab === "prints" ? pendingPrints : "—"} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} />
+        <SummaryCard label="Users" value={users.length} color="var(--electric-blue)" active={tab === "users"} onClick={() => setTab("users")} />
+        <SummaryCard label="Transactions" value={txs.length} color="var(--cosmic-violet)" active={tab === "transactions"} onClick={() => setTab("transactions")} />
+        <SummaryCard label="Cards" value={cards.length} color="var(--aurora-pink)" active={tab === "cards"} onClick={() => setTab("cards")} />
+        <SummaryCard label="Pending Prints" value={pendingPrints} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} />
       </div>
 
       {/* Tabs */}
@@ -185,7 +180,7 @@ export default function AdminPage() {
           })}
         </div>
         <button
-          onClick={fetchData}
+          onClick={fetchAll}
           className="btn-ghost !py-2 !px-4 !text-xs"
           data-testid="admin-refresh"
         >
@@ -221,7 +216,7 @@ export default function AdminPage() {
           {tab === "users" && <UsersTable users={users} />}
           {tab === "transactions" && <TxsTable txs={txs} />}
           {tab === "cards" && <CardsTable cards={cards} />}
-          {tab === "prints" && <PrintRequestsTable prints={prints} onAccept={fetchData} />}
+          {tab === "prints" && <PrintRequestsTable prints={prints} onAccept={fetchAll} />}
         </>
       )}
     </PageShell>
@@ -360,8 +355,14 @@ function CardsTable({ cards }: { cards: AdminCard[] }) {
                 <StatusPill status={c.fulfillmentStatus} rgb={FULFILLMENT_COLORS[c.fulfillmentStatus]?.rgb ?? "230,232,240"} />
               ) : <span className="text-white/30">—</span>}
             </td>
-            <td className="px-4 py-3.5 font-mono text-xs text-white/60">
-              {c.ownerAddress ? `${c.ownerAddress.slice(0, 6)}...${c.ownerAddress.slice(-4)}` : "—"}
+            <td className="px-4 py-3.5 text-xs">
+              {c.ownerUsername ? (
+                <span className="text-white/80">{c.ownerUsername}</span>
+              ) : c.ownerAddress ? (
+                <span className="font-mono text-white/60">{c.ownerAddress.slice(0, 6)}...{c.ownerAddress.slice(-4)}</span>
+              ) : (
+                <span className="text-white/30">—</span>
+              )}
             </td>
           </tr>
         ))
