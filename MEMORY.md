@@ -115,6 +115,22 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 2. **Demo Day prep** — video backup, pitch deck, rehearsal, test full loop dengan alamat sungguhan
 3. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
 
+### Session 30 Juli 2026 (Part 2 — Malam) — Ringkasan Perubahan
+- 45+ commit, 50 file berubah (+1,397 / -364 lines)
+- **Claim Shipping System**: QR code, camera scan, claimId, block redeem until Real
+- **Auto-confirm**: Mint, Print, Redeem — tunggu receipt 8 detik sebelum return
+- **QR Scanner**: Portal full-screen, corner markers, scan line, detection feedback
+- **Optimistic UI**: Status update tanpa refresh halaman
+- **Admin Console**: Stats langsung load, cardId display, username+address, NEW badge, QR side-by-side
+- **Transaction History**: cardId bukan tokenId, resolve mint cardIds
+- **Image Optimization**: PNG → WebP (-69%), AVIF support, next.config update
+- **Security**: maxDuration 15 detik, unique index cardId, collision retry
+- **Pack Reveal**: Manual open (hapus auto-open)
+- **Blockchain Audit**: Semua user-facing pages bersih dari istilah teknis
+- **Vercel Config**: vercel.json di root, Root Directory harus `.`
+- **Deploy Issue**: Kena limit 100/hari, tunggu besok + fix Root Directory
+- Laporan: `docs/compose/reports/2026-07-30-evening-session-report.md`
+
 ### Session 28 Juli 2026 — Ringkasan Perubahan
 - 13 commit, 11x deploy, 40+ file berubah
 - Security fixes (auto-confirm, Cache-Control, contractAddress)
