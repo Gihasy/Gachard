@@ -142,7 +142,7 @@ export default function CardItem({
         <div className="px-1.5 pb-1.5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-medium text-white truncate">
-              {templateName || (tokenId !== null ? `Card #${tokenId}` : templateId)}
+              {tokenId !== null ? `Card #${tokenId}` : templateId}
             </p>
             <span
               className="text-[0.62rem] uppercase tracking-widest px-2 py-0.5 rounded"

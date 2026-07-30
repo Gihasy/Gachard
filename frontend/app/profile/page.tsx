@@ -411,7 +411,7 @@ export default function Profil() {
                       </div>
                       <div className="px-1 pb-1">
                         <p className="text-xs font-medium text-white truncate">
-                          {card.templateName || (card.tokenId !== null ? `Card #${card.tokenId}` : card.templateId)}
+                          {card.tokenId !== null ? `Card #${card.tokenId}` : card.templateId}
                         </p>
                         <div className="flex flex-wrap items-center justify-between gap-1 mt-1">
                           <span
