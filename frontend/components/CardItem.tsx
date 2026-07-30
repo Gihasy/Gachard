@@ -184,15 +184,28 @@ export default function CardItem({
 
           {/* Action buttons */}
           <div className="mt-2">
-            {canPrint && (
-              <button
-                onClick={() => setShowForm(true)}
-                disabled={printing}
-                className="btn-ghost !py-2 !px-3 !text-[0.65rem] disabled:opacity-50 w-full"
-                data-testid={`request-print-${tokenId}`}
-              >
-                {printing ? "…" : "Print"}
-              </button>
+            {status === "Digital" && (
+              tokenId !== null ? (
+                <button
+                  onClick={() => setShowForm(true)}
+                  disabled={printing}
+                  className="btn-ghost !py-2 !px-3 !text-[0.65rem] disabled:opacity-50 w-full"
+                  data-testid={`request-print-${tokenId}`}
+                >
+                  {printing ? "…" : "Print"}
+                </button>
+              ) : (
+                <div
+                  className="text-center text-[0.6rem] uppercase tracking-widest py-1.5 rounded-lg"
+                  style={{
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(255,255,255,0.05)",
+                    color: "rgba(255,255,255,0.25)",
+                  }}
+                >
+                  Pending…
+                </div>
+              )
             )}
             {isInProgress && (
               <div

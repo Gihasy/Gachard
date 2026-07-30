@@ -457,18 +457,31 @@ export default function Profil() {
                             {card.displayStatus ?? "Digital"}
                           </span>
                         </div>
-                        {card.displayStatus === "Digital" && card.tokenId !== null && (
-                          <Link
-                            href="/collection"
-                            className="mt-2 w-full text-center text-[0.6rem] uppercase tracking-widest py-1.5 rounded-lg transition-all hover:bg-white/[0.06]"
-                            style={{
-                              background: "rgba(255,255,255,0.03)",
-                              border: "1px solid rgba(255,255,255,0.08)",
-                              color: "rgba(255,255,255,0.5)",
-                            }}
-                          >
-                            Print
-                          </Link>
+                        {card.displayStatus === "Digital" && (
+                          card.tokenId !== null ? (
+                            <Link
+                              href="/collection"
+                              className="mt-2 w-full text-center text-[0.6rem] uppercase tracking-widest py-1.5 rounded-lg transition-all hover:bg-white/[0.06]"
+                              style={{
+                                background: "rgba(255,255,255,0.03)",
+                                border: "1px solid rgba(255,255,255,0.08)",
+                                color: "rgba(255,255,255,0.5)",
+                              }}
+                            >
+                              Print
+                            </Link>
+                          ) : (
+                            <div
+                              className="mt-2 w-full text-center text-[0.6rem] uppercase tracking-widest py-1.5 rounded-lg"
+                              style={{
+                                background: "rgba(255,255,255,0.02)",
+                                border: "1px solid rgba(255,255,255,0.05)",
+                                color: "rgba(255,255,255,0.25)",
+                              }}
+                            >
+                              Pending…
+                            </div>
+                          )
                         )}
                       </div>
                     </div>
