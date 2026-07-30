@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
-import { redeemCard } from "@/lib/blockchain";
+import { redeemCard, getProvider } from "@/lib/blockchain";
 import { hashRedeemCode } from "@/lib/redeem-code";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { generateInvoiceId } from "@/lib/invoice";
 import { friendlyTxStatus } from "@/lib/status-map";
+import { ethers } from "ethers";
+
+export const maxDuration = 15;
+
+const CARD_STATUS_CHANGED_TOPIC = ethers.id("CardStatusChanged(uint256,uint8,uint8)");
 
 export async function POST(request: Request) {
   try {
@@ -66,6 +71,51 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+
+    // Auto-confirm: wait for on-chain receipt (up to 8s)
+    try {
+      const provider = getProvider();
+      const receipt = await Promise.race([
+        provider.getTransactionReceipt(txHash),
+        new Promise((resolve) => setTimeout(() => resolve(null), 8000)),
+      ]) as ethers.TransactionReceipt | null;
+
+      if (receipt && receipt.status === 1) {
+        for (const log of receipt.logs) {
+          if (
+            log.topics[0] === CARD_STATUS_CHANGED_TOPIC &&
+            log.address.toLowerCase() === contractAddress.toLowerCase()
+          ) {
+            const logTokenId = parseInt(log.topics[1], 16);
+            const data = log.data.slice(2);
+            const newCardStatus = parseInt(data.slice(64, 128), 16);
+
+            if (newCardStatus === 0) {
+              await cardsCollection.updateOne(
+                { tokenId: logTokenId },
+                {
+                  $set: {
+                    status: "Digital",
+                    fulfillmentStatus: null,
+                    ownerAddress: user.walletAddress,
+                    lastOnChainSync: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  },
+                  $unset: { deliveredAt: "", claimId: "" },
+                }
+              );
+            }
+          }
+        }
+
+        await txCollection.updateOne(
+          { _id: result.insertedId },
+          { $set: { status: "confirmed" } }
+        );
+      }
+    } catch {
+      // Receipt wait failed — will be confirmed by polling later
+    }
 
     // Return immediately — frontend polls /api/transactions for confirmation (ADR-018)
     return NextResponse.json({
