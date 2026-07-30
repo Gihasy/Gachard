@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { getCollection } from "@/lib/mongodb";
 import { getOrCreateUser } from "@/lib/auth";
-import { getCreditBalance, addCredits } from "@/lib/credits";
 
 /**
  * Demo / sandbox account.
@@ -51,11 +50,7 @@ export async function POST() {
       { $set: { username } }
     );
 
-    // One-time starter balance so packs / topup / redeem can be tested.
-    const balance = await getCreditBalance(userId);
-    if (balance <= 0) {
-      await addCredits(userId, 10000);
-    }
+    // Demo accounts start with 0 credits — user tops up manually.
 
     return NextResponse.json({
       user_id: userId,
