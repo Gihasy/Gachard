@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
-import { mintBatch } from "@/lib/blockchain";
+import { mintBatch, getProvider } from "@/lib/blockchain";
 import { buildPackRarities } from "@/lib/odds";
 import { pickCardTemplate, seedCardTemplates } from "@/lib/card-templates";
 import { deductCredits, addCredits } from "@/lib/credits";
 import { generateInvoiceId } from "@/lib/invoice";
 import { friendlyTxStatus } from "@/lib/status-map";
+import { ethers } from "ethers";
 
 /** Generate a unique 5-character hex Card ID (e.g. "a3f1b") */
 function generateCardId(): string {
@@ -102,6 +103,44 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     }));
     await cardsCollection.insertMany(cardDocs);
+
+    // Wait for on-chain receipt (up to 8s) to assign tokenIds immediately
+    let confirmedTokenIds: number[] = [];
+    try {
+      const provider = getProvider();
+      const receipt = await Promise.race([
+        provider.getTransactionReceipt(txHash),
+        new Promise((resolve) => setTimeout(() => resolve(null), 8000)),
+      ]) as ethers.TransactionReceipt | null;
+
+      if (receipt && receipt.status === 1) {
+        const CARD_MINTED_TOPIC = ethers.id("CardMinted(uint256,address,uint8,uint8)");
+        let mintIndex = 0;
+        for (const log of receipt.logs) {
+          if (log.topics[0] === CARD_MINTED_TOPIC && log.address.toLowerCase() === contractAddress.toLowerCase()) {
+            const tokenId = parseInt(log.topics[1], 16);
+            const logData = log.data.slice(2);
+            const rarity = parseInt(logData.slice(64, 128), 16);
+            confirmedTokenIds.push(tokenId);
+
+            await cardsCollection.updateOne(
+              { txId: txResult.insertedId.toString(), pickIndex: mintIndex },
+              { $set: { tokenId, status: "Digital", rarity } }
+            );
+            mintIndex++;
+          }
+        }
+
+        if (confirmedTokenIds.length > 0) {
+          await txCollection.updateOne(
+            { _id: txResult.insertedId },
+            { $set: { status: "confirmed", tokenIds: confirmedTokenIds } }
+          );
+        }
+      }
+    } catch {
+      // Receipt wait failed — cards stay pending, frontend can poll later
+    }
 
     // Build response array
     const cards = templates.map((template, i) => ({
