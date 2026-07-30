@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Html5Qrcode } from "html5-qrcode";
 
 interface QRScannerProps {
@@ -71,7 +72,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
     };
   }, [onScan]);
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
@@ -171,6 +172,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
