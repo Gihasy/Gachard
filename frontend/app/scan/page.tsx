@@ -163,7 +163,11 @@ function ScanContent() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   const input = (e.currentTarget.elements.namedItem("retryTokenId") as HTMLInputElement).value.trim();
-                  if (input) router.push(`/scan?tokenId=${input}`);
+                  if (input) {
+                    router.push(`/scan?tokenId=${input}`);
+                  } else {
+                    setShowScanner(true);
+                  }
                 }}
                 className="flex-1 flex gap-2"
               >
