@@ -4,12 +4,12 @@ import Link from "next/link";
 import PageShell from "@/components/PageShell";
 
 const PREVIEW_CARDS = [
-  { name: "Lumora", price: "1,200", img: "/cards/legendary-1.png", tier: "MYTHIC", color: "var(--aurora-gold)" },
-  { name: "Pyrax", price: "620", img: "/cards/epic-1.png", tier: "EPIC", color: "var(--cosmic-violet)" },
-  { name: "Noxel", price: "340", img: "/cards/rare-1.png", tier: "RARE", color: "var(--electric-blue)" },
-  { name: "Auren", price: "1,050", img: "/cards/legendary-2.png", tier: "LEGENDARY", color: "var(--aurora-gold)" },
-  { name: "Nyxthalon", price: "580", img: "/cards/epic-2.png", tier: "EPIC", color: "var(--cosmic-violet)" },
-  { name: "Aquoris", price: "300", img: "/cards/rare-2.png", tier: "RARE", color: "var(--electric-blue)" },
+  { name: "Lumora", price: "1,200", img: "/cards/legendary-1.webp", tier: "MYTHIC", color: "var(--aurora-gold)" },
+  { name: "Pyrax", price: "620", img: "/cards/epic-1.webp", tier: "EPIC", color: "var(--cosmic-violet)" },
+  { name: "Noxel", price: "340", img: "/cards/rare-1.webp", tier: "RARE", color: "var(--electric-blue)" },
+  { name: "Auren", price: "1,050", img: "/cards/legendary-2.webp", tier: "LEGENDARY", color: "var(--aurora-gold)" },
+  { name: "Nyxthalon", price: "580", img: "/cards/epic-2.webp", tier: "EPIC", color: "var(--cosmic-violet)" },
+  { name: "Aquoris", price: "300", img: "/cards/rare-2.webp", tier: "RARE", color: "var(--electric-blue)" },
 ];
 
 export default function Marketplace() {

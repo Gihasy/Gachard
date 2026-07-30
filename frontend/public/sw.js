@@ -1,5 +1,5 @@
 // Bump this version on each deploy to force cache invalidation
-const CACHE_VERSION = "2026-07-23-02";
+const CACHE_VERSION = "2026-07-30-01";
 const CACHE_NAME = `gachard-${CACHE_VERSION}`;
 
 // Only cache static assets, NOT HTML pages (let Next.js handle those)

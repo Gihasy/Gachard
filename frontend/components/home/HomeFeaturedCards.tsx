@@ -4,10 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 const FEATURED_CARDS = [
-  { id: "lumora-001", name: "Lumora", tier: "MYTHIC", img: "/cards/legendary-1.png", color: "var(--aurora-gold)" },
-  { id: "pyrax-002",  name: "Pyrax",  tier: "EPIC",   img: "/cards/epic-1.png",      color: "var(--cosmic-violet)" },
-  { id: "noxel-003",  name: "Noxel",  tier: "RARE",   img: "/cards/rare-1.png",      color: "var(--electric-blue)" },
-  { id: "auren-004",  name: "Auren",  tier: "LEGENDARY", img: "/cards/legendary-2.png", color: "var(--aurora-gold)" },
+  { id: "lumora-001", name: "Lumora", tier: "MYTHIC", img: "/cards/legendary-1.webp", color: "var(--aurora-gold)" },
+  { id: "pyrax-002",  name: "Pyrax",  tier: "EPIC",   img: "/cards/epic-1.webp",      color: "var(--cosmic-violet)" },
+  { id: "noxel-003",  name: "Noxel",  tier: "RARE",   img: "/cards/rare-1.webp",      color: "var(--electric-blue)" },
+  { id: "auren-004",  name: "Auren",  tier: "LEGENDARY", img: "/cards/legendary-2.webp", color: "var(--aurora-gold)" },
 ] as const;
 
 export default function HomeFeaturedCards() {

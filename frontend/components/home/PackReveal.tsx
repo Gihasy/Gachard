@@ -223,7 +223,7 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
             >
               <div className="relative" style={{ width: 200, height: 280 }}>
                 <Image
-                  src={`/packs/${packType}.png`}
+                  src={`/packs/${packType}.webp`}
                   alt={packLabel}
                   fill
                   className="object-contain drop-shadow-2xl"

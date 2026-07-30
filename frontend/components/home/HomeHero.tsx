@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 const HERO_CARDS = [
-  { img: "/cards/epic-1.png", name: "PYRAX", tier: "EPIC", stat: "ATK 620 · DEF 410", rot: -14, x: -180, y: 30, z: 1 },
-  { img: "/cards/legendary-1.png", name: "LUMORA", tier: "MYTHIC", stat: "ATK 860 · DEF 620", rot: 0, x: 0, y: 0, z: 3 },
-  { img: "/cards/rare-1.png", name: "NOXEL", tier: "RARE", stat: "ATK 540 · DEF 360", rot: 14, x: 180, y: 30, z: 1 },
+  { img: "/cards/epic-1.webp", name: "PYRAX", tier: "EPIC", stat: "ATK 620 · DEF 410", rot: -14, x: -180, y: 30, z: 1 },
+  { img: "/cards/legendary-1.webp", name: "LUMORA", tier: "MYTHIC", stat: "ATK 860 · DEF 620", rot: 0, x: 0, y: 0, z: 3 },
+  { img: "/cards/rare-1.webp", name: "NOXEL", tier: "RARE", stat: "ATK 540 · DEF 360", rot: 14, x: 180, y: 30, z: 1 },
 ] as const;
 
 const TIER_COLOR: Record<string, string> = {
