@@ -156,14 +156,14 @@ export default function Profil() {
         </>
       }
     >
-      <div className="grid gap-8 lg:grid-cols-[1fr_1.6fr]">
+      <div className="grid gap-4 sm:gap-6 lg:gap-8 lg:grid-cols-[1fr_1.6fr]">
         {/* Left column: Profile + Stats + Redeem */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Identity + Balance */}
-          <div className="glass p-8" data-testid="profile-identity">
-            <div className="flex items-center gap-5 mb-6">
+          <div className="glass p-4 sm:p-6 lg:p-8" data-testid="profile-identity">
+            <div className="flex items-center gap-3 sm:gap-5 mb-4 sm:mb-6">
               <div
-                className="w-20 h-20 rounded-3xl flex items-center justify-center shrink-0 font-display text-3xl text-white"
+                className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-2xl sm:rounded-3xl flex items-center justify-center shrink-0 font-display text-2xl sm:text-3xl text-white"
                 style={{
                   background:
                     "linear-gradient(135deg, var(--cosmic-violet-deep), var(--aurora-pink) 60%, var(--electric-blue))",
@@ -175,7 +175,7 @@ export default function Profil() {
               </div>
               <div className="min-w-0">
                 <p
-                  className="font-display text-2xl text-white truncate"
+                  className="font-display text-lg sm:text-xl lg:text-2xl text-white truncate"
                   data-testid="profile-username"
                 >
                   @{user?.username ?? "player"}
@@ -189,7 +189,7 @@ export default function Profil() {
             </div>
 
             <div
-              className="p-5 rounded-2xl flex items-center justify-between"
+              className="p-3 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3"
               style={{
                 background:
                   "linear-gradient(135deg, rgba(255,196,102,0.12), rgba(255,107,186,0.06))",
@@ -202,7 +202,7 @@ export default function Profil() {
                   Credit Balance
                 </p>
                 <p
-                  className="font-display text-2xl"
+                  className="font-display text-lg sm:text-xl lg:text-2xl"
                   style={{ color: "var(--aurora-gold)" }}
                 >
                   {(balance ?? 0).toLocaleString()}
@@ -210,7 +210,7 @@ export default function Profil() {
               </div>
               <Link
                 href="/topup"
-                className="btn-gold !py-2.5 !px-4 !text-[0.7rem]"
+                className="btn-gold !py-2 !px-3 sm:!py-2.5 sm:!px-4 !text-[0.6rem] sm:!text-[0.7rem] whitespace-nowrap"
                 data-testid="profile-balance-topup"
               >
                 Top Up
@@ -219,14 +219,14 @@ export default function Profil() {
           </div>
 
           {/* Collection Stats */}
-          <div className="glass p-6" data-testid="profile-stats">
+          <div className="glass p-4 sm:p-6" data-testid="profile-stats">
             <p
-              className="text-[0.72rem] uppercase tracking-[0.22em] mb-4"
+              className="text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.22em] mb-3 sm:mb-4"
               style={{ color: "var(--cosmic-violet)" }}
             >
               Collection Stats
             </p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <StatBlock label="Total" value={stats.total} color="#FFFFFF" />
               <StatBlock label="Digital" value={stats.digital} color="var(--electric-blue)" />
               <StatBlock label="In Progress" value={stats.inProgress} color="var(--aurora-gold)" />
@@ -236,8 +236,8 @@ export default function Profil() {
             </div>
 
             {/* Rarity distribution bar */}
-            <div className="mt-5">
-              <p className="text-[0.6rem] uppercase tracking-widest text-white/40 mb-2">Rarity Mix</p>
+            <div className="mt-4 sm:mt-5">
+              <p className="text-[0.55rem] sm:text-[0.6rem] uppercase tracking-widest text-white/40 mb-1.5 sm:mb-2">Rarity Mix</p>
               <div className="flex h-2.5 rounded-full overflow-hidden bg-white/[0.05]" data-testid="profile-rarity-bar">
                 {stats.total > 0 ? (
                   [
@@ -270,17 +270,17 @@ export default function Profil() {
 
           {/* Redeem Card */}
           <div
-            className="glass p-6"
+            className="glass p-4 sm:p-6"
             data-testid="profile-redeem"
             style={{ borderColor: "rgba(0,255,136,0.2)" }}
           >
             <p
-              className="text-[0.72rem] uppercase tracking-[0.22em] mb-3"
+              className="text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.22em] mb-2 sm:mb-3"
               style={{ color: "#00ff88" }}
             >
               Redeem a Real Card
             </p>
-            <p className="text-xs text-white/50 mb-4">
+            <p className="text-[0.7rem] sm:text-xs text-white/50 mb-3 sm:mb-4">
               Got a real Gachard card? Enter the Card ID and redeem code to claim it as Digital — so your ownership is recorded on-chain and you fully own it.
             </p>
             <div className="space-y-3">
@@ -344,9 +344,9 @@ export default function Profil() {
 
         {/* Right column: Card Collection */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <p
-              className="text-[0.72rem] uppercase tracking-[0.22em]"
+              className="text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.22em]"
               style={{ color: "var(--cosmic-violet)" }}
             >
               Your Collection
@@ -361,7 +361,7 @@ export default function Profil() {
 
           {cards.length === 0 ? (
             <div
-              className="glass p-10 text-center"
+              className="glass p-6 sm:p-8 lg:p-10 text-center"
               data-testid="profile-empty"
               style={{
                 background:
@@ -379,13 +379,13 @@ export default function Profil() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
                 {cards.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE).map((card, i) => {
                   const rarity = Math.max(0, Math.min(3, card.rarity)) as 0 | 1 | 2 | 3;
                   return (
                     <div
                       key={card.tokenId ?? `card-${i}`}
-                      className={`glass glass-hover overflow-hidden p-2.5 ${RARITY_GLOW[rarity]}`}
+                      className={`glass glass-hover overflow-hidden p-2 sm:p-2.5 ${RARITY_GLOW[rarity]}`}
                       style={{ borderColor: RARITY_COLORS[rarity] }}
                       data-testid={`profile-card-${card.tokenId}`}
                     >
@@ -500,13 +500,13 @@ function StatBlock({
 }) {
   return (
     <div
-      className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center"
+      className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-white/[0.03] border border-white/[0.06] text-center"
       data-testid={`stat-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      <p className="font-display text-xl" style={{ color }}>
+      <p className="font-display text-base sm:text-lg lg:text-xl" style={{ color }}>
         {value}
       </p>
-      <p className="text-[0.6rem] uppercase tracking-widest text-white/50 mt-0.5">
+      <p className="text-[0.5rem] sm:text-[0.6rem] uppercase tracking-widest text-white/50 mt-0.5">
         {label}
       </p>
     </div>
