@@ -356,10 +356,9 @@ function CardsTable({ cards }: { cards: AdminCard[] }) {
               ) : <span className="text-white/30">—</span>}
             </td>
             <td className="px-4 py-3.5 text-xs">
-              {c.ownerUsername ? (
-                <span className="text-white/80">{c.ownerUsername}</span>
-              ) : c.ownerAddress ? (
-                <span className="font-mono text-white/60">{c.ownerAddress.slice(0, 6)}...{c.ownerAddress.slice(-4)}</span>
+              {c.ownerUsername && <div className="text-white/80 mb-0.5">{c.ownerUsername}</div>}
+              {c.ownerAddress ? (
+                <div className="font-mono text-[0.6rem] text-white/40">{c.ownerAddress.slice(0, 10)}...{c.ownerAddress.slice(-6)}</div>
               ) : (
                 <span className="text-white/30">—</span>
               )}
