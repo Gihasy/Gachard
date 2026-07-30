@@ -26,7 +26,7 @@ export default function Profil() {
   const [ready, setReady] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
-  const [redeemTokenId, setRedeemTokenId] = useState("");
+  const [redeemCardId, setRedeemCardId] = useState("");
   const [redeemCode, setRedeemCode] = useState("");
   const [redeemLoading, setRedeemLoading] = useState(false);
   const [redeemMessage, setRedeemMessage] = useState<{ text: string; ok: boolean } | null>(null);
@@ -108,7 +108,7 @@ export default function Profil() {
   };
 
   const handleRedeem = async () => {
-    if (!user || !redeemTokenId.trim() || !redeemCode.trim()) return;
+    if (!user || !redeemCardId.trim() || !redeemCode.trim()) return;
     setRedeemLoading(true);
     setRedeemMessage(null);
     try {
@@ -117,17 +117,17 @@ export default function Profil() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: user.user_id,
-          tokenId: parseInt(redeemTokenId.trim()),
+          cardId: redeemCardId.trim().toLowerCase(),
           code: redeemCode.trim(),
         }),
       });
       const data = await res.json();
       if (res.ok) {
         setRedeemMessage({
-          text: `Card #${redeemTokenId} redeemed successfully! It's now in your collection.`,
+          text: `Card #${redeemCardId} redeemed successfully! It's now in your collection.`,
           ok: true,
         });
-        setRedeemTokenId("");
+        setRedeemCardId("");
         setRedeemCode("");
         fetch(`/api/cards?userId=${user.user_id}`)
           .then((r) => r.json())
@@ -295,21 +295,26 @@ export default function Profil() {
               Redeem a Real Card
             </p>
             <p className="text-[0.7rem] sm:text-xs text-white/50 mb-3 sm:mb-4">
-              Got a real Gachard card? Enter the Card ID and redeem code to claim it as Digital — so your ownership is recorded and you fully own it.
+              Received a real card? Enter the Card ID and the redeem code printed on the card to transfer ownership to your account.
             </p>
             <div className="space-y-3">
               <div>
                 <label className="block text-[0.65rem] uppercase tracking-widest text-white/40 mb-1.5">
                   Card ID
                 </label>
-                <input
-                  type="number"
-                  value={redeemTokenId}
-                  onChange={(e) => setRedeemTokenId(e.target.value)}
-                  placeholder="e.g. 14"
-                  className="w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
-                  data-testid="redeem-token-input"
-                />
+                <div
+                  className="flex items-center bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5"
+                >
+                  <span className="text-sm text-white/40 mr-1 font-mono">#</span>
+                  <input
+                    type="text"
+                    value={redeemCardId}
+                    onChange={(e) => setRedeemCardId(e.target.value)}
+                    placeholder="8a866"
+                    className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
+                    data-testid="redeem-card-input"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-[0.65rem] uppercase tracking-widest text-white/40 mb-1.5">
@@ -326,7 +331,7 @@ export default function Profil() {
               </div>
               <button
                 onClick={handleRedeem}
-                disabled={redeemLoading || !redeemTokenId.trim() || !redeemCode.trim()}
+                disabled={redeemLoading || !redeemCardId.trim() || !redeemCode.trim()}
                 className="w-full py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
                 style={{
                   background: "linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,204,255,0.15))",

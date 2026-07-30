@@ -8,7 +8,7 @@ import { friendlyTxStatus } from "@/lib/status-map";
 
 export async function POST(request: Request) {
   try {
-    const { userId, tokenId, code } = await request.json();
+    const { userId, cardId, tokenId, code } = await request.json();
 
     // Get user
     const usersCollection = await getCollection("users");
@@ -17,9 +17,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Verify card exists and is in "Real" status (must claim shipping first)
+    // Find card by cardId or tokenId
     const cardsCollection = await getCollection("cards");
-    const card = await cardsCollection.findOne({ tokenId });
+    let card = null;
+    if (cardId) {
+      card = await cardsCollection.findOne({ cardId: cardId.toLowerCase() });
+    } else if (tokenId) {
+      card = await cardsCollection.findOne({ tokenId });
+    }
     if (!card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
@@ -44,7 +49,7 @@ export async function POST(request: Request) {
 
     // Submit redeemCard transaction (async — ADR-018)
     // recipientAddress = wallet user yang login (ADR-007)
-    const txHash = await redeemCard(tokenId, redeemHash, user.walletAddress);
+    const txHash = await redeemCard(card.tokenId, redeemHash, user.walletAddress);
 
     // Simpan transaksi sebagai pending
     const contractAddress = process.env.CONTRACT_ADDRESS!;
@@ -52,7 +57,7 @@ export async function POST(request: Request) {
     const result = await txCollection.insertOne({
       userId: user._id.toString(),
       type: "redeem",
-      tokenId,
+      tokenId: card.tokenId,
       txHash,
       status: "pending",
       contractAddress,
