@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import PageShell from "@/components/PageShell";
+import CardItem from "@/components/CardItem";
 
 type SessionUser = { user_id: string; username: string; email?: string };
 type Card = {
@@ -16,15 +16,6 @@ type Card = {
   artworkUrl?: string;
   templateName?: string;
 };
-
-const RARITY_COLORS = [
-  "var(--rarity-common)",
-  "var(--rarity-rare)",
-  "var(--rarity-epic)",
-  "var(--rarity-legendary)",
-];
-const RARITY_GLOW = ["", "glow-rare", "glow-epic", "glow-legendary"];
-const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 
 export default function Profil() {
   const router = useRouter();
@@ -400,93 +391,18 @@ export default function Profil() {
           ) : (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
-                {cards.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE).map((card, i) => {
-                  const rarity = Math.max(0, Math.min(3, card.rarity)) as 0 | 1 | 2 | 3;
-                  return (
-                    <div
-                      key={card.tokenId ?? `card-${i}`}
-                      className={`glass glass-hover overflow-hidden p-2 sm:p-2.5 ${RARITY_GLOW[rarity]}`}
-                      style={{ borderColor: RARITY_COLORS[rarity] }}
-                      data-testid={`profile-card-${card.tokenId}`}
-                    >
-                      <div
-                        className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5"
-                        style={{ aspectRatio: "5/7" }}
-                      >
-                        {card.artworkUrl ? (
-                          <Image
-                            src={card.artworkUrl}
-                            alt={card.templateName || card.templateId}
-                            fill
-                            sizes="(max-width:768px) 40vw, 20vw"
-                            className="object-contain"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-3xl text-white/30">◆</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="px-1 pb-1">
-                        <p className="text-xs font-medium text-white truncate">
-                          {card.cardId ? `Card ID: #${card.cardId}` : card.tokenId !== null ? `Card #${card.tokenId}` : card.templateId}
-                        </p>
-                        <div className="flex flex-wrap items-center justify-between gap-1 mt-1">
-                          <span
-                            className={`tag tag-${RARITY_LABELS[rarity].toLowerCase()} text-[0.55rem]`}
-                          >
-                            {RARITY_LABELS[rarity]}
-                          </span>
-                          <span
-                            className="text-[0.55rem] uppercase tracking-widest px-1.5 py-0.5 rounded whitespace-nowrap"
-                            style={{
-                              background:
-                                card.displayStatus === "Real"
-                                  ? "rgba(0,255,136,0.15)"
-                                  : card.displayStatus === "In Progress"
-                                  ? "rgba(255,196,102,0.15)"
-                                  : "rgba(0,204,255,0.15)",
-                              color:
-                                card.displayStatus === "Real"
-                                  ? "#00ff88"
-                                  : card.displayStatus === "In Progress"
-                                  ? "var(--aurora-gold)"
-                                  : "#00ccff",
-                            }}
-                          >
-                            {card.displayStatus ?? "Digital"}
-                          </span>
-                        </div>
-                        {card.displayStatus === "Digital" && (
-                          card.tokenId !== null ? (
-                            <Link
-                              href="/collection"
-                              className="mt-2 w-full text-center text-[0.6rem] uppercase tracking-widest py-1.5 rounded-lg transition-all hover:bg-white/[0.06]"
-                              style={{
-                                background: "rgba(255,255,255,0.03)",
-                                border: "1px solid rgba(255,255,255,0.08)",
-                                color: "rgba(255,255,255,0.5)",
-                              }}
-                            >
-                              Print
-                            </Link>
-                          ) : (
-                            <div
-                              className="mt-2 w-full text-center text-[0.6rem] uppercase tracking-widest py-1.5 rounded-lg"
-                              style={{
-                                background: "rgba(255,255,255,0.02)",
-                                border: "1px solid rgba(255,255,255,0.05)",
-                                color: "rgba(255,255,255,0.25)",
-                              }}
-                            >
-                              Pending…
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                {cards.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE).map((card, i) => (
+                  <CardItem
+                    key={card.tokenId ?? `card-${i}`}
+                    cardId={card.cardId}
+                    tokenId={card.tokenId}
+                    templateId={card.templateId}
+                    rarity={card.rarity}
+                    artworkUrl={card.artworkUrl || ""}
+                    status={card.displayStatus || "Digital"}
+                    userId={user.user_id}
+                  />
+                ))}
               </div>
 
               {/* Pagination */}
