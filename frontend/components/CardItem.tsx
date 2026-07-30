@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import QRScanner from "./QRScanner";
 
 const RARITY_COLORS = [
   "var(--rarity-common)",
@@ -62,6 +63,7 @@ export default function CardItem({
   const [formError, setFormError] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);
+  const [showClaimScanner, setShowClaimScanner] = useState(false);
 
   const canPrint = status === "Digital" && tokenId !== null;
   const isInProgress = status === "In Progress";
@@ -80,15 +82,19 @@ export default function CardItem({
     setFormError(null);
   };
 
-  const handleClaimShipping = async () => {
-    if (!claimId) return;
+  const handleClaimScan = async (scannedClaimId: string) => {
+    setShowClaimScanner(false);
+    if (scannedClaimId !== claimId) {
+      setClaimError("QR code does not match this card. Please scan the correct Claim Shipping QR.");
+      return;
+    }
     setClaiming(true);
     setClaimError(null);
     try {
       const res = await fetch("/api/claim-shipping", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, claimId }),
+        body: JSON.stringify({ userId, claimId: scannedClaimId }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -256,8 +262,11 @@ export default function CardItem({
             )}
             {isShipping && (
               <div className="space-y-1.5">
+                {showClaimScanner && (
+                  <QRScanner onScan={handleClaimScan} onClose={() => setShowClaimScanner(false)} />
+                )}
                 <button
-                  onClick={handleClaimShipping}
+                  onClick={() => setShowClaimScanner(true)}
                   disabled={claiming}
                   className="w-full py-2 rounded-lg text-[0.65rem] font-medium uppercase tracking-widest transition-all disabled:opacity-50"
                   style={{
