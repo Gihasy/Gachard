@@ -221,7 +221,7 @@ function EmptyState() {
         Your vault is empty
       </h2>
       <p className="text-white/60 mb-6">
-        Open your first Cosmic Genesis pack and start your collection.
+        Open your first pack and start your collection.
       </p>
       <Link href="/" className="btn-primary" data-testid="empty-buy-pack">
         Open First Pack

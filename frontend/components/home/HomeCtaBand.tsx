@@ -27,8 +27,7 @@ export default function HomeCtaBand() {
               Your first pack is <span className="text-gradient-gold">waiting for you.</span>
             </h3>
             <p className="text-white/70 max-w-xl">
-              Sign up in seconds. Open your first Cosmic Genesis pack and start
-              building your legacy in the Gachard universe.
+              Sign up in seconds. Open your first pack and start building your collection.
             </p>
           </div>
           <div className="flex flex-wrap gap-4 justify-start lg:justify-end">
