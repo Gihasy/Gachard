@@ -25,7 +25,8 @@ interface ScanTx {
 }
 
 interface ScanData {
-  tokenId: string | number;
+  cardId?: string | null;
+  tokenId: string | number | null;
   onChain: {
     rarityCode: number;
     rarity: string;
@@ -44,7 +45,7 @@ interface ScanData {
 function ScanContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const tokenId = searchParams.get("tokenId");
+  const cardId = searchParams.get("cardId");
   const [data, setData] = useState<ScanData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,21 +53,21 @@ function ScanContent() {
   const [retryLoading, setRetryLoading] = useState(false);
 
   const handleScan = useCallback(
-    (scannedTokenId: string) => {
+    (scannedId: string) => {
       setShowScanner(false);
-      router.push(`/scan?tokenId=${scannedTokenId}`);
+      router.push(`/scan?cardId=${scannedId}`);
     },
     [router]
   );
 
   useEffect(() => {
-    if (!tokenId) return;
+    if (!cardId) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
     setData(null);
     setRetryLoading(false);
-    fetch(`/api/scan?tokenId=${tokenId}`)
+    fetch(`/api/scan?cardId=${cardId}`)
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
@@ -82,10 +83,10 @@ function ScanContent() {
     return () => {
       cancelled = true;
     };
-  }, [tokenId]);
+  }, [cardId]);
 
-  // Landing state — no token yet
-  if (!tokenId) {
+  // Landing state — no card yet
+  if (!cardId) {
     return (
       <>
         {showScanner && (
@@ -113,7 +114,7 @@ function ScanContent() {
   return (
     <PageShell
       testId="scan-result-page"
-      eyebrow={`Token #${tokenId}`}
+      eyebrow={`Card ID: #${cardId}`}
       title={
         <>
           Scan <span className="text-gradient-aurora">Result</span>
@@ -149,7 +150,7 @@ function ScanContent() {
               Error
             </p>
             <p className="text-white/70 mb-2">{error}</p>
-            <p className="text-xs text-white/40 mb-6">Card ID: #{tokenId}</p>
+            <p className="text-xs text-white/40 mb-6">Card ID: #{cardId}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowScanner(true)}
@@ -167,21 +168,26 @@ function ScanContent() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  const input = (e.currentTarget.elements.namedItem("retryTokenId") as HTMLInputElement).value.trim();
+                  const input = (e.currentTarget.elements.namedItem("retryCardId") as HTMLInputElement).value.trim();
                   if (input) {
                     setRetryLoading(true);
-                    router.push(`/scan?tokenId=${input}`);
+                    router.push(`/scan?cardId=${input}`);
                   }
                 }}
                 className="flex-1 flex gap-2"
               >
-                <input
-                  type="number"
-                  name="retryTokenId"
-                  placeholder="Enter Card ID"
-                  className="flex-1 bg-white/[0.04] border border-white/[0.1] rounded-2xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
-                  data-testid="scan-retry-input"
-                />
+                <div
+                  className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-4 py-3"
+                >
+                  <span className="text-sm text-white/40 mr-1 font-mono">#</span>
+                  <input
+                    type="text"
+                    name="retryCardId"
+                    placeholder="a1b2c3"
+                    className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
+                    data-testid="scan-retry-input"
+                  />
+                </div>
                 <button
                   type="submit"
                   disabled={retryLoading}
@@ -513,7 +519,7 @@ function ManualInput() {
   const [input, setInput] = useState("");
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim()) router.push(`/scan?tokenId=${input.trim()}`);
+    if (input.trim()) router.push(`/scan?cardId=${input.trim()}`);
   };
   return (
     <form
@@ -532,11 +538,12 @@ function ManualInput() {
           border: "1px solid rgba(255,255,255,0.10)",
         }}
       >
+        <span className="text-sm text-white/40 font-mono">#</span>
         <input
-          type="number"
+          type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="e.g. 108"
+          placeholder="a1b2c3"
           className="flex-1 bg-transparent outline-none text-white text-sm placeholder:text-white/40"
           data-testid="scan-token-input"
         />
@@ -547,10 +554,10 @@ function ManualInput() {
         className="btn-primary w-full disabled:opacity-50"
         data-testid="scan-submit-btn"
       >
-        Verify Card
+        Scan Card
       </button>
       <p className="mt-4 text-xs text-white/50 leading-relaxed">
-        Card IDs are numeric. If you don't have one, scan a card's QR with
+        Enter the 5-character Card ID shown on your card. Scan a card's QR with
         your camera to jump straight to the result.
       </p>
     </form>

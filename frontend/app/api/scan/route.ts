@@ -9,20 +9,25 @@ const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const cardIdParam = searchParams.get("cardId");
     const tokenIdParam = searchParams.get("tokenId");
 
-    if (!tokenIdParam) {
-      return NextResponse.json({ error: "tokenId required" }, { status: 400 });
-    }
-
-    const tokenId = parseInt(tokenIdParam);
-    if (isNaN(tokenId)) {
-      return NextResponse.json({ error: "Invalid tokenId" }, { status: 400 });
+    if (!cardIdParam && !tokenIdParam) {
+      return NextResponse.json({ error: "cardId or tokenId required" }, { status: 400 });
     }
 
     // Baca dari cache MongoDB (diupdate saat confirmTransaction)
     const cardsCollection = await getCollection("cards");
-    const card = await cardsCollection.findOne({ tokenId });
+    let card = null;
+
+    if (cardIdParam) {
+      card = await cardsCollection.findOne({ cardId: cardIdParam.toLowerCase() });
+    } else if (tokenIdParam) {
+      const tokenId = parseInt(tokenIdParam);
+      if (!isNaN(tokenId)) {
+        card = await cardsCollection.findOne({ tokenId });
+      }
+    }
 
     if (!card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
@@ -41,7 +46,7 @@ export async function GET(request: Request) {
 
     const mintTx = await txCollection.findOne({
       type: "mint",
-      tokenIds: tokenId,
+      tokenIds: card.tokenId,
     });
 
     if (mintTx?.purchasePrice) {
@@ -51,7 +56,7 @@ export async function GET(request: Request) {
     // Ambil ownership history
     const history = await txCollection
       .find({
-        $or: [{ tokenId }, { tokenIds: tokenId }],
+        $or: [{ tokenId: card.tokenId }, { tokenIds: card.tokenId }],
       })
       .sort({ createdAt: -1 })
       .limit(10)
@@ -96,7 +101,8 @@ export async function GET(request: Request) {
     const verificationFlag = verified && statusMatch ? "verified" : "warning";
 
     return NextResponse.json({
-      tokenId,
+      cardId: card.cardId || null,
+      tokenId: card.tokenId ?? null,
       onChain: {
         status: card.status === "Real" ? "Real" : friendlyCardStatus(STATUS_LABELS[statusCode] || "Unknown"),
         statusCode,
