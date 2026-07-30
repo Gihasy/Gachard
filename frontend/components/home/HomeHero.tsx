@@ -40,11 +40,10 @@ export default function HomeHero({
             </h1>
 
             <p className="reveal reveal-4 text-lg sm:text-xl text-white/85 mb-3 font-medium" data-testid="hero-tagline">
-              Every card tells a story.
+              One Card. Two Worlds. Always Yours.
             </p>
             <p className="reveal reveal-4 text-base text-white/60 max-w-[520px] mb-9 leading-relaxed">
-              Open packs, discover rare cards, and build your ultimate collection.
-              Each card you own is unique, verified, and one of a kind.
+              Every Gachard card starts digital-native — collect it, play it, and bring it into the real world anytime, with authenticity you can always verify.
             </p>
 
             <div className="reveal reveal-5 flex flex-wrap items-center gap-4 mb-12" data-testid="hero-cta-row">
