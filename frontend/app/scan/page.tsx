@@ -98,7 +98,7 @@ function ScanContent() {
               Scan a <span className="text-gradient-aurora">card</span>
             </>
           }
-          description="Every Gachard card carries a unique on-chain signature. Scan its QR code with your camera or enter the Card ID below to verify ownership, rarity, and history."
+          description="Every Gachard card carries a unique verified signature. Scan its QR code with your camera or enter the Card ID below to verify ownership, rarity, and history."
         >
           <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] items-start">
             <ScanInstructions onOpenCamera={() => setShowScanner(true)} />
@@ -294,7 +294,7 @@ function ScanContent() {
                     : "Warning — data mismatch"}
                 </p>
                 <p className="text-xs text-white/60 mt-0.5">
-                  Signature validated against on-chain record.
+                  Signature validated against verified record.
                 </p>
               </div>
             </div>

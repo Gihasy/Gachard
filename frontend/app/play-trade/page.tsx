@@ -78,11 +78,11 @@ export default function PlayTradePage() {
               <p className="text-white/70 leading-relaxed mb-5">
                 Every player gets access to <strong className="text-white">Play Cards</strong> — 
                 a dedicated set of cards designed purely for in-game battles. No purchase 
-                required. No wallet needed. Just pick up and play with anyone, 
+                required. No setup, no hassle. Just pick up and play with anyone, 
                 anywhere in the world.
               </p>
               <ul className="space-y-3">
-                <FeatureItem text="Instant access — start playing the moment you sign up" />
+                <FeatureItem text="Instant access once battles go live — no purchase needed" />
                 <FeatureItem text="Play Cards are free and unlimited — no pay-to-win" />
                 <FeatureItem text="Battle friends or match with players globally" />
                 <FeatureItem text="Casual fun or ranked competitive — your choice" />
@@ -161,7 +161,7 @@ export default function PlayTradePage() {
             <p className="text-white/70 leading-relaxed mb-8 max-w-2xl">
               Every Digital card you own is a tradeable asset. List it at a 
               fixed price, or put it up for auction and let the community 
-              decide its value. Every transaction is verified on-chain — 
+              decide its value. Every transaction will be fully verified — 
               no fakes, no scams, no middlemen.
             </p>
 
@@ -195,7 +195,7 @@ export default function PlayTradePage() {
                   </svg>
                 }
                 title="Verified"
-                desc="Every listing carries an on-chain rarity signature. What you see is what you get."
+                desc="Every listing carries a verified rarity signature. What you see is what you get."
               />
             </div>
           </div>

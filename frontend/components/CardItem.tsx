@@ -95,7 +95,7 @@ export default function CardItem({
         return;
       }
 
-      // Step 2: Request print on-chain
+      // Step 2: Request print
       const printRes = await fetch("/api/print", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

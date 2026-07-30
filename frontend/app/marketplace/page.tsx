@@ -59,19 +59,19 @@ export default function Marketplace() {
             </div>
             <h2 className="font-display uppercase text-3xl sm:text-4xl text-white mb-4 leading-tight">
               Peer-to-peer trading,{" "}
-              <span className="text-gradient-gold">on-chain settled.</span>
+              <span className="text-gradient-gold">fully verified.</span>
             </h2>
             <p className="text-white/70 max-w-xl leading-relaxed">
               List cards for any price. Every trade is verified against the
-              on-chain rarity signature — no counterfeits, no middlemen. Escrow
-              is atomic, and payouts settle in credits or on-chain tokens.
+              rarity signature — no counterfeits, no middlemen. Escrow
+              is atomic, and payouts settle in credits instantly.
             </p>
           </div>
           <div className="flex flex-col gap-3">
             <FeatureRow
               n="01"
               t="Verified rarity"
-              d="Every listing carries an on-chain rarity signature."
+              d="Every listing carries a verified rarity signature."
             />
             <FeatureRow
               n="02"

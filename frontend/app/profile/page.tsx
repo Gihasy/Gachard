@@ -283,7 +283,7 @@ export default function Profil() {
               Redeem a Real Card
             </p>
             <p className="text-[0.7rem] sm:text-xs text-white/50 mb-3 sm:mb-4">
-              Got a real Gachard card? Enter the Card ID and redeem code to claim it as Digital — so your ownership is recorded on-chain and you fully own it.
+              Got a real Gachard card? Enter the Card ID and redeem code to claim it as Digital — so your ownership is recorded and you fully own it.
             </p>
             <div className="space-y-3">
               <div>
