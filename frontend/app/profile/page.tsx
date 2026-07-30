@@ -36,7 +36,9 @@ export default function Profil() {
     id: string;
     type: string;
     tokenId: number | null;
+    cardId: string | null;
     tokenIds: number[] | null;
+    cardIds: string[] | null;
     status: string;
     amount: number | null;
     createdAt: string;
@@ -519,10 +521,14 @@ export default function Profil() {
                       <td className="px-4 py-3 text-white/60 text-xs">
                         {tx.type === "topup" && tx.amount
                           ? `${tx.amount.toLocaleString()} Credit`
+                          : tx.type === "mint" && tx.cardIds?.length
+                          ? `${tx.cardIds.length} cards`
                           : tx.type === "mint" && tx.tokenIds
                           ? `${tx.tokenIds.length} cards`
+                          : tx.cardId
+                          ? `#${tx.cardId}`
                           : tx.tokenId
-                          ? `Card #${tx.tokenId}`
+                          ? `#${tx.tokenId}`
                           : "—"}
                       </td>
                       <td className="px-4 py-3">

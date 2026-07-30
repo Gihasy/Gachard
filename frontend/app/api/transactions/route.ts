@@ -18,21 +18,47 @@ export async function GET(request: Request) {
       }
 
       const txCollection = await getCollection("transactions");
+      const cardsCollection = await getCollection("cards");
+
       const txs = await txCollection
         .find({ userId })
         .sort({ createdAt: -1 })
         .limit(50)
         .toArray();
 
-      const formatted = txs.map((tx) => ({
-        id: generateInvoiceId(tx._id.toString()),
-        type: tx.type,
-        tokenId: tx.tokenId ?? null,
-        tokenIds: tx.tokenIds ?? null,
-        status: tx.status === "confirmed" ? "Success" : tx.status === "failed" ? "Failed" : "Processing",
-        amount: tx.amount ?? null,
-        createdAt: tx.createdAt,
-      }));
+      // Build tokenId → cardId map
+      const allCards = await cardsCollection.find({}).toArray();
+      const tokenIdToCardId = new Map<string, string>();
+      for (const card of allCards) {
+        if (card.tokenId && card.cardId) {
+          tokenIdToCardId.set(String(card.tokenId), card.cardId);
+        }
+      }
+
+      const formatted = txs.map((tx) => {
+        // Resolve cardIds for mint transactions (tokenIds array)
+        let cardIds: string[] | null = null;
+        if (tx.tokenIds && Array.isArray(tx.tokenIds)) {
+          cardIds = tx.tokenIds
+            .map((tid: number) => tokenIdToCardId.get(String(tid)) || null)
+            .filter(Boolean) as string[];
+        }
+
+        // Resolve cardId for single tokenId
+        const cardId = tx.tokenId ? tokenIdToCardId.get(String(tx.tokenId)) || null : null;
+
+        return {
+          id: generateInvoiceId(tx._id.toString()),
+          type: tx.type,
+          tokenId: tx.tokenId ?? null,
+          cardId,
+          tokenIds: tx.tokenIds ?? null,
+          cardIds,
+          status: tx.status === "confirmed" ? "Success" : tx.status === "failed" ? "Failed" : "Processing",
+          amount: tx.amount ?? null,
+          createdAt: tx.createdAt,
+        };
+      });
 
       return NextResponse.json({ transactions: formatted });
     }
