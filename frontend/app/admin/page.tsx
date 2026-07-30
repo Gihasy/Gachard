@@ -544,7 +544,7 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
                     {processing === pr.tokenId ? "Processing..." : action.label}
                   </button>
                 )}
-                {fs === "Real" && <span className="text-[0.65rem] text-white/40">Delivered</span>}
+
               </div>
             </div>
           </div>
