@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const RARITY_COLORS = [
   "var(--rarity-common)",
@@ -44,6 +45,7 @@ export type RevealResult = RevealSuccess | RevealError;
 interface PackRevealProps {
   result: RevealResult;
   packLabel?: string;
+  packType?: "standard" | "booster";
 }
 
 type RevealPhase = "ready" | "bursting" | "revealing" | "done";
@@ -88,7 +90,7 @@ function SparkBurst() {
   );
 }
 
-export default function PackReveal({ result, packLabel = "Your Pack" }: PackRevealProps) {
+export default function PackReveal({ result, packLabel = "Your Pack", packType = "booster" }: PackRevealProps) {
   const [phase, setPhase] = useState<RevealPhase>("ready");
   const [revealedCount, setRevealedCount] = useState(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -211,55 +213,29 @@ export default function PackReveal({ result, packLabel = "Your Pack" }: PackReve
               </div>
             )}
 
-            {/* the pack itself */}
-            <button
-              onClick={handleOpen}
-              disabled={phase === "bursting"}
-              className={`relative z-10 group ${phase === "bursting" ? "pack-shake" : "pack-breathe"}`}
-              style={{ cursor: phase === "bursting" ? "default" : "pointer", opacity: phase === "bursting" ? 0 : 1, transition: "opacity 300ms ease 700ms" }}
-              data-testid="open-pack-btn"
-              aria-label="Open pack"
+            {/* Pack image */}
+            <div
+              className="relative z-10 pack-breathe"
+              style={{
+                opacity: phase === "bursting" ? 0 : 1,
+                transition: "opacity 300ms ease 700ms",
+              }}
             >
-              <div
-                className="relative overflow-hidden rounded-3xl"
-                style={{
-                  width: 240,
-                  aspectRatio: "5/7",
-                  background: "linear-gradient(160deg, #1a1740 0%, #241a52 45%, #3a1d5c 100%)",
-                  border: "1px solid rgba(255,196,102,0.35)",
-                  boxShadow: "0 40px 90px -30px rgba(255,196,102,0.55), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.2)",
-                }}
-              >
-                {/* diagonal sheen */}
-                <span
-                  className="absolute inset-y-0 w-1/3 pointer-events-none"
-                  style={{
-                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)",
-                    animation: "packSheen 3.5s ease-in-out infinite",
-                  }}
+              <div className="relative" style={{ width: 200, height: 280 }}>
+                <Image
+                  src={`/packs/${packType}.png`}
+                  alt={packLabel}
+                  fill
+                  className="object-contain drop-shadow-2xl"
+                  sizes="200px"
+                  priority
                 />
-                {/* emblem */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-4">
-                  <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center"
-                    style={{
-                      background: "linear-gradient(135deg, var(--aurora-gold), var(--aurora-pink))",
-                      boxShadow: "0 10px 30px -6px rgba(255,196,102,0.6)",
-                    }}
-                  >
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0B0E1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="12 2 15 8.5 22 9.3 17 14 18.3 21 12 17.5 5.7 21 7 14 2 9.3 9 8.5 12 2" />
-                    </svg>
-                  </div>
-                  <p className="font-display uppercase text-lg text-white tracking-wide text-center leading-tight">
-                    {packLabel}
-                  </p>
-                  <span className="chip"><span className="chip-dot" />Sealed</span>
-                </div>
-                {/* grain */}
-                <span className="grid-lines opacity-40" />
               </div>
-            </button>
+              <p className="font-display uppercase text-base text-white/80 tracking-wider mt-3 text-center">
+                {packLabel}
+              </p>
+              <span className="chip mt-2 mx-auto"><span className="chip-dot" />Sealed</span>
+            </div>
           </div>
         </div>
       )}
