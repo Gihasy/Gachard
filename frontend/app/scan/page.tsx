@@ -48,6 +48,7 @@ function ScanContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [retryLoading, setRetryLoading] = useState(false);
 
   const handleScan = useCallback(
     (scannedTokenId: string) => {
@@ -62,6 +63,8 @@ function ScanContent() {
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setData(null);
+    setRetryLoading(false);
     fetch(`/api/scan?tokenId=${tokenId}`)
       .then((r) => r.json())
       .then((d) => {
@@ -144,11 +147,12 @@ function ScanContent() {
             <p style={{ color: "var(--aurora-pink)" }} className="uppercase tracking-widest text-sm mb-2">
               Error
             </p>
-            <p className="text-white/70 mb-6">{error}</p>
+            <p className="text-white/70 mb-2">{error}</p>
+            <p className="text-xs text-white/40 mb-6">Card ID: #{tokenId}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowScanner(true)}
-                className="py-3 px-5 rounded-2xl text-sm font-medium transition-all"
+                className="py-3 px-5 rounded-2xl text-sm font-medium transition-all active:scale-95"
                 style={{
                   background: "linear-gradient(135deg, var(--cosmic-violet), var(--electric-blue))",
                   color: "#fff",
@@ -164,9 +168,8 @@ function ScanContent() {
                   e.preventDefault();
                   const input = (e.currentTarget.elements.namedItem("retryTokenId") as HTMLInputElement).value.trim();
                   if (input) {
+                    setRetryLoading(true);
                     router.push(`/scan?tokenId=${input}`);
-                  } else {
-                    setShowScanner(true);
                   }
                 }}
                 className="flex-1 flex gap-2"
@@ -180,15 +183,25 @@ function ScanContent() {
                 />
                 <button
                   type="submit"
-                  className="py-3 px-5 rounded-2xl text-sm font-medium transition-all"
+                  disabled={retryLoading}
+                  className="py-3 px-5 rounded-2xl text-sm font-medium transition-all active:scale-95 disabled:opacity-50"
                   style={{
-                    background: "rgba(0,204,255,0.15)",
+                    background: retryLoading
+                      ? "rgba(0,204,255,0.08)"
+                      : "rgba(0,204,255,0.15)",
                     border: "1px solid rgba(0,204,255,0.35)",
                     color: "var(--electric-blue)",
                   }}
                   data-testid="scan-retry-submit"
                 >
-                  Scan
+                  {retryLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Scanning…
+                    </span>
+                  ) : (
+                    "Scan"
+                  )}
                 </button>
               </form>
             </div>
