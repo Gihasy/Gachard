@@ -136,6 +136,7 @@ export default function AdminPage() {
     tab === "cards" ? cards.length : prints.length;
 
   const pendingPrints = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) !== "Real").length;
+  const newPrintRequests = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) === "Locked").length;
 
   return (
     <PageShell
@@ -149,7 +150,7 @@ export default function AdminPage() {
         <SummaryCard label="Users" value={users.length} color="var(--electric-blue)" active={tab === "users"} onClick={() => setTab("users")} />
         <SummaryCard label="Transactions" value={txs.length} color="var(--cosmic-violet)" active={tab === "transactions"} onClick={() => setTab("transactions")} />
         <SummaryCard label="Cards" value={cards.length} color="var(--aurora-pink)" active={tab === "cards"} onClick={() => setTab("cards")} />
-        <SummaryCard label="Pending Prints" value={pendingPrints} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} />
+        <SummaryCard label="Pending Prints" value={pendingPrints} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} hasNotification={newPrintRequests > 0} />
       </div>
 
       {/* Tabs */}
@@ -224,15 +225,21 @@ export default function AdminPage() {
 }
 
 function SummaryCard({
-  label, value, color, active, onClick,
-}: { label: string; value: number | string; color: string; active: boolean; onClick: () => void }) {
+  label, value, color, active, onClick, hasNotification,
+}: { label: string; value: number | string; color: string; active: boolean; onClick: () => void; hasNotification?: boolean }) {
   return (
     <button
       onClick={onClick}
-      className="glass glass-hover p-5 text-left"
+      className="glass glass-hover p-5 text-left relative"
       style={{ borderColor: active ? color : undefined }}
       data-testid={`admin-summary-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
+      {hasNotification && (
+        <span
+          className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full animate-pulse"
+          style={{ background: "#ff6bba", boxShadow: "0 0 8px rgba(255,107,186,0.6)" }}
+        />
+      )}
       <p className="text-[0.62rem] uppercase tracking-[0.2em] text-white/45 mb-2">{label}</p>
       <p className="font-display text-3xl" style={{ color }}>{value}</p>
     </button>
@@ -413,12 +420,28 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
           <div
             key={pr.rawTxId}
             className="glass p-5"
-            style={{ borderColor: fs === "Real" ? "rgba(0,255,136,0.3)" : undefined }}
+            style={{
+              borderColor: fs === "Locked"
+                ? "rgba(255,107,186,0.5)"
+                : fs === "Real"
+                ? "rgba(0,255,136,0.3)"
+                : undefined,
+            }}
             data-testid={`print-request-${pr.tokenId}`}
           >
             <div className="flex flex-wrap gap-6 items-start">
               <div className="min-w-[140px]">
-                <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-1">Card</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-[0.62rem] uppercase tracking-widest text-white/40">Card</p>
+                  {fs === "Locked" && (
+                    <span
+                      className="text-[0.5rem] uppercase tracking-widest px-1.5 py-0.5 rounded-full animate-pulse"
+                      style={{ background: "rgba(255,107,186,0.2)", color: "#ff6bba", border: "1px solid rgba(255,107,186,0.5)" }}
+                    >
+                      NEW
+                    </span>
+                  )}
+                </div>
                 <p className="font-display text-xl">#{pr.card?.cardId || pr.tokenId || "?"}</p>
                 {pr.card && (
                   <>
@@ -465,23 +488,25 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
                 ) : <p className="text-xs text-white/40">No address</p>}
               </div>
 
-              <div>
-                <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-1">Scan & Verify QR</p>
-                {pr.tokenId !== null ? (
-                  <div className="bg-white p-2 rounded-lg inline-block">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/api/cards/${pr.tokenId}/qr`} alt={`QR for #${pr.tokenId}`} className="w-24 h-24" />
-                  </div>
-                ) : <p className="text-xs text-white/40">No token ID</p>}
-                {pr.card?.claimId && pr.card?.fulfillmentStatus === "Shipping" && (
-                  <>
-                    <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-1 mt-3">Claim Shipping QR</p>
+              <div className="flex gap-4">
+                <div>
+                  <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-1">Scan & Verify</p>
+                  {pr.tokenId !== null ? (
                     <div className="bg-white p-2 rounded-lg inline-block">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={`/api/claim-qr/${pr.card.claimId}`} alt="Claim QR" className="w-24 h-24" />
+                      <img src={`/api/cards/${pr.tokenId}/qr`} alt={`QR for #${pr.tokenId}`} className="w-20 h-20" />
                     </div>
-                    <p className="text-[0.55rem] font-mono text-white/30 mt-1">{pr.card.claimId}</p>
-                  </>
+                  ) : <p className="text-xs text-white/40">No token ID</p>}
+                </div>
+                {pr.card?.claimId && pr.card?.fulfillmentStatus === "Shipping" && (
+                  <div>
+                    <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-1">Claim Shipping</p>
+                    <div className="bg-white p-2 rounded-lg inline-block">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={`/api/claim-qr/${pr.card.claimId}`} alt="Claim QR" className="w-20 h-20" />
+                    </div>
+                    <p className="text-[0.5rem] font-mono text-white/30 mt-1">{pr.card.claimId}</p>
+                  </div>
                 )}
               </div>
 
