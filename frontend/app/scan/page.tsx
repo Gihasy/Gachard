@@ -132,16 +132,62 @@ function ScanContent() {
       )}
 
       {error && !loading && (
-        <div
-          className="glass p-10 text-center max-w-xl mx-auto"
-          data-testid="scan-error"
-          style={{ borderColor: "rgba(255,107,186,0.35)" }}
-        >
-          <p style={{ color: "var(--aurora-pink)" }} className="uppercase tracking-widest text-sm mb-2">
-            Error
-          </p>
-          <p className="text-white/70">{error}</p>
-        </div>
+        <>
+          {showScanner && (
+            <QRScanner onScan={handleScan} onClose={() => setShowScanner(false)} />
+          )}
+          <div
+            className="glass p-10 text-center max-w-xl mx-auto"
+            data-testid="scan-error"
+            style={{ borderColor: "rgba(255,107,186,0.35)" }}
+          >
+            <p style={{ color: "var(--aurora-pink)" }} className="uppercase tracking-widest text-sm mb-2">
+              Error
+            </p>
+            <p className="text-white/70 mb-6">{error}</p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setShowScanner(true)}
+                className="flex-1 py-3 rounded-2xl text-sm font-medium transition-all"
+                style={{
+                  background: "linear-gradient(135deg, var(--cosmic-violet), var(--electric-blue))",
+                  color: "#fff",
+                }}
+                data-testid="scan-retry-camera"
+              >
+                Scan Again
+              </button>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const input = (e.currentTarget.elements.namedItem("retryTokenId") as HTMLInputElement).value.trim();
+                  if (input) router.push(`/scan?tokenId=${input}`);
+                }}
+                className="flex-1 flex gap-2"
+              >
+                <input
+                  type="number"
+                  name="retryTokenId"
+                  placeholder="Enter Card ID"
+                  className="flex-1 bg-white/[0.04] border border-white/[0.1] rounded-2xl px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
+                  data-testid="scan-retry-input"
+                />
+                <button
+                  type="submit"
+                  className="py-3 px-5 rounded-2xl text-sm font-medium transition-all"
+                  style={{
+                    background: "rgba(0,204,255,0.15)",
+                    border: "1px solid rgba(0,204,255,0.35)",
+                    color: "var(--electric-blue)",
+                  }}
+                  data-testid="scan-retry-submit"
+                >
+                  Verify
+                </button>
+              </form>
+            </div>
+          </div>
+        </>
       )}
 
       {data && !loading && (
