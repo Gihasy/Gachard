@@ -67,6 +67,7 @@ export async function POST(request: Request) {
     const txResult = await txCollection.insertOne({
       userId: user._id.toString(),
       type: "mint",
+      amount: pack.price,
       rarities,
       templateIds: templates.map((t) => t.templateId),
       tokenIds: [], // populated saat konfirmasi on-chain

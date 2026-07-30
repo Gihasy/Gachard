@@ -16,6 +16,7 @@ const RARITY_GLOW = ["", "glow-rare", "glow-epic", "glow-legendary"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 
 interface ScanTx {
+  invoiceId?: string;
   type: string;
   status: string;
   timestamp: string | number;
@@ -376,6 +377,11 @@ function ScanContent() {
                       className="flex justify-between items-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
                     >
                       <div className="flex items-center gap-3 min-w-0">
+                        {tx.invoiceId && (
+                          <span className="text-[0.6rem] font-mono text-white/40 shrink-0">
+                            {tx.invoiceId}
+                          </span>
+                        )}
                         <span className="text-sm font-medium capitalize text-white shrink-0">
                           {tx.type}
                         </span>

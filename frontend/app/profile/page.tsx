@@ -37,6 +37,16 @@ export default function Profil() {
   const [redeemMessage, setRedeemMessage] = useState<{ text: string; ok: boolean } | null>(null);
   const [page, setPage] = useState(0);
   const CARDS_PER_PAGE = 6;
+  type Tx = {
+    id: string;
+    type: string;
+    tokenId: number | null;
+    tokenIds: number[] | null;
+    status: string;
+    amount: number | null;
+    createdAt: string;
+  };
+  const [transactions, setTransactions] = useState<Tx[]>([]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -70,6 +80,13 @@ export default function Profil() {
       .then((r) => r.json())
       .then((d: { cards?: Card[] }) => {
         if (!cancelled) setCards(d.cards ?? []);
+      })
+      .catch(() => {});
+
+    fetch(`/api/transactions?userId=${user.user_id}`)
+      .then((r) => r.json())
+      .then((d: { transactions?: Tx[] }) => {
+        if (!cancelled) setTransactions(d.transactions ?? []);
       })
       .catch(() => {});
 
@@ -487,6 +504,98 @@ export default function Profil() {
           )}
         </div>
       </div>
+
+      {/* Transaction History */}
+      {transactions.length > 0 && (
+        <div className="mt-8" data-testid="profile-transactions">
+          <p
+            className="text-[0.72rem] uppercase tracking-[0.22em] mb-4"
+            style={{ color: "var(--cosmic-violet)" }}
+          >
+            Transaction History
+          </p>
+          <div className="glass overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.06]">
+                    <th className="text-left px-4 py-3 text-[0.65rem] uppercase tracking-widest text-white/40 font-medium">Invoice</th>
+                    <th className="text-left px-4 py-3 text-[0.65rem] uppercase tracking-widest text-white/40 font-medium">Type</th>
+                    <th className="text-left px-4 py-3 text-[0.65rem] uppercase tracking-widest text-white/40 font-medium">Details</th>
+                    <th className="text-left px-4 py-3 text-[0.65rem] uppercase tracking-widest text-white/40 font-medium">Status</th>
+                    <th className="text-left px-4 py-3 text-[0.65rem] uppercase tracking-widest text-white/40 font-medium">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((tx) => (
+                    <tr key={tx.id} className="border-b border-white/[0.04] hover:bg-white/[0.02]" data-testid={`tx-row-${tx.id}`}>
+                      <td className="px-4 py-3 font-mono text-xs text-white/80">{tx.id}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded"
+                          style={{
+                            background:
+                              tx.type === "topup"
+                                ? "rgba(0,255,136,0.12)"
+                                : tx.type === "mint"
+                                ? "rgba(0,204,255,0.12)"
+                                : tx.type === "print"
+                                ? "rgba(255,196,102,0.12)"
+                                : "rgba(184,172,255,0.12)",
+                            color:
+                              tx.type === "topup"
+                                ? "#00ff88"
+                                : tx.type === "mint"
+                                ? "var(--electric-blue)"
+                                : tx.type === "print"
+                                ? "var(--aurora-gold)"
+                                : "var(--cosmic-violet)",
+                          }}
+                        >
+                          {tx.type === "topup" ? "Top Up" : tx.type === "mint" ? "Pack" : tx.type === "print" ? "Print" : tx.type === "redeem" ? "Redeem" : tx.type}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-white/60 text-xs">
+                        {tx.type === "topup" && tx.amount
+                          ? `${tx.amount.toLocaleString()} Credit`
+                          : tx.type === "mint" && tx.tokenIds
+                          ? `${tx.tokenIds.length} cards`
+                          : tx.tokenId
+                          ? `Card #${tx.tokenId}`
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded"
+                          style={{
+                            background:
+                              tx.status === "Success"
+                                ? "rgba(0,204,255,0.12)"
+                                : tx.status === "Failed"
+                                ? "rgba(255,107,186,0.12)"
+                                : "rgba(255,196,102,0.12)",
+                            color:
+                              tx.status === "Success"
+                                ? "var(--electric-blue)"
+                                : tx.status === "Failed"
+                                ? "var(--aurora-pink)"
+                                : "var(--aurora-gold)",
+                          }}
+                        >
+                          {tx.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-white/50">
+                        {new Date(tx.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </PageShell>
   );
 }

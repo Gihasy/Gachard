@@ -10,13 +10,14 @@ export type TxStatus = "pending" | "confirmed" | "failed";
 export interface Transaction {
   _id?: ObjectId;
   userId: string;
-  type: "mint" | "print" | "redeem" | "transfer";
+  type: "mint" | "print" | "redeem" | "transfer" | "topup";
   tokenId?: number;
   rarity?: number;
   txHash: string | null;
   status: TxStatus;
   fromAddress: string;
   toAddress: string;
+  amount?: number;
   error?: string;
   createdAt: string;
   updatedAt: string;

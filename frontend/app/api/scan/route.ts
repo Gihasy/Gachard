@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { friendlyTxStatus, friendlyCardStatus } from "@/lib/status-map";
+import { generateInvoiceId } from "@/lib/invoice";
 
 const STATUS_LABELS = ["Digital", "Vaulted"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
@@ -116,6 +117,7 @@ export async function GET(request: Request) {
         flag: verificationFlag,
       },
       history: history.map((tx) => ({
+        invoiceId: generateInvoiceId(tx._id.toString()),
         type: tx.type,
         status: friendlyTxStatus(tx.status),
         from: tx.fromAddress === "vault" ? "Gachard Vault" : tx.fromAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() ? "Gachard" : addressToUsername.get(tx.fromAddress?.toLowerCase()) || tx.fromAddress,
