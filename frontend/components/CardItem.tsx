@@ -13,6 +13,7 @@ const RARITY_GLOW = ["", "glow-rare", "glow-epic", "glow-legendary"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 
 interface CardItemProps {
+  cardId?: string | null;
   tokenId: number | null;
   templateId: string;
   templateName?: string;
@@ -41,6 +42,7 @@ const EMPTY_FORM: ShippingForm = {
 };
 
 export default function CardItem({
+  cardId,
   tokenId,
   templateId,
   templateName,
@@ -153,7 +155,7 @@ export default function CardItem({
 
         <div className="px-1 pb-1">
           <p className="text-xs font-medium text-white truncate">
-            {tokenId !== null ? `Card #${tokenId}` : templateId}
+            {cardId ? `Card ID: #${cardId}` : tokenId !== null ? `Card #${tokenId}` : templateId}
           </p>
           <div className="flex flex-wrap items-center justify-between gap-1 mt-1">
             <span

@@ -40,6 +40,7 @@ export async function GET(request: Request) {
     const enrichedCards = cards.map((card) => {
       const template = templateMap.get(card.templateId);
       return {
+        cardId: card.cardId || null,
         tokenId: card.tokenId,
         templateId: card.templateId,
         rarity: card.rarity,

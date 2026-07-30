@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
 import { mintBatch } from "@/lib/blockchain";
 import { buildPackRarities } from "@/lib/odds";
@@ -6,6 +7,11 @@ import { pickCardTemplate, seedCardTemplates } from "@/lib/card-templates";
 import { deductCredits, addCredits } from "@/lib/credits";
 import { generateInvoiceId } from "@/lib/invoice";
 import { friendlyTxStatus } from "@/lib/status-map";
+
+/** Generate a unique 5-character hex Card ID (e.g. "a3f1b") */
+function generateCardId(): string {
+  return randomBytes(3).toString("hex").slice(0, 5);
+}
 
 const PACK_TYPES: Record<string, { price: number; cards: number; guaranteed: number }> = {
   standard: { price: 500, cards: 5, guaranteed: 1 },
@@ -84,6 +90,7 @@ export async function POST(request: Request) {
     // Simpan card records
     const cardsCollection = await getCollection("cards");
     const cardDocs = templates.map((template, i) => ({
+      cardId: generateCardId(),
       tokenId: null,
       txId: txResult.insertedId.toString(),
       pickIndex: i,

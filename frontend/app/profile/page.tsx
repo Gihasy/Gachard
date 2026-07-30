@@ -8,6 +8,7 @@ import PageShell from "@/components/PageShell";
 
 type SessionUser = { user_id: string; username: string; email?: string };
 type Card = {
+  cardId?: string | null;
   tokenId: number | null;
   templateId: string;
   rarity: number;
@@ -428,7 +429,7 @@ export default function Profil() {
                       </div>
                       <div className="px-1 pb-1">
                         <p className="text-xs font-medium text-white truncate">
-                          {card.tokenId !== null ? `Card #${card.tokenId}` : card.templateId}
+                          {card.cardId ? `Card ID: #${card.cardId}` : card.tokenId !== null ? `Card #${card.tokenId}` : card.templateId}
                         </p>
                         <div className="flex flex-wrap items-center justify-between gap-1 mt-1">
                           <span
@@ -456,6 +457,19 @@ export default function Profil() {
                             {card.displayStatus ?? "Digital"}
                           </span>
                         </div>
+                        {card.displayStatus === "Digital" && card.tokenId !== null && (
+                          <Link
+                            href="/collection"
+                            className="mt-2 w-full text-center text-[0.6rem] uppercase tracking-widest py-1.5 rounded-lg transition-all hover:bg-white/[0.06]"
+                            style={{
+                              background: "rgba(255,255,255,0.03)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              color: "rgba(255,255,255,0.5)",
+                            }}
+                          >
+                            Print
+                          </Link>
+                        )}
                       </div>
                     </div>
                   );

@@ -14,6 +14,7 @@ const RARITY_TABS = [
 ];
 
 type Card = {
+  cardId?: string | null;
   templateId: string;
   templateName?: string;
   tokenId: number | null;
@@ -179,6 +180,7 @@ export default function Koleksi() {
           {filtered.map((card) => (
             <CardItem
               key={card.templateId + (card.tokenId ?? "")}
+              cardId={card.cardId}
               tokenId={card.tokenId}
               templateId={card.templateId}
               templateName={card.templateName}
