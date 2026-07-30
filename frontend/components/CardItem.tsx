@@ -6,6 +6,7 @@ import Image from "next/image";
 interface CardItemProps {
   tokenId: number | null;
   templateId: string;
+  templateName?: string;
   rarity: number;
   artworkUrl: string;
   status: string;
@@ -33,6 +34,7 @@ const EMPTY_FORM: ShippingForm = {
 export default function CardItem({
   tokenId,
   templateId,
+  templateName,
   artworkUrl,
   status,
   userId,
@@ -140,7 +142,7 @@ export default function CardItem({
         <div className="px-1.5 pb-1.5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-medium text-white truncate">
-              {tokenId !== null ? `Card #${tokenId}` : templateId}
+              {templateName || (tokenId !== null ? `Card #${tokenId}` : templateId)}
             </p>
             <span
               className="text-[0.62rem] uppercase tracking-widest px-2 py-0.5 rounded"

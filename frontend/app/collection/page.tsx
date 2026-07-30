@@ -15,6 +15,7 @@ const RARITY_TABS = [
 
 type Card = {
   templateId: string;
+  templateName?: string;
   tokenId: number | null;
   rarity: number;
   artworkUrl?: string;
@@ -180,6 +181,7 @@ export default function Koleksi() {
               key={card.templateId + (card.tokenId ?? "")}
               tokenId={card.tokenId}
               templateId={card.templateId}
+              templateName={card.templateName}
               rarity={card.rarity}
               artworkUrl={card.artworkUrl || ""}
               status={card.displayStatus || "Digital"}
