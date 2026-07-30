@@ -215,7 +215,7 @@ function LoginInner() {
 
         {demoEnabled && (
           <p className="mt-3 text-center text-[0.68rem] text-white/45">
-            Spins up a real sandbox account (on-chain wallet + starter credits) — perfect for testing.
+            Creates a demo account instantly — try packs, cards, and the full experience.
           </p>
         )}
 
