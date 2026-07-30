@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
+
+// Auto-confirm waits up to 8s for receipt. Total process ~10-12s. Set 15s buffer.
+export const maxDuration = 15;
 import { getCollection, parseObjectId } from "@/lib/mongodb";
 import { mintBatch, getProvider } from "@/lib/blockchain";
 import { buildPackRarities } from "@/lib/odds";
@@ -9,9 +12,14 @@ import { generateInvoiceId } from "@/lib/invoice";
 import { friendlyTxStatus } from "@/lib/status-map";
 import { ethers } from "ethers";
 
-/** Generate a unique 5-character hex Card ID (e.g. "a3f1b") */
-function generateCardId(): string {
-  return randomBytes(3).toString("hex").slice(0, 5);
+/** Generate a unique 5-character hex Card ID (e.g. "a3f1b"), with collision retry */
+async function generateUniqueCardId(cardsCollection: { findOne: (q: Record<string, unknown>) => Promise<unknown> }): Promise<string> {
+  for (let i = 0; i < 5; i++) {
+    const id = randomBytes(3).toString("hex").slice(0, 5);
+    const existing = await cardsCollection.findOne({ cardId: id });
+    if (!existing) return id;
+  }
+  throw new Error("Failed to generate unique cardId after 5 attempts");
 }
 
 const PACK_TYPES: Record<string, { price: number; cards: number; guaranteed: number }> = {
@@ -90,18 +98,21 @@ export async function POST(request: Request) {
 
     // Simpan card records
     const cardsCollection = await getCollection("cards");
-    const cardDocs = templates.map((template, i) => ({
-      cardId: generateCardId(),
-      tokenId: null,
-      txId: txResult.insertedId.toString(),
-      pickIndex: i,
-      templateId: template.templateId,
-      rarity: rarities[i],
+    const cardDocs = [];
+    for (let i = 0; i < templates.length; i++) {
+      cardDocs.push({
+        cardId: await generateUniqueCardId(cardsCollection),
+        tokenId: null,
+        txId: txResult.insertedId.toString(),
+        pickIndex: i,
+        templateId: templates[i].templateId,
+        rarity: rarities[i],
       ownerAddress: user.walletAddress,
       status: "pending",
       contractAddress,
       createdAt: new Date().toISOString(),
-    }));
+      });
+    }
     await cardsCollection.insertMany(cardDocs);
 
     // Wait for on-chain receipt (up to 8s) to assign tokenIds immediately
