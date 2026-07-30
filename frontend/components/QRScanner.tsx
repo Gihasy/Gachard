@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Html5Qrcode } from "html5-qrcode";
+import type { Html5Qrcode } from "html5-qrcode";
 
 interface QRScannerProps {
   onScan: (tokenId: string) => void;
@@ -20,6 +20,14 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
 
     const startScanner = async () => {
       try {
+        // Check camera permission first
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          setError("Camera is not supported in this browser.");
+          return;
+        }
+
+        // Dynamic import to avoid SSR issues
+        const { Html5Qrcode } = await import("html5-qrcode");
         const scanner = new Html5Qrcode("qr-reader");
         scannerRef.current = scanner;
 
@@ -28,14 +36,9 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
         const boxSize = Math.max(200, minDim);
 
         await scanner.start(
+          { facingMode: "environment" },
           {
-            facingMode: "environment",
-            // Request high resolution for better QR detection
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-          {
-            fps: 15,
+            fps: 10,
             qrbox: { width: boxSize, height: boxSize },
             aspectRatio: 1.0,
             disableFlip: false,
