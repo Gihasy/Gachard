@@ -121,13 +121,6 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
     return () => clearTimeout(timer);
   }, [phase, revealedCount, sortedCards.length]);
 
-  // Auto-open after a short delay
-  useEffect(() => {
-    const t = setTimeout(() => handleOpen(), 600);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   if ("error" in result && result.error) {
     return (
       <div
