@@ -21,6 +21,7 @@ interface CardItemProps {
   artworkUrl: string;
   status: string;
   requestedAt?: string | null;
+  claimId?: string | null;
   userId: string;
 }
 
@@ -51,6 +52,7 @@ export default function CardItem({
   artworkUrl,
   status,
   requestedAt,
+  claimId,
   userId,
 }: CardItemProps) {
   const [printing, setPrinting] = useState(false);
@@ -58,9 +60,12 @@ export default function CardItem({
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ShippingForm>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [claimError, setClaimError] = useState<string | null>(null);
 
   const canPrint = status === "Digital" && tokenId !== null;
   const isInProgress = status === "In Progress";
+  const isShipping = status === "Shipping";
   const isReal = status === "Real";
 
   const isFormValid =
@@ -73,6 +78,29 @@ export default function CardItem({
   const handleFormChange = (field: keyof ShippingForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setFormError(null);
+  };
+
+  const handleClaimShipping = async () => {
+    if (!claimId) return;
+    setClaiming(true);
+    setClaimError(null);
+    try {
+      const res = await fetch("/api/claim-shipping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, claimId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        setClaimError(data.error || "Claim failed");
+      }
+    } catch {
+      setClaimError("Network error");
+    } finally {
+      setClaiming(false);
+    }
   };
 
   const handleRequestPrint = async () => {
@@ -170,11 +198,15 @@ export default function CardItem({
               style={{
                 background: isReal
                   ? "rgba(0,255,136,0.15)"
+                  : isShipping
+                  ? "rgba(138,92,255,0.15)"
                   : isInProgress
                   ? "rgba(255,196,102,0.15)"
                   : "rgba(0,204,255,0.15)",
                 color: isReal
                   ? "#00ff88"
+                  : isShipping
+                  ? "var(--cosmic-violet)"
                   : isInProgress
                   ? "var(--aurora-gold)"
                   : "#00ccff",
@@ -220,6 +252,28 @@ export default function CardItem({
                 data-testid={`requested-at-${tokenId}`}
               >
                 Requested {new Date(requestedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </div>
+            )}
+            {isShipping && (
+              <div className="space-y-1.5">
+                <button
+                  onClick={handleClaimShipping}
+                  disabled={claiming}
+                  className="w-full py-2 rounded-lg text-[0.65rem] font-medium uppercase tracking-widest transition-all disabled:opacity-50"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(138,92,255,0.2), rgba(0,204,255,0.15))",
+                    border: "1px solid rgba(138,92,255,0.4)",
+                    color: "var(--cosmic-violet)",
+                  }}
+                  data-testid={`claim-shipping-${tokenId}`}
+                >
+                  {claiming ? "Claiming…" : "Claim Shipping"}
+                </button>
+                {claimError && (
+                  <p className="text-[0.6rem] text-center" style={{ color: "var(--aurora-pink)" }}>
+                    {claimError}
+                  </p>
+                )}
               </div>
             )}
             {isReal && (

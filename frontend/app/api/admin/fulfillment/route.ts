@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { getCollection } from "@/lib/mongodb";
 
 const VALID_TRANSITIONS: Record<string, string> = {
@@ -37,9 +38,10 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     };
 
-    // Add tracking number if provided (for Shipping status)
-    if (action === "Shipping" && trackingNumber) {
-      update.trackingNumber = trackingNumber;
+    // Add tracking number and generate claimId for Shipping status
+    if (action === "Shipping") {
+      if (trackingNumber) update.trackingNumber = trackingNumber;
+      update.claimId = randomBytes(4).toString("hex");
     }
 
     // If status is "Real", also update card status to "Real" (final state)

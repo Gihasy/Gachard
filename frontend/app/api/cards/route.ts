@@ -7,7 +7,8 @@ import { getCollection, parseObjectId } from "@/lib/mongodb";
  */
 function getDisplayStatus(fulfillmentStatus: string | null | undefined): string {
   if (!fulfillmentStatus) return "Digital";
-  if (["Locked", "Processing", "Printed", "Shipping"].includes(fulfillmentStatus)) return "In Progress";
+  if (["Locked", "Processing", "Printed"].includes(fulfillmentStatus)) return "In Progress";
+  if (fulfillmentStatus === "Shipping") return "Shipping";
   if (fulfillmentStatus === "Real") return "Real";
   return "Digital";
 }
@@ -48,6 +49,7 @@ export async function GET(request: Request) {
         artworkUrl: template?.artworkUrl || "",
         templateName: template?.name || card.templateId,
         requestedAt: card.fulfillmentStatus ? card.updatedAt || null : null,
+        claimId: card.claimId || null,
       };
     });
 

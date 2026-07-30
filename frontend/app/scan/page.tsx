@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import PageShell from "@/components/PageShell";
 import QRScanner from "@/components/QRScanner";
@@ -46,22 +47,63 @@ function ScanContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const cardId = searchParams.get("cardId");
+  const claimId = searchParams.get("claimId");
   const [data, setData] = useState<ScanData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [retryLoading, setRetryLoading] = useState(false);
+  const [claimResult, setClaimResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const handleScan = useCallback(
     (scannedId: string) => {
       setShowScanner(false);
-      router.push(`/scan?cardId=${scannedId}`);
+      // Check if it's a claim QR (short hex) or card QR (5-char hex)
+      if (scannedId.length <= 8 && /^[a-f0-9]+$/i.test(scannedId)) {
+        router.push(`/scan?claimId=${scannedId}`);
+      } else {
+        router.push(`/scan?cardId=${scannedId}`);
+      }
     },
     [router]
   );
 
+  // Handle claim shipping
   useEffect(() => {
-    if (!cardId) return;
+    if (!claimId) return;
+    const user = localStorage.getItem("user");
+    if (!user) {
+      setClaimResult({ success: false, message: "Please login first to claim your card." });
+      return;
+    }
+    let userId: string;
+    try {
+      userId = JSON.parse(user).user_id;
+    } catch {
+      setClaimResult({ success: false, message: "Session expired. Please login again." });
+      return;
+    }
+
+    setLoading(true);
+    fetch("/api/claim-shipping", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, claimId }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) {
+          setClaimResult({ success: true, message: `Card #${d.cardId || d.tokenId} claimed successfully! Status: Real` });
+        } else {
+          setClaimResult({ success: false, message: d.error || "Claim failed" });
+        }
+      })
+      .catch(() => setClaimResult({ success: false, message: "Network error" }))
+      .finally(() => setLoading(false));
+  }, [claimId]);
+
+  useEffect(() => {
+    if (!cardId || claimId) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -83,10 +125,84 @@ function ScanContent() {
     return () => {
       cancelled = true;
     };
-  }, [cardId]);
+  }, [cardId, claimId]);
 
-  // Landing state — no card yet
-  if (!cardId) {
+  // Claim result state
+  if (claimId && claimResult) {
+    return (
+      <PageShell
+        testId="claim-result-page"
+        eyebrow="Claim Shipping"
+        title={
+          <>
+            Claim <span className="text-gradient-aurora">Result</span>
+          </>
+        }
+      >
+        <div
+          className="glass p-10 text-center max-w-xl mx-auto"
+          style={{ borderColor: claimResult.success ? "rgba(0,255,136,0.35)" : "rgba(255,107,186,0.35)" }}
+        >
+          <div
+            className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+            style={{
+              background: claimResult.success ? "rgba(0,255,136,0.15)" : "rgba(255,107,186,0.15)",
+            }}
+          >
+            {claimResult.success ? (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12l4 4 10-10" />
+              </svg>
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff6bba" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            )}
+          </div>
+          <p
+            className="text-lg font-display uppercase mb-2"
+            style={{ color: claimResult.success ? "#00ff88" : "#ff6bba" }}
+          >
+            {claimResult.success ? "Claimed!" : "Claim Failed"}
+          </p>
+          <p className="text-white/70">{claimResult.message}</p>
+          {claimResult.success && (
+            <Link href="/profile" className="btn-primary mt-6 inline-block">
+              View Collection
+            </Link>
+          )}
+        </div>
+      </PageShell>
+    );
+  }
+
+  // Loading state for claim
+  if (claimId && loading) {
+    return (
+      <PageShell
+        testId="claim-loading-page"
+        eyebrow="Claim Shipping"
+        title={
+          <>
+            Claiming <span className="text-gradient-aurora">Card…</span>
+          </>
+        }
+      >
+        <div className="glass p-14 text-center max-w-xl mx-auto">
+          <div
+            className="w-10 h-10 mx-auto rounded-full border-2 border-t-transparent animate-spin"
+            style={{ borderColor: "var(--cosmic-violet)", borderTopColor: "transparent" }}
+          />
+          <p className="mt-5 text-white/70 uppercase tracking-widest text-xs">
+            Verifying claim…
+          </p>
+        </div>
+      </PageShell>
+    );
+  }
+
+  // Landing state — no card or claim
+  if (!cardId && !claimId) {
     return (
       <>
         {showScanner && (

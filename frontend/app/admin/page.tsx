@@ -59,7 +59,7 @@ type PrintRequest = {
   fulfillmentStatus: string | null;
   shippingAddress: ShippingAddress | null;
   user: { email: string; username: string; walletAddress: string } | null;
-  card: { cardId: string | null; status: string; rarity: number; templateId: string; fulfillmentStatus: string | null } | null;
+  card: { cardId: string | null; claimId: string | null; status: string; rarity: number; templateId: string; fulfillmentStatus: string | null } | null;
   txStatus: string;
   createdAt: string;
   updatedAt: string;
@@ -375,7 +375,7 @@ const FULFILLMENT_ACTIONS: Record<string, { label: string; next: string }> = {
   Locked: { label: "Accept & Start Processing", next: "Processing" },
   Processing: { label: "Mark as Printed", next: "Printed" },
   Printed: { label: "Mark as Shipped", next: "Shipping" },
-  Shipping: { label: "Mark as Delivered", next: "Real" },
+  Shipping: { label: "Awaiting User Claim", next: "" },
 };
 
 function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAccept: () => void }) {
@@ -473,6 +473,16 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
                     <img src={`/api/cards/${pr.tokenId}/qr`} alt={`QR for #${pr.tokenId}`} className="w-24 h-24" />
                   </div>
                 ) : <p className="text-xs text-white/40">No token ID</p>}
+                {pr.card?.claimId && pr.card?.fulfillmentStatus === "Shipping" && (
+                  <>
+                    <p className="text-[0.62rem] uppercase tracking-widest text-white/40 mb-1 mt-3">Claim Shipping QR</p>
+                    <div className="bg-white p-2 rounded-lg inline-block">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={`/api/claim-qr/${pr.card.claimId}`} alt="Claim QR" className="w-24 h-24" />
+                    </div>
+                    <p className="text-[0.55rem] font-mono text-white/30 mt-1">{pr.card.claimId}</p>
+                  </>
+                )}
               </div>
 
               <div className="w-full sm:ml-auto sm:w-auto sm:min-w-[210px] text-left sm:text-right">
@@ -492,7 +502,7 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
                     className="w-full mb-2 px-3 py-2 rounded-xl text-xs bg-white/[0.04] border border-white/10 text-white placeholder:text-white/30 outline-none focus:border-white/30"
                   />
                 )}
-                {action && pr.tokenId !== null && (
+                {action && action.next && pr.tokenId !== null && (
                   <button
                     onClick={() => handleFulfillment(pr.tokenId!, action.next)}
                     disabled={processing === pr.tokenId}

@@ -16,6 +16,7 @@ type Card = {
   artworkUrl?: string;
   templateName?: string;
   requestedAt?: string | null;
+  claimId?: string | null;
 };
 
 export default function Profil() {
@@ -402,6 +403,7 @@ export default function Profil() {
                     artworkUrl={card.artworkUrl || ""}
                     status={card.displayStatus || "Digital"}
                     requestedAt={card.requestedAt}
+                    claimId={card.claimId}
                     userId={user.user_id}
                   />
                 ))}

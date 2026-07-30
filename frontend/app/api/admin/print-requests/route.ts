@@ -87,6 +87,7 @@ export async function GET() {
           card: card
             ? {
                 cardId: card.cardId || null,
+                claimId: card.claimId || null,
                 status: card.status,
                 rarity: card.rarity,
                 templateId: card.templateId,

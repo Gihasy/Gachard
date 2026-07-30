@@ -22,6 +22,7 @@ type Card = {
   artworkUrl?: string;
   displayStatus?: string;
   requestedAt?: string | null;
+  claimId?: string | null;
 };
 
 export default function Koleksi() {
@@ -189,6 +190,7 @@ export default function Koleksi() {
               artworkUrl={card.artworkUrl || ""}
               status={card.displayStatus || "Digital"}
               requestedAt={card.requestedAt}
+              claimId={card.claimId}
               userId={user.user_id}
             />
           ))}

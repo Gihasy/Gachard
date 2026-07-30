@@ -17,6 +17,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Verify card exists and is in "Real" status (must claim shipping first)
+    const cardsCollection = await getCollection("cards");
+    const card = await cardsCollection.findOne({ tokenId });
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
+    if (card.fulfillmentStatus !== "Real") {
+      return NextResponse.json(
+        { error: "Card must be claimed (status: Real) before redeeming. Please claim shipping first." },
+        { status: 400 }
+      );
+    }
+
     // CEK RATE-LIMIT (ADR-006) — TOLAK sebelum transaksi on-chain
     const rateLimit = await checkRateLimit(user._id.toString(), "redeem");
     if (!rateLimit.allowed) {
