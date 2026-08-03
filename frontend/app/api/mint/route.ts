@@ -6,7 +6,7 @@ export const maxDuration = 15;
 import { getCollection, parseObjectId } from "@/lib/mongodb";
 import { mintBatch, getProvider } from "@/lib/blockchain";
 import { buildPackRarities } from "@/lib/odds";
-import { pickCardTemplate, seedCardTemplates } from "@/lib/card-templates";
+import { pickCardTemplate, seedCardTemplates, updateArtworkUrls } from "@/lib/card-templates";
 import { deductCredits, addCredits } from "@/lib/credits";
 import { generateInvoiceId } from "@/lib/invoice";
 import { friendlyTxStatus } from "@/lib/status-map";
@@ -63,6 +63,7 @@ export async function POST(request: Request) {
   // Bungkus sisa proses — refund jika gagal
   try {
     await seedCardTemplates();
+    await updateArtworkUrls();
 
     // Build rarities based on pack type
     const rarities = await buildPackRarities(pack.cards, pack.guaranteed);

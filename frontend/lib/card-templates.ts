@@ -9,14 +9,14 @@ export interface CardTemplate {
 
 // Default templates — artworkUrl sesuai nama file di public/cards/
 const DEFAULT_TEMPLATES: CardTemplate[] = [
-  { templateId: "common-1", rarity: 0, name: "Common Card A", artworkUrl: "/cards/common-1.png" },
-  { templateId: "common-2", rarity: 0, name: "Common Card B", artworkUrl: "/cards/common-2.png" },
-  { templateId: "rare-1", rarity: 1, name: "Rare Card A", artworkUrl: "/cards/rare-1.png" },
-  { templateId: "rare-2", rarity: 1, name: "Rare Card B", artworkUrl: "/cards/rare-2.png" },
-  { templateId: "epic-1", rarity: 2, name: "Epic Card A", artworkUrl: "/cards/epic-1.png" },
-  { templateId: "epic-2", rarity: 2, name: "Epic Card B", artworkUrl: "/cards/epic-2.png" },
-  { templateId: "legendary-1", rarity: 3, name: "Legendary Card A", artworkUrl: "/cards/legendary-1.png" },
-  { templateId: "legendary-2", rarity: 3, name: "Legendary Card B", artworkUrl: "/cards/legendary-2.png" },
+  { templateId: "common-1", rarity: 0, name: "Common Card A", artworkUrl: "/cards/common-1.webp" },
+  { templateId: "common-2", rarity: 0, name: "Common Card B", artworkUrl: "/cards/common-2.webp" },
+  { templateId: "rare-1", rarity: 1, name: "Rare Card A", artworkUrl: "/cards/rare-1.webp" },
+  { templateId: "rare-2", rarity: 1, name: "Rare Card B", artworkUrl: "/cards/rare-2.webp" },
+  { templateId: "epic-1", rarity: 2, name: "Epic Card A", artworkUrl: "/cards/epic-1.webp" },
+  { templateId: "epic-2", rarity: 2, name: "Epic Card B", artworkUrl: "/cards/epic-2.webp" },
+  { templateId: "legendary-1", rarity: 3, name: "Legendary Card A", artworkUrl: "/cards/legendary-1.webp" },
+  { templateId: "legendary-2", rarity: 3, name: "Legendary Card B", artworkUrl: "/cards/legendary-2.webp" },
 ];
 
 /**
