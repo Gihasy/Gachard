@@ -182,7 +182,7 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
             <span className="text-gradient-aurora">Pack Ready</span>
           </h2>
           <p className="text-white/50 text-sm mb-8">
-            {phase === "bursting" ? "Unsealing…" : "Opening your pack…"}
+            {phase === "bursting" ? "Unsealing…" : "Your pack is ready to open"}
           </p>
 
           <div className="relative mx-auto flex items-center justify-center" style={{ height: 360 }}>
@@ -230,6 +230,16 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
               <span className="chip mt-2 mx-auto"><span className="chip-dot" />Sealed</span>
             </div>
           </div>
+
+          {phase === "ready" && (
+            <button
+              onClick={handleOpen}
+              className="btn-primary mt-6 text-lg px-8 py-3"
+              data-testid="pack-open-btn"
+            >
+              Open Pack
+            </button>
+          )}
         </div>
       )}
 
