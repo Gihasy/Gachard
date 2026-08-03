@@ -25,6 +25,7 @@ interface CardItemProps {
   deliveredAt?: string | null;
   claimId?: string | null;
   userId: string;
+  isNew?: boolean;
   onStatusChange?: (tokenId: number, newStatus: string) => void;
 }
 
@@ -58,6 +59,7 @@ export default function CardItem({
   deliveredAt,
   claimId,
   userId,
+  isNew,
   onStatusChange,
 }: CardItemProps) {
   const [printing, setPrinting] = useState(false);
@@ -181,6 +183,19 @@ export default function CardItem({
         data-testid={`card-item-${tokenId ?? templateId}`}
       >
         <div className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5" style={{ aspectRatio: "5/7" }}>
+          {isNew && (
+            <span
+              className="absolute top-2 right-2 z-10 text-[0.55rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,107,186,0.9), rgba(184,172,255,0.9))",
+                color: "#fff",
+                boxShadow: "0 0 12px rgba(255,107,186,0.5)",
+              }}
+              data-testid="card-new-badge"
+            >
+              New
+            </span>
+          )}
           {artworkUrl ? (
             <Image
               src={artworkUrl}

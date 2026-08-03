@@ -18,6 +18,7 @@ type Card = {
   requestedAt?: string | null;
   deliveredAt?: string | null;
   claimId?: string | null;
+  isNew?: boolean;
 };
 
 export default function Profil() {
@@ -76,7 +77,22 @@ export default function Profil() {
     fetch(`/api/cards?userId=${user.user_id}`)
       .then((r) => r.json())
       .then((d: { cards?: Card[] }) => {
-        if (!cancelled) setCards(d.cards ?? []);
+        if (!cancelled) {
+          setCards(d.cards ?? []);
+          // Mark new cards as viewed after 2 seconds
+          const newCardIds = (d.cards ?? []).filter((c) => c.isNew).map((c) => c.cardId).filter(Boolean);
+          if (newCardIds.length > 0) {
+            setTimeout(() => {
+              fetch("/api/cards/view", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: user.user_id, cardIds: newCardIds }),
+              }).then(() => {
+                setCards((prev) => prev.map((c) => ({ ...c, isNew: false })));
+              }).catch(() => {});
+            }, 2000);
+          }
+        }
       })
       .catch(() => {});
 
@@ -412,6 +428,7 @@ export default function Profil() {
                     status={card.displayStatus || "Digital"}
                     requestedAt={card.requestedAt}
                     deliveredAt={card.deliveredAt}
+                    isNew={card.isNew}
                     onStatusChange={(tokenId, newStatus) => {
                       setCards((prev) =>
                         prev.map((c) =>

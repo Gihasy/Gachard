@@ -24,6 +24,7 @@ type Card = {
   requestedAt?: string | null;
   deliveredAt?: string | null;
   claimId?: string | null;
+  isNew?: boolean;
 };
 
 export default function Koleksi() {
@@ -66,6 +67,19 @@ export default function Koleksi() {
         clearTimeout(timer);
         setCards(d.cards ?? []);
         setLoading(false);
+        // Mark new cards as viewed after 2 seconds
+        const newCardIds = (d.cards ?? []).filter((c) => c.isNew).map((c) => c.cardId).filter(Boolean);
+        if (newCardIds.length > 0) {
+          setTimeout(() => {
+            fetch("/api/cards/view", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: user.user_id, cardIds: newCardIds }),
+            }).then(() => {
+              setCards((prev) => prev.map((c) => ({ ...c, isNew: false })));
+            }).catch(() => {});
+          }, 2000);
+        }
       })
       .catch(() => {
         clearTimeout(timer);
@@ -192,6 +206,7 @@ export default function Koleksi() {
               status={card.displayStatus || "Digital"}
               requestedAt={card.requestedAt}
               deliveredAt={card.deliveredAt}
+              isNew={card.isNew}
               onStatusChange={(tokenId, newStatus) => {
                 setCards((prev) =>
                   prev.map((c) =>

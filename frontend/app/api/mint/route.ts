@@ -111,6 +111,7 @@ export async function POST(request: Request) {
       ownerAddress: user.walletAddress,
       status: "pending",
       contractAddress,
+      viewed: false,
       createdAt: new Date().toISOString(),
       });
     }

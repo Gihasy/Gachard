@@ -31,6 +31,7 @@ export async function GET(request: Request) {
     const cardsCollection = await getCollection("cards");
     const cards = await cardsCollection
       .find({ ownerAddress: user.walletAddress })
+      .sort({ createdAt: -1 })
       .toArray();
 
     // Lookup artworkUrl dari card_templates
@@ -51,6 +52,8 @@ export async function GET(request: Request) {
         requestedAt: card.fulfillmentStatus ? card.updatedAt || null : null,
         deliveredAt: card.deliveredAt || null,
         claimId: card.claimId || null,
+        isNew: !card.viewed,
+        createdAt: card.createdAt || null,
       };
     });
 
