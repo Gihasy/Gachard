@@ -290,7 +290,7 @@ export default function CardItem({
                 <button
                   onClick={() => setShowClaimScanner(true)}
                   disabled={claiming}
-                  className="w-full py-2 rounded-lg text-[0.65rem] font-medium uppercase tracking-widest transition-all disabled:opacity-50"
+                  className="w-full py-2 rounded-lg text-[0.65rem] font-medium uppercase tracking-widest transition-all disabled:opacity-50 active:scale-95 active:brightness-125 hover:brightness-110"
                   style={{
                     background: "linear-gradient(135deg, rgba(138,92,255,0.2), rgba(0,204,255,0.15))",
                     border: "1px solid rgba(138,92,255,0.4)",
