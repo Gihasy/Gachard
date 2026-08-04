@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import QRScanner from "./QRScanner";
+import CardDetailModal from "./CardDetailModal";
 
 const RARITY_COLORS = [
   "var(--rarity-common)",
@@ -63,7 +63,6 @@ export default function CardItem({
   isNew,
   onStatusChange,
 }: CardItemProps) {
-  const router = useRouter();
   const [printing, setPrinting] = useState(false);
   const [printStatus, setPrintStatus] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -73,6 +72,7 @@ export default function CardItem({
   const [claimError, setClaimError] = useState<string | null>(null);
   const [showClaimScanner, setShowClaimScanner] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
+  const [showDetail, setShowDetail] = useState(false);
 
   const canPrint = currentStatus === "Digital" && tokenId !== null;
   const isInProgress = currentStatus === "In Progress";
@@ -186,7 +186,7 @@ export default function CardItem({
       >
         <button
           type="button"
-          onClick={() => router.push(`/scan?cardId=${cardId || tokenId}`)}
+          onClick={() => setShowDetail(true)}
           className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5 cursor-pointer group"
           style={{ aspectRatio: "5/7" }}
           data-testid={`card-visual-${tokenId ?? templateId}`}
@@ -345,6 +345,15 @@ export default function CardItem({
           )}
         </div>
       </div>
+
+      {/* Card Detail Modal */}
+      {showDetail && (
+        <CardDetailModal
+          cardId={cardId}
+          tokenId={tokenId}
+          onClose={() => setShowDetail(false)}
+        />
+      )}
 
       {/* Shipping Address Modal */}
       {showForm && (
