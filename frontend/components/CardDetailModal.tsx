@@ -87,61 +87,62 @@ export default function CardDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
       style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
       onClick={onClose}
       data-testid="card-detail-modal"
     >
       <div
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl"
+        className="w-full max-w-lg rounded-3xl flex flex-col overflow-hidden"
         style={{
           background: "rgba(15,19,36,0.97)",
           border: "1px solid rgba(184,172,255,0.2)",
+          maxHeight: "min(88vh, 600px)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10 sticky top-0 z-10" style={{ background: "rgba(15,19,36,0.97)" }}>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 shrink-0">
           <p className="text-[0.72rem] uppercase tracking-[0.22em]" style={{ color: "var(--cosmic-violet)" }}>
             Card Details
           </p>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:brightness-125"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:brightness-125"
             style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
             data-testid="card-detail-close"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-5">
+        {/* Body — scrollable if needed */}
+        <div className="flex-1 overflow-y-auto p-4">
           {loading && (
-            <div className="py-16 text-center">
+            <div className="py-12 text-center">
               <div
-                className="w-10 h-10 mx-auto rounded-full border-2 border-t-transparent animate-spin"
+                className="w-8 h-8 mx-auto rounded-full border-2 border-t-transparent animate-spin"
                 style={{ borderColor: "var(--cosmic-violet)", borderTopColor: "transparent" }}
               />
-              <p className="mt-5 text-white/70 uppercase tracking-widest text-xs">Loading…</p>
+              <p className="mt-4 text-white/70 uppercase tracking-widest text-xs">Loading…</p>
             </div>
           )}
 
           {error && (
-            <div className="py-16 text-center">
+            <div className="py-12 text-center">
               <p style={{ color: "var(--aurora-pink)" }} className="uppercase tracking-widest text-sm mb-2">Error</p>
-              <p className="text-white/70">{error}</p>
+              <p className="text-white/70 text-sm">{error}</p>
             </div>
           )}
 
           {data && (
-            <div className="grid gap-6 sm:grid-cols-[200px_1fr] items-start">
-              {/* Card artwork */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Card artwork — fixed width on desktop */}
               <div
-                className={`glass overflow-hidden mx-auto w-full max-w-[200px] ${RARITY_GLOW[data.onChain.rarityCode]}`}
-                style={{ borderColor: RARITY_COLORS[data.onChain.rarityCode] }}
+                className={`glass overflow-hidden shrink-0 mx-auto sm:mx-0 ${RARITY_GLOW[data.onChain.rarityCode]}`}
+                style={{ borderColor: RARITY_COLORS[data.onChain.rarityCode], width: 150 }}
               >
                 <div className="relative w-full bg-white/5" style={{ aspectRatio: "5/7" }}>
                   {data.metadata.artworkUrl ? (
@@ -149,22 +150,22 @@ export default function CardDetailModal({
                       src={data.metadata.artworkUrl}
                       alt={data.metadata.templateName || "Card"}
                       fill
-                      sizes="200px"
+                      sizes="150px"
                       className="object-contain"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-4xl text-white/30">◆</span>
+                      <span className="text-3xl text-white/30">◆</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Meta */}
-              <div className="space-y-3">
+              {/* Meta — fills remaining space */}
+              <div className="flex-1 min-w-0 space-y-2.5">
                 {/* Verification */}
                 <div
-                  className="flex items-center gap-3 p-3 rounded-2xl"
+                  className="flex items-center gap-2.5 p-2.5 rounded-xl"
                   style={{
                     background: data.verification.flag === "verified" ? "rgba(0,204,255,0.08)" : "rgba(255,196,102,0.08)",
                     border: data.verification.flag === "verified" ? "1px solid rgba(0,204,255,0.35)" : "1px solid rgba(255,196,102,0.35)",
@@ -172,12 +173,12 @@ export default function CardDetailModal({
                   data-testid="modal-verification"
                 >
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                    className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
                     style={{
                       background: data.verification.flag === "verified" ? "rgba(0,204,255,0.18)" : "rgba(255,196,102,0.18)",
                     }}
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                       {data.verification.flag === "verified" ? (
                         <path d="M5 12l4 4 10-10" stroke="var(--electric-blue)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       ) : (
@@ -187,23 +188,23 @@ export default function CardDetailModal({
                   </div>
                   <div>
                     <p
-                      className="text-xs font-semibold uppercase tracking-wide"
+                      className="text-[0.7rem] font-semibold uppercase tracking-wide"
                       style={{ color: data.verification.flag === "verified" ? "var(--electric-blue)" : "var(--aurora-gold)" }}
                     >
                       {data.verification.flag === "verified" ? "Verified authentic" : "Warning — data mismatch"}
                     </p>
-                    <p className="text-[0.6rem] text-white/60 mt-0.5">Signature validated against verified record.</p>
+                    <p className="text-[0.55rem] text-white/60">Signature validated against verified record.</p>
                   </div>
                 </div>
 
                 {/* Metadata */}
-                <div className="glass p-4">
+                <div className="glass p-3">
                   <MetaRow label="Card ID" value={`#${data.cardId || data.tokenId}`} mono />
                   <MetaRow label="Name" value={data.metadata.templateName || "Unknown"} />
                   <MetaRow
                     label="Rarity"
                     value={
-                      <span className={`tag tag-${RARITY_LABELS[data.onChain.rarityCode].toLowerCase()} text-[0.6rem]`}>
+                      <span className={`tag tag-${RARITY_LABELS[data.onChain.rarityCode].toLowerCase()} text-[0.55rem]`}>
                         {data.onChain.rarity}
                       </span>
                     }
@@ -212,7 +213,7 @@ export default function CardDetailModal({
                     label="Status"
                     value={
                       <span
-                        className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded"
+                        className="text-[0.55rem] uppercase tracking-widest px-1.5 py-0.5 rounded"
                         style={{
                           background: data.onChain.status === "Print Requested" ? "rgba(255,107,186,0.15)" : "rgba(0,204,255,0.15)",
                           color: data.onChain.status === "Print Requested" ? "var(--aurora-pink)" : "var(--electric-blue)",
@@ -223,11 +224,11 @@ export default function CardDetailModal({
                       </span>
                     }
                   />
-                  <MetaRow label="Last Owner" value={<span className="text-xs text-white/70">{data.onChain.lastOwner || "—"} </span>} />
+                  <MetaRow label="Last Owner" value={<span className="text-[0.65rem] text-white/70">{data.onChain.lastOwner || "—"} </span>} />
                   {data.purchasePrice !== null && (
                     <MetaRow
                       label="Purchase Price"
-                      value={<span className="font-semibold text-xs" style={{ color: "var(--aurora-gold)" }}>{data.purchasePrice} Credit</span>}
+                      value={<span className="font-semibold text-[0.65rem]" style={{ color: "var(--aurora-gold)" }}>{data.purchasePrice} Credit</span>}
                       last
                     />
                   )}
@@ -235,25 +236,25 @@ export default function CardDetailModal({
 
                 {/* History */}
                 {data.history && data.history.length > 0 && (
-                  <div className="glass p-4" data-testid="modal-history">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[0.65rem] uppercase tracking-[0.22em]" style={{ color: "var(--cosmic-violet)" }}>
+                  <div className="glass p-3" data-testid="modal-history">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[0.6rem] uppercase tracking-[0.22em]" style={{ color: "var(--cosmic-violet)" }}>
                         Transaction History
                       </p>
                       {data.history.length > 3 && (
                         <button
                           onClick={() => setHistoryExpanded(!historyExpanded)}
-                          className="flex items-center gap-1 text-[0.6rem] text-white/50 hover:text-white/80 transition-colors"
+                          className="flex items-center gap-1 text-[0.55rem] text-white/50 hover:text-white/80 transition-colors"
                           data-testid="modal-history-toggle"
                         >
                           {historyExpanded ? "Show less" : `+${data.history.length - 3} more`}
                           <svg
-                            width="14"
-                            height="14"
+                            width="12"
+                            height="12"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2"
+                            strokeWidth="2.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             className={`transition-transform duration-200 ${historyExpanded ? "rotate-180" : ""}`}
@@ -263,19 +264,19 @@ export default function CardDetailModal({
                         </button>
                       )}
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       {(historyExpanded ? data.history : data.history.slice(0, 3)).map((tx, i) => (
                         <div
                           key={`${tx.type}-${tx.timestamp}-${i}`}
-                          className="flex justify-between items-center p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]"
+                          className="flex justify-between items-center p-2 rounded-lg bg-white/[0.03] border border-white/[0.06]"
                         >
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-center gap-1.5 min-w-0">
                             {tx.invoiceId && (
-                              <span className="text-[0.55rem] font-mono text-white/40 shrink-0">{tx.invoiceId}</span>
+                              <span className="text-[0.5rem] font-mono text-white/40 shrink-0">{tx.invoiceId}</span>
                             )}
-                            <span className="text-xs font-medium capitalize text-white shrink-0">{tx.type}</span>
+                            <span className="text-[0.65rem] font-medium capitalize text-white shrink-0">{tx.type}</span>
                             <span
-                              className="text-[0.55rem] uppercase tracking-widest px-1.5 py-0.5 rounded shrink-0"
+                              className="text-[0.5rem] uppercase tracking-widest px-1 py-0.5 rounded shrink-0"
                               style={{
                                 background: tx.status === "Success" ? "rgba(0,204,255,0.15)" : "rgba(255,196,102,0.15)",
                                 color: tx.status === "Success" ? "var(--electric-blue)" : "var(--aurora-gold)",
@@ -284,10 +285,10 @@ export default function CardDetailModal({
                               {tx.status}
                             </span>
                             {tx.from && tx.to && (
-                              <span className="text-[0.6rem] text-white/40 truncate">{tx.from} → {tx.to}</span>
+                              <span className="text-[0.55rem] text-white/40 truncate">{tx.from} → {tx.to}</span>
                             )}
                           </div>
-                          <span className="text-[0.6rem] text-white/50 shrink-0 ml-2">
+                          <span className="text-[0.55rem] text-white/50 shrink-0 ml-2">
                             {new Date(tx.timestamp).toLocaleDateString()}
                           </span>
                         </div>
@@ -316,9 +317,9 @@ function MetaRow({
   last?: boolean;
 }) {
   return (
-    <div className={`flex justify-between items-center py-2 ${!last ? "border-b border-white/[0.06]" : ""}`}>
-      <span className="text-[0.6rem] uppercase tracking-widest text-white/50">{label}</span>
-      <span className={`text-xs text-white ${mono ? "font-mono font-bold" : "font-medium"}`}>{value}</span>
+    <div className={`flex justify-between items-center py-1.5 ${!last ? "border-b border-white/[0.06]" : ""}`}>
+      <span className="text-[0.55rem] uppercase tracking-widest text-white/50">{label}</span>
+      <span className={`text-[0.65rem] text-white ${mono ? "font-mono font-bold" : "font-medium"}`}>{value}</span>
     </div>
   );
 }
