@@ -334,6 +334,60 @@ function ScanContent() {
 
       {data && !loading && (
         <>
+          {showScanner && (
+            <QRScanner onScan={handleScan} onClose={() => setShowScanner(false)} />
+          )}
+          {/* Scan Another Card — top bar */}
+          <div className="mb-6 flex gap-2" data-testid="scan-again-bar">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const input = (e.currentTarget.elements.namedItem("topCardId") as HTMLInputElement).value.trim();
+                if (input) router.push(`/scan?cardId=${input}`);
+              }}
+              className="flex-1 flex items-center gap-2"
+            >
+              <div
+                className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-4 py-2.5"
+              >
+                <span className="text-sm text-white/40 mr-1 font-mono">#</span>
+                <input
+                  type="text"
+                  name="topCardId"
+                  placeholder="Enter Card ID…"
+                  className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
+                  data-testid="scan-top-input"
+                />
+              </div>
+              <button
+                type="submit"
+                className="py-2.5 px-5 rounded-2xl text-sm font-medium transition-all active:scale-95"
+                style={{
+                  background: "rgba(0,204,255,0.15)",
+                  border: "1px solid rgba(0,204,255,0.35)",
+                  color: "var(--electric-blue)",
+                }}
+                data-testid="scan-top-submit"
+              >
+                Scan
+              </button>
+            </form>
+            <button
+              onClick={() => setShowScanner(true)}
+              className="p-2.5 rounded-2xl transition-all active:scale-95 shrink-0"
+              style={{
+                background: "linear-gradient(135deg, var(--cosmic-violet), var(--electric-blue))",
+                color: "#fff",
+              }}
+              data-testid="scan-top-camera"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </button>
+          </div>
+
           <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]" data-testid="scan-result">
             {/* Card artwork */}
             <div
@@ -538,21 +592,6 @@ function ScanContent() {
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Scan Again */}
-          <div className="mt-8 flex justify-center">
-            <Link
-              href="/scan"
-              className="btn-primary inline-flex items-center gap-2"
-              data-testid="scan-again-btn"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                <circle cx="12" cy="13" r="4" />
-              </svg>
-              Scan Another Card
-            </Link>
           </div>
         </>
       )}
