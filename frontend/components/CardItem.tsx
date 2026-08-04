@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import QRScanner from "./QRScanner";
 
@@ -62,6 +63,7 @@ export default function CardItem({
   isNew,
   onStatusChange,
 }: CardItemProps) {
+  const router = useRouter();
   const [printing, setPrinting] = useState(false);
   const [printStatus, setPrintStatus] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -182,7 +184,13 @@ export default function CardItem({
         style={{ borderColor: RARITY_COLORS[rarityLevel] }}
         data-testid={`card-item-${tokenId ?? templateId}`}
       >
-        <div className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5" style={{ aspectRatio: "5/7" }}>
+        <button
+          type="button"
+          onClick={() => router.push(`/scan?cardId=${cardId || tokenId}`)}
+          className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5 cursor-pointer group"
+          style={{ aspectRatio: "5/7" }}
+          data-testid={`card-visual-${tokenId ?? templateId}`}
+        >
           {isNew && (
             <span
               className="absolute top-2 right-2 z-10 text-[0.55rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -202,14 +210,22 @@ export default function CardItem({
               alt={templateId}
               fill
               sizes="(max-width:768px) 40vw, 20vw"
-              className="object-contain"
+              className="object-contain transition-transform duration-200 group-hover:scale-105"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <span className="text-3xl text-white/30">◆</span>
             </div>
           )}
-        </div>
+          <div
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.35)" }}
+          >
+            <span className="text-xs font-semibold uppercase tracking-widest text-white">
+              View Details
+            </span>
+          </div>
+        </button>
 
         <div className="px-1 pb-1">
           <p className="text-xs font-medium text-white truncate">
