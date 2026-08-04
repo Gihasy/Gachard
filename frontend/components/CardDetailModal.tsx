@@ -51,6 +51,7 @@ export default function CardDetailModal({
   const [data, setData] = useState<ScanData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
 
   useEffect(() => {
     const id = cardId || tokenId;
@@ -136,10 +137,10 @@ export default function CardDetailModal({
           )}
 
           {data && (
-            <div className="grid gap-6 sm:grid-cols-[1fr_1.3fr]">
+            <div className="grid gap-6 sm:grid-cols-[200px_1fr] items-start">
               {/* Card artwork */}
               <div
-                className={`glass overflow-hidden ${RARITY_GLOW[data.onChain.rarityCode]}`}
+                className={`glass overflow-hidden mx-auto w-full max-w-[200px] ${RARITY_GLOW[data.onChain.rarityCode]}`}
                 style={{ borderColor: RARITY_COLORS[data.onChain.rarityCode] }}
               >
                 <div className="relative w-full bg-white/5" style={{ aspectRatio: "5/7" }}>
@@ -148,12 +149,12 @@ export default function CardDetailModal({
                       src={data.metadata.artworkUrl}
                       alt={data.metadata.templateName || "Card"}
                       fill
-                      sizes="(max-width:640px) 100vw, 30vw"
+                      sizes="200px"
                       className="object-contain"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-5xl text-white/30">◆</span>
+                      <span className="text-4xl text-white/30">◆</span>
                     </div>
                   )}
                 </div>
@@ -235,11 +236,35 @@ export default function CardDetailModal({
                 {/* History */}
                 {data.history && data.history.length > 0 && (
                   <div className="glass p-4" data-testid="modal-history">
-                    <p className="text-[0.65rem] uppercase tracking-[0.22em] mb-3" style={{ color: "var(--cosmic-violet)" }}>
-                      Transaction History
-                    </p>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[0.65rem] uppercase tracking-[0.22em]" style={{ color: "var(--cosmic-violet)" }}>
+                        Transaction History
+                      </p>
+                      {data.history.length > 3 && (
+                        <button
+                          onClick={() => setHistoryExpanded(!historyExpanded)}
+                          className="flex items-center gap-1 text-[0.6rem] text-white/50 hover:text-white/80 transition-colors"
+                          data-testid="modal-history-toggle"
+                        >
+                          {historyExpanded ? "Show less" : `+${data.history.length - 3} more`}
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={`transition-transform duration-200 ${historyExpanded ? "rotate-180" : ""}`}
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                     <div className="space-y-1.5">
-                      {data.history.map((tx, i) => (
+                      {(historyExpanded ? data.history : data.history.slice(0, 3)).map((tx, i) => (
                         <div
                           key={`${tx.type}-${tx.timestamp}-${i}`}
                           className="flex justify-between items-center p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]"
