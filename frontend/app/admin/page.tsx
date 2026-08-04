@@ -68,7 +68,22 @@ type PrintRequest = {
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 const BSC_TESTNET_TX = "https://testnet.bscscan.com/tx/";
 
-type TabKey = "users" | "transactions" | "cards" | "prints";
+type PendingCard = {
+  cardId: string | null;
+  tokenId: number | null;
+  templateId: string;
+  rarity: string;
+  rarityCode: number;
+  ownerUsername: string | null;
+  txHash: string | null;
+  txStatus: string;
+  createdAt: string;
+  pendingMs: number;
+  pendingDuration: string;
+  isStale: boolean;
+};
+
+type TabKey = "users" | "transactions" | "cards" | "prints" | "health";
 
 const TAB_META: Record<TabKey, { label: string; icon: React.ReactNode }> = {
   users: {
@@ -95,6 +110,12 @@ const TAB_META: Record<TabKey, { label: string; icon: React.ReactNode }> = {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
     ),
   },
+  health: {
+    label: "Health",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+    ),
+  },
 };
 
 export default function AdminPage() {
@@ -103,7 +124,10 @@ export default function AdminPage() {
   const [txs, setTxs] = useState<AdminTx[]>([]);
   const [cards, setCards] = useState<AdminCard[]>([]);
   const [prints, setPrints] = useState<PrintRequest[]>([]);
+  const [pendingCards, setPendingCards] = useState<PendingCard[]>([]);
+  const [pendingMeta, setPendingMeta] = useState({ total: 0, staleCount: 0, avgPendingMinutes: 0 });
   const [loading, setLoading] = useState(true);
+  const [confirmingAll, setConfirmingAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchAll = useCallback(() => {
@@ -115,12 +139,15 @@ export default function AdminPage() {
       fetch("/api/admin/transactions").then((r) => r.json()),
       fetch("/api/admin/cards").then((r) => r.json()),
       fetch("/api/admin/print-requests").then((r) => r.json()),
+      fetch("/api/admin/pending-cards").then((r) => r.json()),
     ])
-      .then(([usersData, txsData, cardsData, printsData]) => {
+      .then(([usersData, txsData, cardsData, printsData, pendingData]) => {
         setUsers(usersData.users ?? []);
         setTxs(txsData.transactions ?? []);
         setCards(cardsData.cards ?? []);
         setPrints(printsData.printRequests ?? []);
+        setPendingCards(pendingData.cards ?? []);
+        setPendingMeta({ total: pendingData.total ?? 0, staleCount: pendingData.staleCount ?? 0, avgPendingMinutes: pendingData.avgPendingMinutes ?? 0 });
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -133,10 +160,23 @@ export default function AdminPage() {
   const count =
     tab === "users" ? users.length :
     tab === "transactions" ? txs.length :
-    tab === "cards" ? cards.length : prints.length;
+    tab === "cards" ? cards.length :
+    tab === "prints" ? prints.length : pendingCards.length;
 
   const pendingPrints = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) !== "Real").length;
   const newPrintRequests = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) === "Locked").length;
+
+  const handleConfirmAll = async () => {
+    setConfirmingAll(true);
+    try {
+      await fetch("/api/admin/confirm-all", { method: "POST" });
+      fetchAll();
+    } catch {
+      alert("Failed to confirm transactions");
+    } finally {
+      setConfirmingAll(false);
+    }
+  };
 
   return (
     <PageShell
@@ -146,17 +186,18 @@ export default function AdminPage() {
       description="Manage users, monitor on-chain transactions, and fulfil physical card print requests."
     >
       {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <SummaryCard label="Users" value={users.length} color="var(--electric-blue)" active={tab === "users"} onClick={() => setTab("users")} />
         <SummaryCard label="Transactions" value={txs.length} color="var(--cosmic-violet)" active={tab === "transactions"} onClick={() => setTab("transactions")} />
         <SummaryCard label="Cards" value={cards.length} color="var(--aurora-pink)" active={tab === "cards"} onClick={() => setTab("cards")} />
         <SummaryCard label="Pending Prints" value={pendingPrints} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} hasNotification={newPrintRequests > 0} />
+        <SummaryCard label="Pending Mints" value={pendingMeta.total} color={pendingMeta.staleCount > 0 ? "#ff6bba" : "var(--electric-blue)"} active={tab === "health"} onClick={() => setTab("health")} hasNotification={pendingMeta.staleCount > 0} />
       </div>
 
       {/* Tabs */}
       <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
         <div className="flex gap-2 flex-wrap">
-          {(["users", "transactions", "cards", "prints"] as const).map((t) => {
+          {(["users", "transactions", "cards", "prints", "health"] as const).map((t) => {
             const isActive = tab === t;
             return (
               <button
@@ -218,6 +259,14 @@ export default function AdminPage() {
           {tab === "transactions" && <TxsTable txs={txs} />}
           {tab === "cards" && <CardsTable cards={cards} />}
           {tab === "prints" && <PrintRequestsTable prints={prints} onAccept={fetchAll} />}
+          {tab === "health" && (
+            <HealthTable
+              pendingCards={pendingCards}
+              meta={pendingMeta}
+              confirmingAll={confirmingAll}
+              onConfirmAll={handleConfirmAll}
+            />
+          )}
         </>
       )}
     </PageShell>
@@ -550,6 +599,123 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/* ─── Health / Pending Cards ─── */
+function HealthTable({
+  pendingCards,
+  meta,
+  confirmingAll,
+  onConfirmAll,
+}: {
+  pendingCards: PendingCard[];
+  meta: { total: number; staleCount: number; avgPendingMinutes: number };
+  confirmingAll: boolean;
+  onConfirmAll: () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      {/* Summary bar */}
+      <div className="glass p-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-6">
+          <div>
+            <p className="text-[0.6rem] uppercase tracking-widest text-white/40">Pending Cards</p>
+            <p className="font-display text-2xl" style={{ color: meta.staleCount > 0 ? "#ff6bba" : "var(--electric-blue)" }}>
+              {meta.total}
+            </p>
+          </div>
+          {meta.staleCount > 0 && (
+            <div>
+              <p className="text-[0.6rem] uppercase tracking-widest text-white/40">Stale (&gt;1m)</p>
+              <p className="font-display text-2xl" style={{ color: "#ff6bba" }}>{meta.staleCount}</p>
+            </div>
+          )}
+          {meta.total > 0 && (
+            <div>
+              <p className="text-[0.6rem] uppercase tracking-widest text-white/40">Avg Pending</p>
+              <p className="font-display text-2xl" style={{ color: "var(--aurora-gold)" }}>{meta.avgPendingMinutes}m</p>
+            </div>
+          )}
+        </div>
+        {meta.total > 0 && (
+          <button
+            onClick={onConfirmAll}
+            disabled={confirmingAll}
+            className="btn-primary !py-2 !px-4 !text-xs disabled:opacity-50"
+            data-testid="admin-confirm-all-pending"
+          >
+            {confirmingAll ? "Confirming…" : "Confirm All Pending"}
+          </button>
+        )}
+      </div>
+
+      {/* Table */}
+      {pendingCards.length === 0 ? (
+        <div className="glass p-12 text-center" data-testid="admin-health-empty">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: "rgba(0,204,255,0.15)" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--electric-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12l4 4 10-10" />
+            </svg>
+          </div>
+          <p className="text-white/60 text-sm">No pending cards — all mints confirmed.</p>
+        </div>
+      ) : (
+        <TableShell
+          head={
+            <>
+              <TH>Card ID</TH>
+              <TH>Template</TH>
+              <TH>Rarity</TH>
+              <TH>Owner</TH>
+              <TH>Tx Status</TH>
+              <TH>Pending</TH>
+              <TH>Created</TH>
+            </>
+          }
+        >
+          {pendingCards.map((card, i) => (
+            <tr
+              key={card.cardId ?? `pending-${i}`}
+              style={{
+                ...rowStyle,
+                background: card.isStale ? "rgba(255,107,186,0.04)" : undefined,
+              }}
+              className="hover:bg-white/[0.03] transition-colors"
+              data-testid={`pending-card-${card.cardId ?? i}`}
+            >
+              <td className="px-4 py-3 font-mono text-white/90">
+                {card.cardId ? `#${card.cardId}` : "—"}
+              </td>
+              <td className="px-4 py-3 text-white/80 text-xs">{card.templateId}</td>
+              <td className="px-4 py-3">
+                <span className={`tag tag-${card.rarity.toLowerCase()} text-[0.55rem]`}>{card.rarity}</span>
+              </td>
+              <td className="px-4 py-3 text-xs">
+                {card.ownerUsername && <div className="text-white/80">{card.ownerUsername}</div>}
+              </td>
+              <td className="px-4 py-3">
+                <StatusPill
+                  status={card.txStatus}
+                  rgb={card.txStatus === "confirmed" ? "0,204,255" : card.txStatus === "failed" ? "255,107,186" : "255,196,102"}
+                />
+              </td>
+              <td className="px-4 py-3">
+                <span
+                  className="text-sm font-mono font-semibold"
+                  style={{ color: card.pendingMs > 300000 ? "#ff6bba" : card.pendingMs > 60000 ? "var(--aurora-gold)" : "var(--electric-blue)" }}
+                >
+                  {card.pendingDuration}
+                </span>
+              </td>
+              <td className="px-4 py-3 text-white/50 text-xs">
+                {new Date(card.createdAt).toLocaleString()}
+              </td>
+            </tr>
+          ))}
+        </TableShell>
+      )}
     </div>
   );
 }
