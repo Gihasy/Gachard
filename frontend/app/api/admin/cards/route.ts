@@ -7,12 +7,17 @@ export async function GET() {
     const usersCollection = await getCollection("users");
     const cards = await cardsCollection.find({}).toArray();
 
-    // Build address → username map
-    const users = await usersCollection.find({}).toArray();
+    // Build address → username map (only for card owners)
+    const ownerAddresses = [...new Set(cards.map((c) => c.ownerAddress?.toLowerCase()).filter(Boolean))];
     const addressToUsername = new Map<string, string>();
-    for (const u of users) {
-      if (u.walletAddress) {
-        addressToUsername.set(u.walletAddress.toLowerCase(), `@${u.username}`);
+    if (ownerAddresses.length > 0) {
+      const owners = await usersCollection
+        .find({ walletAddress: { $in: ownerAddresses } })
+        .toArray();
+      for (const u of owners) {
+        if (u.walletAddress) {
+          addressToUsername.set(u.walletAddress.toLowerCase(), `@${u.username}`);
+        }
       }
     }
 

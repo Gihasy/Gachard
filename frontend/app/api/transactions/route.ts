@@ -26,12 +26,23 @@ export async function GET(request: Request) {
         .limit(50)
         .toArray();
 
-      // Build tokenId → cardId map
-      const allCards = await cardsCollection.find({}).toArray();
+      // Build tokenId → cardId map (only for relevant tokenIds)
+      const relevantTokenIds = new Set<number>();
+      for (const tx of txs) {
+        if (tx.tokenId !== undefined) relevantTokenIds.add(tx.tokenId);
+        if (tx.tokenIds && Array.isArray(tx.tokenIds)) {
+          for (const tid of tx.tokenIds) relevantTokenIds.add(tid);
+        }
+      }
       const tokenIdToCardId = new Map<string, string>();
-      for (const card of allCards) {
-        if (card.tokenId && card.cardId) {
-          tokenIdToCardId.set(String(card.tokenId), card.cardId);
+      if (relevantTokenIds.size > 0) {
+        const relevantCards = await cardsCollection
+          .find({ tokenId: { $in: Array.from(relevantTokenIds) } })
+          .toArray();
+        for (const card of relevantCards) {
+          if (card.tokenId && card.cardId) {
+            tokenIdToCardId.set(String(card.tokenId), card.cardId);
+          }
         }
       }
 

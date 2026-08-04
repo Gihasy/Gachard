@@ -73,8 +73,11 @@ export async function GET(request: Request) {
 
     const addressToUsername = new Map<string, string>();
     if (allAddresses.size > 0) {
-      const allUsers = await usersCollection.find({}).toArray();
-      for (const u of allUsers) {
+      const addressList = Array.from(allAddresses);
+      const relevantUsers = await usersCollection
+        .find({ walletAddress: { $in: addressList.map((a) => new RegExp(`^${a}$`, "i")) } })
+        .toArray();
+      for (const u of relevantUsers) {
         if (u.walletAddress) {
           addressToUsername.set(u.walletAddress.toLowerCase(), `@${u.username}`);
         }

@@ -220,15 +220,7 @@ function LoginInner() {
         )}
 
         <p className="mt-6 text-center text-[0.7rem] text-white/45 leading-relaxed">
-          By continuing you agree to Gachard&apos;s{" "}
-          <a href="#" className="text-white/70 hover:text-white underline underline-offset-2">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="#" className="text-white/70 hover:text-white underline underline-offset-2">
-            Privacy Policy
-          </a>
-          .
+          By continuing you agree to Gachard&apos;s Terms of Service and Privacy Policy.
         </p>
       </div>
     </div>

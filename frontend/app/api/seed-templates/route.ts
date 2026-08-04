@@ -4,14 +4,21 @@ import { seedCardTemplates, updateArtworkUrls } from "@/lib/card-templates";
 /**
  * POST /api/seed-templates
  * Seed card_templates if empty, then update artworkUrl for all templates.
- * Call once after deploying with artwork files.
+ * Protected by admin credentials.
  */
-export async function POST() {
-  try {
-    // Seed if empty
-    await seedCardTemplates();
+export async function POST(request: Request) {
+  // Basic auth check
+  const auth = request.headers.get("authorization");
+  const expected = `Basic ${Buffer.from(
+    `${process.env.ADMIN_USERNAME || ""}:${process.env.ADMIN_PASSWORD || ""}`
+  ).toString("base64")}`;
 
-    // Update artworkUrl for all templates
+  if (!auth || auth !== expected) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await seedCardTemplates();
     const updated = await updateArtworkUrls();
 
     return NextResponse.json({

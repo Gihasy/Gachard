@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import PageShell from "@/components/PageShell";
 
 const PREVIEW_CARDS = [
@@ -22,17 +21,7 @@ export default function Marketplace() {
           <span className="text-gradient-aurora">Marketplace</span>
         </>
       }
-      description="Buy, sell, and trade cards with the entire Gachard universe. Peer-to-peer trades open soon — reserve your slot on the launch waitlist."
-      actions={
-        <>
-          <button className="btn-primary" data-testid="market-join-waitlist">
-            Join Waitlist
-          </button>
-          <Link href="/" className="btn-ghost" data-testid="market-back-home">
-            Back to Home
-          </Link>
-        </>
-      }
+      description="Buy, sell, and trade cards with the entire Gachard universe. Peer-to-peer trades open soon."
     >
       {/* Coming soon banner */}
       <div
