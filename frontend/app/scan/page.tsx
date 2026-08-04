@@ -270,11 +270,7 @@ function ScanContent() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowScanner(true)}
-                className="py-3 px-5 rounded-2xl text-sm font-medium transition-all active:scale-95"
-                style={{
-                  background: "linear-gradient(135deg, var(--cosmic-violet), var(--electric-blue))",
-                  color: "#fff",
-                }}
+                className="btn-primary !px-4"
                 data-testid="scan-retry-camera"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -307,14 +303,7 @@ function ScanContent() {
                 <button
                   type="submit"
                   disabled={retryLoading}
-                  className="py-3 px-5 rounded-2xl text-sm font-medium transition-all active:scale-95 disabled:opacity-50"
-                  style={{
-                    background: retryLoading
-                      ? "rgba(0,204,255,0.08)"
-                      : "rgba(0,204,255,0.15)",
-                    border: "1px solid rgba(0,204,255,0.35)",
-                    color: "var(--electric-blue)",
-                  }}
+                  className="btn-primary disabled:opacity-50"
                   data-testid="scan-retry-submit"
                 >
                   {retryLoading ? (
@@ -361,12 +350,7 @@ function ScanContent() {
               </div>
               <button
                 type="submit"
-                className="py-2.5 px-5 rounded-2xl text-sm font-medium transition-all active:scale-95"
-                style={{
-                  background: "rgba(0,204,255,0.15)",
-                  border: "1px solid rgba(0,204,255,0.35)",
-                  color: "var(--electric-blue)",
-                }}
+                className="btn-primary"
                 data-testid="scan-top-submit"
               >
                 Scan
@@ -374,11 +358,7 @@ function ScanContent() {
             </form>
             <button
               onClick={() => setShowScanner(true)}
-              className="p-2.5 rounded-2xl transition-all active:scale-95 shrink-0"
-              style={{
-                background: "linear-gradient(135deg, var(--cosmic-violet), var(--electric-blue))",
-                color: "#fff",
-              }}
+              className="btn-primary !p-2.5"
               data-testid="scan-top-camera"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -666,12 +646,7 @@ function ScanInstructions({ onOpenCamera }: { onOpenCamera: () => void }) {
       </div>
       <button
         onClick={onOpenCamera}
-        className="w-full py-3.5 rounded-2xl text-sm font-medium transition-all hover:scale-[1.02]"
-        style={{
-          background: "linear-gradient(135deg, var(--cosmic-violet), var(--electric-blue))",
-          color: "#fff",
-          boxShadow: "0 8px 24px rgba(138,92,255,0.3)",
-        }}
+        className="btn-primary w-full"
         data-testid="scan-camera-btn"
       >
         <span className="flex items-center justify-center gap-2">

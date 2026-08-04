@@ -384,11 +384,7 @@ export default function CardItem({
               <button
                 onClick={handleRequestPrint}
                 disabled={printing || !isFormValid}
-                className="w-full py-3 rounded-2xl text-sm font-medium transition-all disabled:opacity-50"
-                style={{
-                  background: "linear-gradient(135deg, var(--cosmic-violet), var(--electric-blue))",
-                  color: "#fff",
-                }}
+                className="btn-primary w-full disabled:opacity-50"
               >
                 {printing ? "Processing..." : "Pay $14.99 & Print"}
               </button>
