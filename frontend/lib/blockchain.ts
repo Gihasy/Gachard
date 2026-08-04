@@ -61,17 +61,32 @@ export async function mintCard(toAddress: string, rarity: number): Promise<strin
   return tx.hash;
 }
 
-export async function mintBatch(toAddress: string, rarities: number[]): Promise<{ txHash: string; receipt: ethers.TransactionReceipt | null }> {
+export async function mintBatch(toAddress: string, rarities: number[]): Promise<string> {
   const contract = getContract();
   const tx = await contract.mintBatch(toAddress, rarities);
-  // Wait for mining to ensure receipt is available for auto-confirm
-  let receipt: ethers.TransactionReceipt | null = null;
-  try {
-    receipt = (await tx.wait()) as ethers.TransactionReceipt;
-  } catch {
-    // Mining timeout — auto-confirm will handle it later
+  return tx.hash;
+}
+
+/**
+ * Poll for transaction receipt with retries and exponential backoff.
+ * Returns receipt if confirmed, or null if still pending after all retries.
+ */
+export async function waitForReceipt(
+  txHash: string,
+  maxRetries = 6,
+  baseDelayMs = 1500
+): Promise<ethers.TransactionReceipt | null> {
+  const provider = getProvider();
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const receipt = await provider.getTransactionReceipt(txHash);
+      if (receipt) return receipt;
+    } catch {
+      // Provider error — retry
+    }
+    await new Promise((r) => setTimeout(r, baseDelayMs * (i + 1)));
   }
-  return { txHash: tx.hash, receipt };
+  return null;
 }
 
 export async function requestPrint(tokenId: number, redeemHash: string, ownerAddress: string): Promise<string> {

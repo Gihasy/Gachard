@@ -4,7 +4,7 @@ import { randomBytes } from "crypto";
 // Auto-confirm waits up to 8s for receipt. Total process ~10-12s. Set 15s buffer.
 export const maxDuration = 15;
 import { getCollection, parseObjectId } from "@/lib/mongodb";
-import { mintBatch } from "@/lib/blockchain";
+import { mintBatch, waitForReceipt } from "@/lib/blockchain";
 import { buildPackRarities } from "@/lib/odds";
 import { pickCardTemplate, seedCardTemplates, updateArtworkUrls } from "@/lib/card-templates";
 import { deductCredits, addCredits } from "@/lib/credits";
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     }
 
     // Mint batch — 1 tx untuk seluruh pack (atomik)
-    const { txHash, receipt } = await mintBatch(user.walletAddress, rarities);
+    const txHash = await mintBatch(user.walletAddress, rarities);
 
     // Simpan transaksi
     const contractAddress = process.env.CONTRACT_ADDRESS!;
@@ -117,8 +117,9 @@ export async function POST(request: Request) {
     }
     await cardsCollection.insertMany(cardDocs);
 
-    // Assign tokenIds from receipt (mintBatch waits for mining)
+    // Poll for receipt with retries (up to ~10s, within 15s maxDuration)
     let confirmedTokenIds: number[] = [];
+    const receipt = await waitForReceipt(txHash, 4, 1000);
     if (receipt && receipt.status === 1) {
       const CARD_MINTED_TOPIC = ethers.id("CardMinted(uint256,address,uint8,uint8)");
       let mintIndex = 0;
