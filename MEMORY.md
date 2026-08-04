@@ -115,6 +115,19 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 2. **Demo Day prep** — video backup, pitch deck, rehearsal, test full loop dengan alamat sungguhan
 3. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
 
+### Session 4 Agustus 2026 — Ringkasan Perubahan
+- 14 commit, 16 file berubah (+981 / -458 lines)
+- **Scan Fix**: Hapus false "data mismatch" (cache freshness check), tambah Scan Again top bar
+- **Card Detail Modal**: Overlay modal saat klik kartu di Collection/Profile — fetch dari `/api/scan`, tampilkan verification, metadata, transaction history (3 terakhir + expand)
+- **Button Unification**: Semua tombol aksi pakai `btn-primary` gradient (aurora-pink → cosmic-violet → electric-blue)
+- **Dead Code Cleanup**: Hapus `/api/admin/accept-print`, protect `/api/seed-templates`, hapus dead links (Footer, Login, Marketplace)
+- **DB Query Optimization**: `/api/scan`, `/api/transactions`, `/api/admin/cards` — filter by relevant IDs, bukan fetch all
+- **Mint Flow Fix**: `waitForReceipt()` polling (3x, 1s/2s/3s) ganti blocking `tx.wait()` — mencegah timeout 15s
+- **Auto-Reconciliation**: `/api/cards` cek pending cards → `confirmTransaction()` otomatis saat user buka collection
+- **Admin Health Dashboard**: Tab baru di `/admin` — monitor pending cards dengan duration, stale count, Confirm All button
+- **Clean Slate**: Database dibersihkan (75 cards, 22 tx, 4 redeem_codes, 4 shipping, 4 payments dihapus)
+- Laporan: `docs/compose/reports/2026-08-04-session-report.md`
+
 ### Session 30 Juli 2026 (Part 2 — Malam) — Ringkasan Perubahan
 - 45+ commit, 50 file berubah (+1,397 / -364 lines)
 - **Claim Shipping System**: QR code, camera scan, claimId, block redeem until Real
