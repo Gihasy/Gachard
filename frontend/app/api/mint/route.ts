@@ -117,9 +117,9 @@ export async function POST(request: Request) {
     }
     await cardsCollection.insertMany(cardDocs);
 
-    // Poll for receipt with retries (up to ~10s, within 15s maxDuration)
+    // Poll for receipt with retries (up to ~6s, within 15s maxDuration)
     let confirmedTokenIds: number[] = [];
-    const receipt = await waitForReceipt(txHash, 4, 1000);
+    const receipt = await waitForReceipt(txHash, 3, 1000);
     if (receipt && receipt.status === 1) {
       const CARD_MINTED_TOPIC = ethers.id("CardMinted(uint256,address,uint8,uint8)");
       let mintIndex = 0;
