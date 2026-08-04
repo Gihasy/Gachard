@@ -61,10 +61,17 @@ export async function mintCard(toAddress: string, rarity: number): Promise<strin
   return tx.hash;
 }
 
-export async function mintBatch(toAddress: string, rarities: number[]): Promise<string> {
+export async function mintBatch(toAddress: string, rarities: number[]): Promise<{ txHash: string; receipt: ethers.TransactionReceipt | null }> {
   const contract = getContract();
   const tx = await contract.mintBatch(toAddress, rarities);
-  return tx.hash;
+  // Wait for mining to ensure receipt is available for auto-confirm
+  let receipt: ethers.TransactionReceipt | null = null;
+  try {
+    receipt = (await tx.wait()) as ethers.TransactionReceipt;
+  } catch {
+    // Mining timeout — auto-confirm will handle it later
+  }
+  return { txHash: tx.hash, receipt };
 }
 
 export async function requestPrint(tokenId: number, redeemHash: string, ownerAddress: string): Promise<string> {
