@@ -141,7 +141,7 @@ export default function CardDetailModal({
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Card artwork — fixed width on desktop */}
               <div
-                className={`glass overflow-hidden shrink-0 mx-auto sm:mx-0 ${RARITY_GLOW[data.onChain.rarityCode]}`}
+                className={`glass overflow-hidden shrink-0 self-start mx-auto sm:mx-0 ${RARITY_GLOW[data.onChain.rarityCode]}`}
                 style={{ borderColor: RARITY_COLORS[data.onChain.rarityCode], width: 150 }}
               >
                 <div className="relative w-full bg-white/5" style={{ aspectRatio: "5/7" }}>
