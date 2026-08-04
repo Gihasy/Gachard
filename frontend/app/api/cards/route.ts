@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { confirmTransaction } from "@/lib/transactions";
 
 /**
  * Derive user-facing display status from fulfillmentStatus.
@@ -29,13 +30,33 @@ export async function GET(request: Request) {
     }
 
     const cardsCollection = await getCollection("cards");
+    const templatesCollection = await getCollection("card_templates");
+
+    // Auto-reconciliation: if any cards are pending, try to confirm their transactions
+    const pendingCards = await cardsCollection
+      .find({ ownerAddress: user.walletAddress, status: "pending" })
+      .toArray();
+
+    if (pendingCards.length > 0) {
+      const txCollection = await getCollection("transactions");
+      const pendingTxIds = [...new Set(pendingCards.map((c) => c.txId).filter(Boolean))];
+
+      for (const txId of pendingTxIds) {
+        try {
+          await confirmTransaction(txId);
+        } catch {
+          // Silent fail — will retry next time user opens collection
+        }
+      }
+    }
+
+    // Fetch cards (possibly updated by reconciliation above)
     const cards = await cardsCollection
       .find({ ownerAddress: user.walletAddress })
       .sort({ createdAt: -1 })
       .toArray();
 
     // Lookup artworkUrl dari card_templates
-    const templatesCollection = await getCollection("card_templates");
     const templates = await templatesCollection.find({}).toArray();
     const templateMap = new Map(templates.map((t) => [t.templateId, t]));
 
