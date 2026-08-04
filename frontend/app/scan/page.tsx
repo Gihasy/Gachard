@@ -333,211 +333,228 @@ function ScanContent() {
       )}
 
       {data && !loading && (
-        <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]" data-testid="scan-result">
-          {/* Card artwork */}
-          <div
-            className={`glass overflow-hidden ${RARITY_GLOW[data.onChain.rarityCode]}`}
-            style={{ borderColor: RARITY_COLORS[data.onChain.rarityCode] }}
-          >
-            <div className="relative w-full bg-white/5" style={{ aspectRatio: "5/7" }}>
-              {data.metadata.artworkUrl ? (
-                <Image
-                  src={data.metadata.artworkUrl}
-                  alt={data.metadata.templateName || "Card"}
-                  fill
-                  sizes="(max-width:1024px) 100vw, 40vw"
-                  className="object-contain"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-5xl text-white/30">◆</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Meta */}
-          <div className="space-y-4">
-            {/* Verification */}
+        <>
+          <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]" data-testid="scan-result">
+            {/* Card artwork */}
             <div
-              className="flex items-center gap-3 p-4 rounded-2xl"
-              style={{
-                background:
-                  data.verification.flag === "verified"
-                    ? "rgba(0,204,255,0.08)"
-                    : "rgba(255,196,102,0.08)",
-                border:
-                  data.verification.flag === "verified"
-                    ? "1px solid rgba(0,204,255,0.35)"
-                    : "1px solid rgba(255,196,102,0.35)",
-              }}
-              data-testid="scan-verification"
+              className={`glass overflow-hidden ${RARITY_GLOW[data.onChain.rarityCode]}`}
+              style={{ borderColor: RARITY_COLORS[data.onChain.rarityCode] }}
             >
+              <div className="relative w-full bg-white/5" style={{ aspectRatio: "5/7" }}>
+                {data.metadata.artworkUrl ? (
+                  <Image
+                    src={data.metadata.artworkUrl}
+                    alt={data.metadata.templateName || "Card"}
+                    fill
+                    sizes="(max-width:1024px) 100vw, 40vw"
+                    className="object-contain"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-5xl text-white/30">◆</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Meta */}
+            <div className="space-y-4">
+              {/* Verification */}
               <div
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                className="flex items-center gap-3 p-4 rounded-2xl"
                 style={{
                   background:
                     data.verification.flag === "verified"
-                      ? "rgba(0,204,255,0.18)"
-                      : "rgba(255,196,102,0.18)",
+                      ? "rgba(0,204,255,0.08)"
+                      : "rgba(255,196,102,0.08)",
+                  border:
+                    data.verification.flag === "verified"
+                      ? "1px solid rgba(0,204,255,0.35)"
+                      : "1px solid rgba(255,196,102,0.35)",
                 }}
+                data-testid="scan-verification"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  {data.verification.flag === "verified" ? (
-                    <path
-                      d="M5 12l4 4 10-10"
-                      stroke="var(--electric-blue)"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  ) : (
-                    <path
-                      d="M12 3l10 18H2L12 3zm0 6v5m0 3v.5"
-                      stroke="var(--aurora-gold)"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  )}
-                </svg>
-              </div>
-              <div>
-                <p
-                  className="text-sm font-semibold uppercase tracking-wide"
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                   style={{
-                    color:
+                    background:
                       data.verification.flag === "verified"
-                        ? "var(--electric-blue)"
-                        : "var(--aurora-gold)",
+                        ? "rgba(0,204,255,0.18)"
+                        : "rgba(255,196,102,0.18)",
                   }}
                 >
-                  {data.verification.flag === "verified"
-                    ? "Verified authentic"
-                    : "Warning — data mismatch"}
-                </p>
-                <p className="text-xs text-white/60 mt-0.5">
-                  Signature validated against verified record.
-                </p>
-              </div>
-            </div>
-
-            {/* Metadata */}
-            <div className="glass p-5">
-              <MetaRow label="Card ID" value={`#${data.cardId || data.tokenId}`} mono />
-              <MetaRow
-                label="Name"
-                value={data.metadata.templateName || "Unknown"}
-              />
-              <MetaRow
-                label="Rarity"
-                value={
-                  <span className={`tag tag-${RARITY_LABELS[data.onChain.rarityCode].toLowerCase()}`}>
-                    {data.onChain.rarity}
-                  </span>
-                }
-              />
-              <MetaRow
-                label="Status"
-                value={
-                  <span
-                    className="text-[0.65rem] uppercase tracking-widest px-2 py-0.5 rounded"
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    {data.verification.flag === "verified" ? (
+                      <path
+                        d="M5 12l4 4 10-10"
+                        stroke="var(--electric-blue)"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    ) : (
+                      <path
+                        d="M12 3l10 18H2L12 3zm0 6v5m0 3v.5"
+                        stroke="var(--aurora-gold)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
+                  </svg>
+                </div>
+                <div>
+                  <p
+                    className="text-sm font-semibold uppercase tracking-wide"
                     style={{
-                      background:
-                        data.onChain.status === "Print Requested"
-                          ? "rgba(255,107,186,0.15)"
-                          : "rgba(0,204,255,0.15)",
                       color:
-                        data.onChain.status === "Print Requested"
-                          ? "var(--aurora-pink)"
-                          : "var(--electric-blue)",
-                      border: `1px solid ${
-                        data.onChain.status === "Print Requested"
-                          ? "rgba(255,107,186,0.35)"
-                          : "rgba(0,204,255,0.35)"
-                      }`,
+                        data.verification.flag === "verified"
+                          ? "var(--electric-blue)"
+                          : "var(--aurora-gold)",
                     }}
                   >
-                    {data.onChain.status}
-                  </span>
-                }
-              />
-              <MetaRow
-                label="Last Owner"
-                value={
-                  <span className="text-sm text-white/70">
-                    {data.onChain.lastOwner || "—"}
-                  </span>
-                }
-              />
-              {data.purchasePrice !== null && (
-                <MetaRow
-                  label="Purchase Price"
-                  value={
-                    <span
-                      className="font-semibold"
-                      style={{ color: "var(--aurora-gold)" }}
-                    >
-                      {data.purchasePrice} Credit
-                    </span>
-                  }
-                  last
-                />
-              )}
-            </div>
-
-            {/* History */}
-            {data.history && data.history.length > 0 && (
-              <div className="glass p-5" data-testid="scan-history">
-                <p className="text-[0.72rem] uppercase tracking-[0.22em] mb-4" style={{ color: "var(--cosmic-violet)" }}>
-                  Transaction History
-                </p>
-                <div className="space-y-2">
-                  {data.history.map((tx, i) => (
-                    <div
-                      key={`${tx.type}-${tx.timestamp}-${i}`}
-                      className="flex justify-between items-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        {tx.invoiceId && (
-                          <span className="text-[0.6rem] font-mono text-white/40 shrink-0">
-                            {tx.invoiceId}
-                          </span>
-                        )}
-                        <span className="text-sm font-medium capitalize text-white shrink-0">
-                          {tx.type}
-                        </span>
-                        <span
-                          className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded shrink-0"
-                          style={{
-                            background:
-                              tx.status === "Success"
-                                ? "rgba(0,204,255,0.15)"
-                                : "rgba(255,196,102,0.15)",
-                            color:
-                              tx.status === "Success"
-                                ? "var(--electric-blue)"
-                                : "var(--aurora-gold)",
-                          }}
-                        >
-                          {tx.status}
-                        </span>
-                        {tx.from && tx.to && (
-                          <span className="text-[0.65rem] text-white/40 truncate">
-                            {tx.from} → {tx.to}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-white/50 shrink-0 ml-3">
-                        {new Date(tx.timestamp).toLocaleDateString()}
-                      </span>
-                    </div>
-                  ))}
+                    {data.verification.flag === "verified"
+                      ? "Verified authentic"
+                      : "Warning — data mismatch"}
+                  </p>
+                  <p className="text-xs text-white/60 mt-0.5">
+                    Signature validated against verified record.
+                  </p>
                 </div>
               </div>
-            )}
+
+              {/* Metadata */}
+              <div className="glass p-5">
+                <MetaRow label="Card ID" value={`#${data.cardId || data.tokenId}`} mono />
+                <MetaRow
+                  label="Name"
+                  value={data.metadata.templateName || "Unknown"}
+                />
+                <MetaRow
+                  label="Rarity"
+                  value={
+                    <span className={`tag tag-${RARITY_LABELS[data.onChain.rarityCode].toLowerCase()}`}>
+                      {data.onChain.rarity}
+                    </span>
+                  }
+                />
+                <MetaRow
+                  label="Status"
+                  value={
+                    <span
+                      className="text-[0.65rem] uppercase tracking-widest px-2 py-0.5 rounded"
+                      style={{
+                        background:
+                          data.onChain.status === "Print Requested"
+                            ? "rgba(255,107,186,0.15)"
+                            : "rgba(0,204,255,0.15)",
+                        color:
+                          data.onChain.status === "Print Requested"
+                            ? "var(--aurora-pink)"
+                            : "var(--electric-blue)",
+                        border: `1px solid ${
+                          data.onChain.status === "Print Requested"
+                            ? "rgba(255,107,186,0.35)"
+                            : "rgba(0,204,255,0.35)"
+                        }`,
+                      }}
+                    >
+                      {data.onChain.status}
+                    </span>
+                  }
+                />
+                <MetaRow
+                  label="Last Owner"
+                  value={
+                    <span className="text-sm text-white/70">
+                      {data.onChain.lastOwner || "—"}
+                    </span>
+                  }
+                />
+                {data.purchasePrice !== null && (
+                  <MetaRow
+                    label="Purchase Price"
+                    value={
+                      <span
+                        className="font-semibold"
+                        style={{ color: "var(--aurora-gold)" }}
+                      >
+                        {data.purchasePrice} Credit
+                      </span>
+                    }
+                    last
+                  />
+                )}
+              </div>
+
+              {/* History */}
+              {data.history && data.history.length > 0 && (
+                <div className="glass p-5" data-testid="scan-history">
+                  <p className="text-[0.72rem] uppercase tracking-[0.22em] mb-4" style={{ color: "var(--cosmic-violet)" }}>
+                    Transaction History
+                  </p>
+                  <div className="space-y-2">
+                    {data.history.map((tx, i) => (
+                      <div
+                        key={`${tx.type}-${tx.timestamp}-${i}`}
+                        className="flex justify-between items-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {tx.invoiceId && (
+                            <span className="text-[0.6rem] font-mono text-white/40 shrink-0">
+                              {tx.invoiceId}
+                            </span>
+                          )}
+                          <span className="text-sm font-medium capitalize text-white shrink-0">
+                            {tx.type}
+                          </span>
+                          <span
+                            className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded shrink-0"
+                            style={{
+                              background:
+                                tx.status === "Success"
+                                  ? "rgba(0,204,255,0.15)"
+                                  : "rgba(255,196,102,0.15)",
+                              color:
+                                tx.status === "Success"
+                                  ? "var(--electric-blue)"
+                                  : "var(--aurora-gold)",
+                            }}
+                          >
+                            {tx.status}
+                          </span>
+                          {tx.from && tx.to && (
+                            <span className="text-[0.65rem] text-white/40 truncate">
+                              {tx.from} → {tx.to}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-white/50 shrink-0 ml-3">
+                          {new Date(tx.timestamp).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+
+          {/* Scan Again */}
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="/scan"
+              className="btn-primary inline-flex items-center gap-2"
+              data-testid="scan-again-btn"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+              Scan Another Card
+            </Link>
+          </div>
+        </>
       )}
     </PageShell>
   );

@@ -90,15 +90,10 @@ export async function GET(request: Request) {
       : null;
     const lastSync = card.lastOnChainSync || null;
 
-    // Verification flag — cek apakah cache masih fresh (< 1 jam)
-    const cacheAge = lastSync
-      ? Date.now() - new Date(lastSync).getTime()
-      : Infinity;
-    const cacheFresh = cacheAge < 3600000; // 1 jam
-
-    const verified = cacheFresh && card.status !== undefined;
+    // Verification flag — data di MongoDB sudah terkonfirmasi on-chain
+    // (diupdate saat mint/print/redeem dikonfirmasi), jadi cukup cek konsistensi status
     const statusMatch = STATUS_LABELS[statusCode] === card.status || card.status === "Real";
-    const verificationFlag = verified && statusMatch ? "verified" : "warning";
+    const verificationFlag = card.status !== undefined && statusMatch ? "verified" : "warning";
 
     return NextResponse.json({
       cardId: card.cardId || null,
@@ -118,7 +113,7 @@ export async function GET(request: Request) {
       },
       purchasePrice,
       verification: {
-        verified,
+        verified: verificationFlag === "verified",
         statusMatch,
         flag: verificationFlag,
       },
