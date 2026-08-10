@@ -267,16 +267,7 @@ function ScanContent() {
             </p>
             <p className="text-white/70 mb-2">{error}</p>
             <p className="text-xs text-white/40 mb-6">Card ID: #{cardId}</p>
-            <div className="flex gap-2 sm:gap-3">
-              <button
-                onClick={() => setShowScanner(true)}
-                className="btn-primary !px-3 sm:!px-4 shrink-0"
-                data-testid="scan-retry-camera"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="3" height="3" /><path d="M20 14v3h3" /><path d="M14 20h3v3" /><path d="M14 17h3" /><path d="M17 14v3" />
-                </svg>
-              </button>
+            <div className="flex gap-2">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -286,16 +277,16 @@ function ScanContent() {
                     router.push(`/scan?cardId=${input}`);
                   }
                 }}
-                className="flex-1 flex gap-2 min-w-0"
+                className="flex-1 flex items-center gap-2 min-w-0"
               >
                 <div
-                  className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-3 sm:px-4 py-3 min-w-0"
+                  className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-3 sm:px-4 py-2.5 min-w-0"
                 >
                   <span className="text-sm text-white/40 mr-1 font-mono">#</span>
                   <input
                     type="text"
                     name="retryCardId"
-                    placeholder="a1b2c3"
+                    placeholder="Enter Card ID…"
                     className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none min-w-0"
                     data-testid="scan-retry-input"
                   />
@@ -316,6 +307,16 @@ function ScanContent() {
                   )}
                 </button>
               </form>
+              <button
+                onClick={() => setShowScanner(true)}
+                className="btn-primary !p-2.5 shrink-0"
+                data-testid="scan-retry-camera"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              </button>
             </div>
           </div>
         </>
