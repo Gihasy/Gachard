@@ -6,7 +6,7 @@ export default function HomeCtaBand() {
   return (
     <section className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10 py-16">
       <div
-        className="relative overflow-hidden rounded-3xl p-10 sm:p-14"
+        className="relative overflow-hidden rounded-3xl p-6 sm:p-10 lg:p-14"
         style={{
           background:
             "linear-gradient(135deg, rgba(138,92,255,0.18), rgba(255,107,186,0.12) 45%, rgba(0,204,255,0.15))",

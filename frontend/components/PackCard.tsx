@@ -67,7 +67,7 @@ export default function PackCard({
       {/* Content */}
       <div className="relative z-10 p-5 flex flex-col gap-4">
         {/* Title + Stats */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
           <h3 className="font-display text-base uppercase tracking-wider" style={{ color: s.accent }}>
             {s.label}
           </h3>

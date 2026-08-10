@@ -188,7 +188,7 @@ function ScanContent() {
           </>
         }
       >
-        <div className="glass p-14 text-center max-w-xl mx-auto">
+        <div className="glass p-8 sm:p-10 lg:p-14 text-center max-w-xl mx-auto">
           <div
             className="w-10 h-10 mx-auto rounded-full border-2 border-t-transparent animate-spin"
             style={{ borderColor: "var(--cosmic-violet)", borderTopColor: "transparent" }}
@@ -239,7 +239,7 @@ function ScanContent() {
     >
       {loading && (
         <div
-          className="glass p-14 text-center"
+          className="glass p-8 sm:p-10 lg:p-14 text-center"
           data-testid="scan-loading"
         >
           <div

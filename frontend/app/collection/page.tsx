@@ -227,7 +227,7 @@ export default function Koleksi() {
 function EmptyState() {
   return (
     <div
-      className="glass p-14 text-center max-w-xl mx-auto"
+      className="glass p-8 sm:p-10 lg:p-14 text-center max-w-xl mx-auto"
       data-testid="collection-empty"
     >
       <div

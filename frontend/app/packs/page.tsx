@@ -91,7 +91,7 @@ export default function PacksPage() {
     >
       {/* Balance */}
       {balance !== null && (
-        <div className="flex items-center justify-center gap-4 mb-8">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-8">
           <span className="text-sm text-white/60">Your Balance: </span>
           <span className="text-lg font-display" style={{ color: "var(--aurora-gold)" }}>
             {balance.toLocaleString()} Credit

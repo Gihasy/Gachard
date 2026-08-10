@@ -143,7 +143,7 @@ export default function TopUp() {
                 <button
                   key={p.credits}
                   onClick={() => setAmount(p.credits)}
-                  className="relative text-left p-5 rounded-2xl transition-all"
+                  className="relative text-left p-3 sm:p-5 rounded-2xl transition-all"
                   style={{
                     background: active
                       ? "linear-gradient(135deg, rgba(184,172,255,0.15), rgba(255,107,186,0.08))"
@@ -169,7 +169,7 @@ export default function TopUp() {
                     </span>
                   )}
                   <div
-                    className="font-display text-2xl mb-1"
+                    className="font-display text-xl sm:text-2xl mb-1"
                     style={{ color: active ? "#FFFFFF" : "rgba(255,255,255,0.85)" }}
                   >
                     {p.credits.toLocaleString()}

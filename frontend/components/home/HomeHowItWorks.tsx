@@ -20,12 +20,12 @@ export default function HomeHowItWorks() {
         </h2>
       </div>
 
-      <div className="relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         {STEPS.map((s, i) => (
           <div key={s.n} className="relative" data-testid={`step-${s.n}`}>
-            <div className="glass p-5 h-full transition-all duration-300 hover:border-white/25" style={{ minHeight: "170px" }}>
+            <div className="glass p-3 sm:p-5 h-full transition-all duration-300 hover:border-white/25" style={{ minHeight: "140px" }}>
               <div
-                className="font-display text-3xl mb-3"
+                className="font-display text-2xl sm:text-3xl mb-2 sm:mb-3"
                 style={{
                   background: "linear-gradient(135deg, var(--cosmic-violet), var(--aurora-pink), var(--electric-blue))",
                   WebkitBackgroundClip: "text",
@@ -35,8 +35,8 @@ export default function HomeHowItWorks() {
               >
                 {s.n}
               </div>
-              <h3 className="font-display uppercase text-white text-sm tracking-wider mb-2">{s.title}</h3>
-              <p className="text-xs text-white/60 leading-relaxed">{s.desc}</p>
+              <h3 className="font-display uppercase text-white text-xs sm:text-sm tracking-wider mb-1.5 sm:mb-2">{s.title}</h3>
+              <p className="text-[0.65rem] sm:text-xs text-white/60 leading-relaxed">{s.desc}</p>
             </div>
             {i < STEPS.length - 1 && (
               <div
