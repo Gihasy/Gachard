@@ -122,6 +122,7 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
   }, [phase, revealedCount, sortedCards.length]);
 
   if ("error" in result && result.error) {
+    const isInsufficient = result.error.toLowerCase().includes("insufficient");
     return (
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-5"
@@ -136,9 +137,16 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
           }}
         >
           <p className="mb-4">{result.error}</p>
-          <button onClick={() => window.location.reload()} className="btn-ghost text-sm">
-            Try Again
-          </button>
+          <div className="flex items-center justify-center gap-3">
+            {isInsufficient && (
+              <Link href="/topup" className="btn-primary text-sm" data-testid="pack-reveal-topup-btn">
+                Top Up
+              </Link>
+            )}
+            <button onClick={() => window.location.reload()} className="btn-ghost text-sm">
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );

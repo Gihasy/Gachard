@@ -218,7 +218,7 @@ function ScanContent() {
           }
           description="Every Gachard card carries a unique verified signature. Scan its QR code with your camera or enter the Card ID below to verify ownership, rarity, and history."
         >
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] items-start">
+          <div className="grid gap-8 md:gap-10 md:grid-cols-[1.1fr_1fr] items-start">
             <ScanInstructions onOpenCamera={() => setShowScanner(true)} />
             <ManualInput />
           </div>
@@ -258,7 +258,7 @@ function ScanContent() {
             <QRScanner onScan={handleScan} onClose={() => setShowScanner(false)} />
           )}
           <div
-            className="glass p-10 text-center max-w-xl mx-auto"
+            className="glass p-6 sm:p-10 text-center max-w-xl mx-auto"
             data-testid="scan-error"
             style={{ borderColor: "rgba(255,107,186,0.35)" }}
           >
@@ -267,10 +267,10 @@ function ScanContent() {
             </p>
             <p className="text-white/70 mb-2">{error}</p>
             <p className="text-xs text-white/40 mb-6">Card ID: #{cardId}</p>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={() => setShowScanner(true)}
-                className="btn-primary !px-4"
+                className="btn-primary !px-3 sm:!px-4 shrink-0"
                 data-testid="scan-retry-camera"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -286,24 +286,24 @@ function ScanContent() {
                     router.push(`/scan?cardId=${input}`);
                   }
                 }}
-                className="flex-1 flex gap-2"
+                className="flex-1 flex gap-2 min-w-0"
               >
                 <div
-                  className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-4 py-3"
+                  className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-3 sm:px-4 py-3 min-w-0"
                 >
                   <span className="text-sm text-white/40 mr-1 font-mono">#</span>
                   <input
                     type="text"
                     name="retryCardId"
                     placeholder="a1b2c3"
-                    className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
+                    className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none min-w-0"
                     data-testid="scan-retry-input"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={retryLoading}
-                  className="btn-primary disabled:opacity-50"
+                  className="btn-primary disabled:opacity-50 shrink-0"
                   data-testid="scan-retry-submit"
                 >
                   {retryLoading ? (
@@ -334,23 +334,23 @@ function ScanContent() {
                 const input = (e.currentTarget.elements.namedItem("topCardId") as HTMLInputElement).value.trim();
                 if (input) router.push(`/scan?cardId=${input}`);
               }}
-              className="flex-1 flex items-center gap-2"
+              className="flex-1 flex items-center gap-2 min-w-0"
             >
               <div
-                className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-4 py-2.5"
+                className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-3 sm:px-4 py-2.5 min-w-0"
               >
                 <span className="text-sm text-white/40 mr-1 font-mono">#</span>
                 <input
                   type="text"
                   name="topCardId"
                   placeholder="Enter Card ID…"
-                  className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
+                  className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none min-w-0"
                   data-testid="scan-top-input"
                 />
               </div>
               <button
                 type="submit"
-                className="btn-primary"
+                className="btn-primary shrink-0"
                 data-testid="scan-top-submit"
               >
                 Scan
@@ -358,7 +358,7 @@ function ScanContent() {
             </form>
             <button
               onClick={() => setShowScanner(true)}
-              className="btn-primary !p-2.5"
+              className="btn-primary !p-2.5 shrink-0"
               data-testid="scan-top-camera"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -368,7 +368,7 @@ function ScanContent() {
             </button>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]" data-testid="scan-result">
+          <div className="grid gap-6 md:gap-8 md:grid-cols-[1fr_1.2fr]" data-testid="scan-result">
             {/* Card artwork */}
             <div
               className={`glass overflow-hidden ${RARITY_GLOW[data.onChain.rarityCode]}`}
@@ -395,7 +395,7 @@ function ScanContent() {
             <div className="space-y-4">
               {/* Verification */}
               <div
-                className="flex items-center gap-3 p-4 rounded-2xl"
+                className="flex items-start sm:items-center gap-3 p-4 rounded-2xl"
                 style={{
                   background:
                     data.verification.flag === "verified"
@@ -437,7 +437,7 @@ function ScanContent() {
                     )}
                   </svg>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p
                     className="text-sm font-semibold uppercase tracking-wide"
                     style={{
@@ -531,9 +531,9 @@ function ScanContent() {
                     {data.history.map((tx, i) => (
                       <div
                         key={`${tx.type}-${tx.timestamp}-${i}`}
-                        className="flex justify-between items-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
+                        className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-wrap">
                           {tx.invoiceId && (
                             <span className="text-[0.6rem] font-mono text-white/40 shrink-0">
                               {tx.invoiceId}
@@ -563,7 +563,7 @@ function ScanContent() {
                             </span>
                           )}
                         </div>
-                        <span className="text-xs text-white/50 shrink-0 ml-3">
+                        <span className="text-xs text-white/50 shrink-0 sm:ml-3">
                           {new Date(tx.timestamp).toLocaleDateString()}
                         </span>
                       </div>
