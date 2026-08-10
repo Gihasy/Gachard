@@ -114,6 +114,21 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: NS1 → ns1.vercel-dns.com + NS2 → ns2.vercel-dns.com
 2. **Demo Day prep** — video backup, pitch deck, rehearsal, test full loop dengan alamat sungguhan
 3. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
+4. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — run with `cd frontend && npx tsx scripts/clean-slate.ts`
+
+### Session 10 Agustus 2026 — Ringkasan Perubahan
+- **Responsive Fixes**: All pages audited and fixed for mobile (320-425px)
+  - PackCard: stack title + stats on mobile
+  - HomeHowItWorks: smaller step cards
+  - HomeCtaBand: responsive padding
+  - TopUp presets: smaller text/padding
+  - Collection empty state: responsive padding
+  - Packs balance: flex-wrap
+  - Scan loading states: responsive padding
+- **Pack Reveal Fix**: Cards no longer cut off on mobile — responsive sizes 140px → 160px → 180px
+- **Insufficient Balance**: Top Up button appears when balance error
+- **Scan Bar Layout**: [Input] [Camera] [Scan] for both error and result states
+- **Clean Slate**: Database reset (60 cards, 11 transactions deleted). Script at `frontend/scripts/clean-slate.ts`
 
 ### Session 4 Agustus 2026 — Ringkasan Perubahan
 - 14 commit, 16 file berubah (+981 / -458 lines)
