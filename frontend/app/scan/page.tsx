@@ -268,16 +268,6 @@ function ScanContent() {
             <p className="text-white/70 mb-2">{error}</p>
             <p className="text-xs text-white/40 mb-6">Card ID: #{cardId}</p>
             <div className="flex gap-2">
-              <button
-                onClick={() => setShowScanner(true)}
-                className="btn-primary !p-2.5 shrink-0"
-                data-testid="scan-retry-camera"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
-              </button>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -287,7 +277,7 @@ function ScanContent() {
                     router.push(`/scan?cardId=${input}`);
                   }
                 }}
-                className="flex-1 flex items-center gap-2 min-w-0"
+                className="flex-1 flex items-center min-w-0"
               >
                 <div
                   className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-3 sm:px-4 py-2.5 min-w-0"
@@ -301,22 +291,35 @@ function ScanContent() {
                     data-testid="scan-retry-input"
                   />
                 </div>
-                <button
-                  type="submit"
-                  disabled={retryLoading}
-                  className="btn-primary disabled:opacity-50 shrink-0"
-                  data-testid="scan-retry-submit"
-                >
-                  {retryLoading ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Scanning…
-                    </span>
-                  ) : (
-                    "Scan"
-                  )}
-                </button>
               </form>
+              <button
+                onClick={() => setShowScanner(true)}
+                className="btn-primary !p-2.5 shrink-0"
+                data-testid="scan-retry-camera"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              </button>
+              <button
+                onClick={() => {
+                  const form = document.querySelector('[data-testid="scan-error"] form') as HTMLFormElement;
+                  if (form) form.requestSubmit();
+                }}
+                disabled={retryLoading}
+                className="btn-primary disabled:opacity-50 shrink-0"
+                data-testid="scan-retry-submit"
+              >
+                {retryLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Scanning…
+                  </span>
+                ) : (
+                  "Scan"
+                )}
+              </button>
             </div>
           </div>
         </>
@@ -329,23 +332,13 @@ function ScanContent() {
           )}
           {/* Scan Another Card — top bar */}
           <div className="mb-6 flex gap-2" data-testid="scan-again-bar">
-            <button
-              onClick={() => setShowScanner(true)}
-              className="btn-primary !p-2.5 shrink-0"
-              data-testid="scan-top-camera"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                <circle cx="12" cy="13" r="4" />
-              </svg>
-            </button>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 const input = (e.currentTarget.elements.namedItem("topCardId") as HTMLInputElement).value.trim();
                 if (input) router.push(`/scan?cardId=${input}`);
               }}
-              className="flex-1 flex items-center gap-2 min-w-0"
+              className="flex-1 flex items-center min-w-0"
             >
               <div
                 className="flex-1 flex items-center bg-white/[0.04] border border-white/[0.1] rounded-2xl px-3 sm:px-4 py-2.5 min-w-0"
@@ -359,14 +352,27 @@ function ScanContent() {
                   data-testid="scan-top-input"
                 />
               </div>
-              <button
-                type="submit"
-                className="btn-primary shrink-0"
-                data-testid="scan-top-submit"
-              >
-                Scan
-              </button>
             </form>
+            <button
+              onClick={() => setShowScanner(true)}
+              className="btn-primary !p-2.5 shrink-0"
+              data-testid="scan-top-camera"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </button>
+            <button
+              onClick={() => {
+                const form = document.querySelector('[data-testid="scan-again-bar"] form') as HTMLFormElement;
+                if (form) form.requestSubmit();
+              }}
+              className="btn-primary shrink-0"
+              data-testid="scan-top-submit"
+            >
+              Scan
+            </button>
           </div>
 
           <div className="grid gap-6 md:gap-8 md:grid-cols-[1fr_1.2fr]" data-testid="scan-result">
