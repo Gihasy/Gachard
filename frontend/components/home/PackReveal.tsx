@@ -185,18 +185,18 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
 
       {/* ─── READY / BURSTING ─── */}
       {(phase === "ready" || phase === "bursting") && (
-        <div className="text-center">
-          <h2 className="font-display uppercase text-3xl sm:text-4xl mb-2">
+        <div className="text-center px-4">
+          <h2 className="font-display uppercase text-2xl sm:text-3xl md:text-4xl mb-2">
             <span className="text-gradient-aurora">Pack Ready</span>
           </h2>
-          <p className="text-white/50 text-sm mb-8">
+          <p className="text-white/50 text-xs sm:text-sm mb-4 sm:mb-8">
             {phase === "bursting" ? "Unsealing…" : "Your pack is ready to open"}
           </p>
 
-          <div className="relative mx-auto flex items-center justify-center" style={{ height: 360 }}>
+          <div className="relative mx-auto flex items-center justify-center" style={{ height: "min(360px, 50vh)" }}>
             {/* ambient glow */}
             <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full pulse-glow"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] rounded-full pulse-glow"
               aria-hidden
               style={{
                 background: "radial-gradient(circle, rgba(255,196,102,0.3) 0%, rgba(184,172,255,0.15) 40%, transparent 70%)",
@@ -222,27 +222,27 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
                 transition: "opacity 300ms ease 700ms",
               }}
             >
-              <div className="relative" style={{ width: 200, height: 280 }}>
+              <div className="relative w-[140px] h-[196px] sm:w-[180px] sm:h-[252px] md:w-[200px] md:h-[280px]">
                 <Image
                   src={`/packs/${packType}.webp`}
                   alt={packLabel}
                   fill
                   className="object-contain drop-shadow-2xl"
-                  sizes="200px"
+                  sizes="(max-width: 640px) 140px, (max-width: 768px) 180px, 200px"
                   priority
                 />
               </div>
-              <p className="font-display uppercase text-base text-white/80 tracking-wider mt-3 text-center">
+              <p className="font-display uppercase text-sm sm:text-base text-white/80 tracking-wider mt-2 sm:mt-3 text-center">
                 {packLabel}
               </p>
-              <span className="chip mt-2 mx-auto"><span className="chip-dot" />Sealed</span>
+              <span className="chip mt-1.5 sm:mt-2 mx-auto"><span className="chip-dot" />Sealed</span>
             </div>
           </div>
 
           {phase === "ready" && (
             <button
               onClick={handleOpen}
-              className="btn-primary mt-6 text-lg px-8 py-3"
+              className="btn-primary mt-4 sm:mt-6 text-base sm:text-lg px-6 sm:px-8 py-2.5 sm:py-3"
               data-testid="pack-open-btn"
             >
               Open Pack
@@ -253,16 +253,16 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
 
       {/* ─── REVEALING / DONE ─── */}
       {(phase === "revealing" || phase === "done") && (
-        <div className="w-full max-w-5xl px-5 py-8">
-          <div className="text-center mb-8">
-            <h2 className="font-display uppercase text-2xl sm:text-3xl mb-1">
+        <div className="w-full max-w-5xl px-3 sm:px-5 py-4 sm:py-8 overflow-y-auto">
+          <div className="text-center mb-4 sm:mb-8">
+            <h2 className="font-display uppercase text-xl sm:text-2xl md:text-3xl mb-1">
               <span className="text-gradient-aurora">
                 {phase === "done" ? "Pack Opened" : "Revealing…"}
               </span>
             </h2>
             {phase === "done" && bestRarity >= 2 && (
               <p
-                className="label-pop text-sm uppercase tracking-[0.2em] font-semibold"
+                className="label-pop text-xs sm:text-sm uppercase tracking-[0.2em] font-semibold"
                 style={{ color: RARITY_COLORS[bestRarity] }}
                 data-testid="best-pull-banner"
               >
@@ -271,7 +271,7 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
             )}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 justify-items-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 justify-items-center">
             {sortedCards.map((card, i) => {
               const key = card.tokenId ?? card.template?.id ?? `${card.template?.name}-${i}`;
               const rarity = Math.max(0, Math.min(3, card.rarity)) as 0 | 1 | 2 | 3;
@@ -281,7 +281,7 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
                 return (
                   <div
                     key={key}
-                    className="w-full max-w-[180px] rounded-2xl"
+                    className="w-full max-w-[140px] sm:max-w-[160px] md:max-w-[180px] rounded-2xl"
                     style={{
                       aspectRatio: "5/7",
                       background: "linear-gradient(135deg, #14162e, #1b1f3a)",
@@ -296,7 +296,7 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
               return (
                 <div
                   key={key}
-                  className="card-pop w-full max-w-[180px]"
+                  className="card-pop w-full max-w-[140px] sm:max-w-[160px] md:max-w-[180px]"
                   style={{ animationDelay: `${(i - Math.max(0, revealedCount - 1)) * 40}ms` }}
                   data-testid={`card-reveal-${i}`}
                 >
@@ -326,7 +326,7 @@ export default function PackReveal({ result, packLabel = "Your Pack", packType =
           </div>
 
           {phase === "done" && (
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-4 sm:mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link href="/collection" className="btn-primary" data-testid="reveal-view-collection">
                 View Collection
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
