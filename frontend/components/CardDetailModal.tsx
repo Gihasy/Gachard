@@ -24,6 +24,7 @@ interface ScanTx {
 interface ScanData {
   cardId?: string | null;
   tokenId: string | number | null;
+  qrDataUrl?: string | null;
   onChain: {
     rarityCode: number;
     rarity: string;
@@ -139,26 +140,53 @@ export default function CardDetailModal({
 
           {data && (
             <div className="flex flex-col sm:flex-row gap-4">
-              {/* Card artwork — fixed width on desktop */}
-              <div
-                className={`glass overflow-hidden shrink-0 self-start mx-auto sm:mx-0 ${RARITY_GLOW[data.onChain.rarityCode]}`}
-                style={{ borderColor: RARITY_COLORS[data.onChain.rarityCode], width: 150 }}
-              >
-                <div className="relative w-full bg-white/5" style={{ aspectRatio: "5/7" }}>
-                  {data.metadata.artworkUrl ? (
-                    <Image
-                      src={data.metadata.artworkUrl}
-                      alt={data.metadata.templateName || "Card"}
-                      fill
-                      sizes="150px"
-                      className="object-contain"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-3xl text-white/30">◆</span>
+              {/* Card artwork + QR — fixed width on desktop */}
+              <div className="shrink-0 self-start mx-auto sm:mx-0 flex flex-col items-center gap-3" style={{ width: 150 }}>
+                <div
+                  className={`glass overflow-hidden w-full ${RARITY_GLOW[data.onChain.rarityCode]}`}
+                  style={{ borderColor: RARITY_COLORS[data.onChain.rarityCode] }}
+                >
+                  <div className="relative w-full bg-white/5" style={{ aspectRatio: "5/7" }}>
+                    {data.metadata.artworkUrl ? (
+                      <Image
+                        src={data.metadata.artworkUrl}
+                        alt={data.metadata.templateName || "Card"}
+                        fill
+                        sizes="150px"
+                        className="object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-3xl text-white/30">◆</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* QR code — scan to verify card details */}
+                {data.qrDataUrl &&
+                  data.onChain.status !== "Print Requested" &&
+                  data.onChain.status !== "Real" && (
+                    <div
+                      className="glass w-full flex flex-col items-center gap-1.5 p-2.5"
+                      data-testid="card-detail-qr"
+                    >
+                      <div className="rounded-lg overflow-hidden bg-white p-1.5">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={data.qrDataUrl}
+                          alt="Scan card QR code"
+                          width={110}
+                          height={110}
+                          className="block"
+                          data-testid="card-detail-qr-image"
+                        />
+                      </div>
+                      <p className="text-[0.5rem] uppercase tracking-[0.2em] text-white/50 text-center">
+                        Scan to verify
+                      </p>
                     </div>
                   )}
-                </div>
               </div>
 
               {/* Meta — fills remaining space */}

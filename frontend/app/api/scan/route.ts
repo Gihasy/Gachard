@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { friendlyTxStatus, friendlyCardStatus } from "@/lib/status-map";
 import { generateInvoiceId } from "@/lib/invoice";
+import { generateQRCode } from "@/lib/qr";
 
 const STATUS_LABELS = ["Digital", "Vaulted"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
@@ -98,9 +99,19 @@ export async function GET(request: Request) {
     const statusMatch = STATUS_LABELS[statusCode] === card.status || card.status === "Real";
     const verificationFlag = card.status !== undefined && statusMatch ? "verified" : "warning";
 
+    // QR code untuk verifikasi (encode URL scan dengan cardId)
+    const qrIdentifier = card.cardId || String(card.tokenId);
+    let qrDataUrl: string | null = null;
+    try {
+      qrDataUrl = await generateQRCode(qrIdentifier);
+    } catch {
+      qrDataUrl = null;
+    }
+
     return NextResponse.json({
       cardId: card.cardId || null,
       tokenId: card.tokenId ?? null,
+      qrDataUrl,
       onChain: {
         status: card.status === "Real" ? "Real" : friendlyCardStatus(STATUS_LABELS[statusCode] || "Unknown"),
         statusCode,
