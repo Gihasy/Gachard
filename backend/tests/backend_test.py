@@ -100,6 +100,29 @@ class TestAuthSession:
 
 
 # ---------------- /api/auth/logout ----------------
+class TestProxyCookieFix:
+    """Primary regression test for the FastAPI proxy Set-Cookie fix.
+
+    Previously the port-8001 reverse proxy collapsed duplicate response
+    headers into a dict, dropping the non-httpOnly gachard_uid cookie set
+    alongside session_token. Both must now appear as separate Set-Cookie
+    headers through the PUBLIC preview URL.
+    """
+    def test_logout_returns_both_set_cookies_through_proxy(self):
+        r = requests.post(f"{BASE_URL}/api/auth/logout", timeout=15)
+        assert r.status_code == 200, r.text
+        # urllib3 exposes multiple Set-Cookie values via getlist
+        set_cookies = r.raw.headers.getlist("set-cookie")
+        joined = "\n".join(set_cookies)
+        assert any("session_token=" in c for c in set_cookies), f"session_token missing: {set_cookies}"
+        assert any("gachard_uid=" in c for c in set_cookies), (
+            f"gachard_uid Set-Cookie missing through proxy — regression of the proxy fix. Got: {set_cookies}"
+        )
+        # confirm they arrived as SEPARATE headers, not merged into one comma-joined value
+        assert len([c for c in set_cookies if "gachard_uid=" in c]) >= 1
+        assert len([c for c in set_cookies if "session_token=" in c]) >= 1
+
+
 class TestAuthLogout:
     def test_logout_deletes_session(self):
         # seed a fresh session inline so we don't touch the shared fixture
@@ -134,9 +157,16 @@ print(oid.toString());
             assert r.json().get("ok") is True
 
             # cookies should be cleared (Set-Cookie with expired/empty)
-            set_cookie = r.headers.get("set-cookie", "")
-            assert "session_token=" in set_cookie
-            assert "gachard_uid=" in set_cookie
+            # THE PROXY FIX: assert BOTH session_token AND gachard_uid appear
+            # as separate Set-Cookie headers (not collapsed by the port-8001
+            # FastAPI proxy). Use raw response to see multiple headers.
+            raw_set_cookies = r.raw.headers.getlist("set-cookie") if hasattr(r.raw, "headers") else []
+            if not raw_set_cookies:
+                # requests exposes multiple set-cookie via .headers.get_list on urllib3 or via headers.items
+                raw_set_cookies = [v for k, v in r.headers.items() if k.lower() == "set-cookie"]
+            joined = "\n".join(raw_set_cookies) if raw_set_cookies else r.headers.get("set-cookie", "")
+            assert "session_token=" in joined, f"missing session_token clear cookie: {joined!r}"
+            assert "gachard_uid=" in joined, f"missing gachard_uid clear cookie (proxy fix regression): {joined!r}"
 
             # session should now be invalid → /api/auth/me returns 401 with the same token
             r = requests.get(

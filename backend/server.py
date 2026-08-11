@@ -46,13 +46,21 @@ async def proxy(path: str, request: Request):
         content=body,
     )
 
-    resp_headers = {
-        k: v for k, v in upstream.headers.items()
-        if k.lower() not in HOP_BY_HOP
-    }
+    content = upstream.content
 
-    return Response(
-        content=upstream.content,
-        status_code=upstream.status_code,
-        headers=resp_headers,
-    )
+    # Preserve EVERY response header individually — critical for `Set-Cookie`,
+    # which legitimately appears multiple times (e.g. session_token +
+    # gachard_uid). Using a dict here would collapse duplicates and drop
+    # cookies, breaking auth. `multi_items()` keeps each header pair intact and
+    # avoids comma-joining (which would also corrupt cookies with commas in
+    # their Expires attribute).
+    raw_headers = [
+        (k.encode("latin-1"), v.encode("latin-1"))
+        for k, v in upstream.headers.multi_items()
+        if k.lower() not in HOP_BY_HOP
+    ]
+    raw_headers.append((b"content-length", str(len(content)).encode("latin-1")))
+
+    response = Response(content=content, status_code=upstream.status_code)
+    response.raw_headers = raw_headers
+    return response
