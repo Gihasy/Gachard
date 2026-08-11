@@ -48,3 +48,24 @@ The `googleLogin` implementation in `lib/api.ts` is currently a mock that return
 ## Local dev env (`frontend/.env`)
 - `MONGODB_URL=mongodb://localhost:27017`, `DATABASE_NAME=gachard`, `ADMIN_USERNAME=admin`, `ADMIN_PASSWORD=gachard123`.
 - Supervisor `frontend` runs `yarn start` (production build). Run `yarn build` after code changes before restarting `frontend`, or use `yarn dev` manually for hot reload.
+
+## Emergent-managed Google Auth (added Aug 2026)
+- Login page (`/login`) primary button: **"Continue with Google"** (data-testid=`login-google-btn`) → redirects to
+  `https://auth.emergentagent.com/?redirect=<origin>/auth-callback` (origin built dynamically, never hardcoded).
+- After Google, user lands at `<origin>/auth-callback#session_id=...` → `/auth-callback` page posts `session_id` to
+  `POST /api/auth/session`, which calls Emergent `https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data`
+  (X-Session-ID header), upserts user by email (custodial wallet auto-created), stores a 7-day session in Mongo
+  `user_sessions`, sets httpOnly `session_token` cookie + non-httpOnly `gachard_uid` cookie, then forwards to `/collection`.
+- `GET /api/auth/me` — returns `{user_id, username, email, name, picture}` for a valid `session_token` (cookie or `Authorization: Bearer`), else 401.
+- `POST /api/auth/logout` — deletes the session row and clears both cookies.
+- Logout button in Navbar (data-testid=`nav-logout-btn` / `mobile-nav-logout-btn`).
+- No API keys required for Emergent auth. Real Google login is NOT automatable — for tests, seed a session:
+  ```bash
+  mongosh "mongodb://localhost:27017/gachard" --eval '
+  var oid=new ObjectId(); var st="test_session_"+Date.now();
+  db.users.insertOne({_id:oid,email:"qa@example.com",username:"QAUser",walletAddress:"0x00...dEaD",createdAt:new Date().toISOString()});
+  db.user_sessions.insertOne({user_id:oid.toString(),session_token:st,expires_at:new Date(Date.now()+6048e5),created_at:new Date()});
+  print(st+" | "+oid.toString());'
+  ```
+  Then use cookie `session_token=<st>` for `/api/auth/me`, and cookies `session_token=<st>` + `gachard_uid=<oid>` for gated pages (/collection, /profile, /topup).
+- Full testing playbook saved at `/app/auth_testing.md`.

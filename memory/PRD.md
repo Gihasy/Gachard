@@ -21,3 +21,22 @@ Buat tampilan https://www.gachard.com/profile menyesuaikan ukuran iPhone 12 Pro 
 - P2: `/api/cards` no longer returns raw `status`; if any other page relies on `status`, align to `displayStatus`.
 - P2: Consider truncating/abbreviating very long badge text on ultra-narrow screens instead of wrapping, if design prefers single-line.
 - Deploy latest commit so production gachard.com/profile reflects the responsive fixes.
+
+---
+## Update — Aug 2026 (E1 session)
+### Feature: QR code in Card Details modal
+- `frontend/app/api/scan/route.ts` now returns `qrDataUrl` (QR encoding the card's verify URL).
+- `frontend/components/CardDetailModal.tsx` renders the QR beneath the card artwork ("Scan to verify"); hidden for Print Requested / Real cards.
+
+### Feature: Emergent-managed Google sign-in
+- New route handlers: `POST /api/auth/session` (exchanges session_id at Emergent, upserts user by email, 7-day session in `user_sessions`, sets `session_token` httpOnly + `gachard_uid` cookies), `GET /api/auth/me`, `POST /api/auth/logout`.
+- `frontend/lib/auth.ts`: added `getOrCreateUserByEmail`, `createSession`, `getUserBySessionToken`, `deleteSession`.
+- `frontend/app/auth-callback/page.tsx`: processes `#session_id` fragment → `/collection`.
+- `frontend/app/login/page.tsx`: "Continue with Google" (Emergent) button; redirect built from `window.location.origin + '/auth-callback'` (never hardcoded).
+- `frontend/components/Navbar.tsx`: Logout button (desktop + mobile).
+- Cookies set via explicit `Set-Cookie` headers (Next.js coalesces `.cookies.set` when mixing SameSite None+Lax).
+- Tested: iteration_13 (6/7 backend, 7/7 frontend) + logout Set-Cookie fix verified. Real Google OAuth login is not automatable; validated via seeded Mongo sessions.
+- Testing playbook: `/app/auth_testing.md`.
+
+### Env note (preview only, gitignored)
+- `frontend/.env` created for local run: MONGODB_URL, DATABASE_NAME, NEXT_PUBLIC_APP_URL, ADMIN_USERNAME/PASSWORD, ENABLE_DEMO_LOGIN, ENCRYPTION_SECRET_KEY, BSC_TESTNET_RPC. No real contract/admin key — on-chain flows remain unconfigured in this preview.

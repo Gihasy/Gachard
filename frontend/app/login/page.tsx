@@ -1,23 +1,9 @@
 "use client";
 
-import { useState, Suspense, useEffect, useRef } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Logo from "@/components/Logo";
-
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
-          renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
-          prompt: () => void;
-        };
-      };
-    };
-  }
-}
 
 function safeNext(raw: string | null): string {
   if (!raw) return "/";
@@ -31,14 +17,19 @@ function LoginInner() {
   const next = safeNext(searchParams.get("next"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const googleButtonRef = useRef<HTMLDivElement>(null);
-  const initialized = useRef(false);
   const [demoEnabled, setDemoEnabled] = useState(false);
 
   useEffect(() => {
     const flag = document.querySelector('meta[name="demo-login-enabled"]')?.getAttribute("content");
     setDemoEnabled(flag === "true");
   }, []);
+
+  const handleGoogleLogin = () => {
+    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    setLoading(true);
+    const redirectUrl = window.location.origin + "/auth-callback";
+    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+  };
 
   const handleDemoLogin = async () => {
     setLoading(true);
@@ -58,67 +49,6 @@ function LoginInner() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    const clientId = document.querySelector('meta[name="google-client-id"]')?.getAttribute("content");
-
-    if (!clientId || clientId === "your-google-client-id") {
-      setError("Google OAuth not configured. Please set GOOGLE_CLIENT_ID.");
-      return;
-    }
-
-    // Load Google Identity Services script
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-
-    script.onload = () => {
-      if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: async (response: { credential: string }) => {
-            setLoading(true);
-            setError(null);
-            try {
-              const res = await fetch("/api/auth/google", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token: response.credential }),
-              });
-
-              if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || "Login failed");
-              }
-
-              const result = await res.json();
-              localStorage.setItem("user", JSON.stringify(result));
-              document.cookie = `gachard_uid=${encodeURIComponent(result.user_id)}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
-              window.location.href = next;
-            } catch (err) {
-              setError((err as Error).message || "Login failed");
-            } finally {
-              setLoading(false);
-            }
-          },
-        });
-
-        if (googleButtonRef.current) {
-          window.google.accounts.id.renderButton(googleButtonRef.current, {
-            theme: "filled_black",
-            size: "large",
-            width: "100%",
-            text: "continue_with",
-          });
-        }
-      }
-    };
-  }, [next]);
 
   return (
     <div className="relative flex-1 flex items-center justify-center px-5 py-16 lg:py-24" data-testid="login-page">
@@ -183,13 +113,26 @@ function LoginInner() {
           </div>
         )}
 
-        {/* Google Sign-In button rendered by Google SDK */}
-        <div ref={googleButtonRef} className="flex justify-center mb-4" data-testid="login-google-btn" />
-
-        {/* Fallback if Google SDK fails to load */}
-        {loading && (
-          <div className="text-center text-sm text-white/60">Signing in…</div>
-        )}
+        {/* Google Sign-In via Emergent-managed OAuth */}
+        <button
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-3 rounded-full px-5 py-3 font-medium text-sm transition-all disabled:opacity-50 hover:brightness-110 active:scale-[0.98]"
+          style={{
+            background: "#ffffff",
+            color: "#1f1f1f",
+            boxShadow: "0 8px 24px -8px rgba(255,255,255,0.25)",
+          }}
+          data-testid="login-google-btn"
+        >
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+          </svg>
+          {loading ? "Redirecting…" : "Continue with Google"}
+        </button>
 
         <div className="my-6 flex items-center gap-3">
           <div className="flex-1 h-px bg-white/10" />

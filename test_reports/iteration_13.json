@@ -1,0 +1,34 @@
+{
+  "summary": "Tested Emergent-managed Google Auth integration on Gachard (Next.js). Backend: 6/7 pytest tests passed — /api/auth/me works via Bearer and cookie, returns 401 with no/invalid token; /api/auth/session validates payload and rejects bogus session_ids with 401; /api/auth/logout deletes the DB session (post-logout /api/auth/me → 401) but does NOT emit a Set-Cookie clearing gachard_uid. Frontend: /login shows 'Continue with Google' (data-testid=login-google-btn), clicking it redirects to https://auth.emergentagent.com/oauth/?redirect=<origin>/auth-callback (URL-encoded). /auth-callback without session_id redirects to /login. With seeded session_token + gachard_uid cookies, /collection and /profile render (no redirect). Without gachard_uid cookie, middleware redirects /collection to /login?next=/collection. Navbar Logout button visible, clears gachard_uid cookie on click and redirects to /.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/logout", "issue": "Response only emits Set-Cookie entries for session_token (twice, once with Partitioned) but NO Set-Cookie for gachard_uid, even though route.ts calls response.cookies.set('gachard_uid', '', ...). API-only clients (curl, mobile apps) will retain the gachard_uid cookie until natural expiry (7 days), leaving middleware-gated routes accessible. In-browser this is masked because Navbar.handleLogout also clears the cookie via document.cookie. Likely a Next.js 16 quirk with setting two Secure/None+Partitioned cookies in the same response."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Investigate why POST /api/auth/logout response does not include a Set-Cookie clearing gachard_uid. Consider using response.cookies.delete('gachard_uid') or setting it before session_token, or emit the header manually via response.headers.append('Set-Cookie', ...). Client-side cookie clear in Navbar currently masks the issue in the browser but breaks non-browser clients."
+  ],
+  "critical_code_review_comments": [
+    "auth/logout/route.ts sets two cookies with sameSite='none'+secure; Next.js may be coalescing them due to Partitioned duplication. Verify with a real curl -I after fix."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "86% (6/7)", "frontend": "100% (7/7 scenarios verified; localStorage-clear-on-logout could not be automated because add_init_script re-seeds localStorage on every navigation — manual verification recommended)"},
+  "seed_data_creation": "Seeded and cleaned up: users with emails matching /^qa\\.test\\./ and sessions matching /^test_session/. All test data removed at end of run.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "No real credentials required; Mongo-seeded test sessions used per /app/auth_testing.md.",
+  "context_for_next_testing_agent": "Backend test at /app/backend/tests/backend_test.py seeds sessions directly in Mongo (mongosh) and cleans up in fixture teardown. Only known issue: /api/auth/logout does not emit Set-Cookie for gachard_uid — see test_logout_deletes_session assertion failure. Real Google OAuth is NOT automatable; only session_id=invalid → 401 is tested. Google button redirect target URL uses '/oauth/' subpath and URL-encoded redirect param (both are correct behavior).",
+  "rca_of_the_issue": "In POST /api/auth/logout, Next.js response.cookies.set() is called for both session_token and gachard_uid, but the actual outbound response contains only session_token Set-Cookie entries (verified via curl -I on the public URL). Recommend either (a) using response.headers.append('Set-Cookie', ...) directly for gachard_uid, or (b) checking whether the platform ingress/CDN strips duplicate Set-Cookie headers for non-httpOnly cookies. Fortunately the Navbar's client-side handleLogout does `document.cookie = 'gachard_uid=; ...; max-age=0'`, so browser flows are unaffected."
+}

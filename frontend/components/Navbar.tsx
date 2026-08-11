@@ -38,6 +38,17 @@ export default function Navbar() {
     setOpen(false);
   }, [pathname]);
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch {
+      // ignore network errors — still clear client state
+    }
+    localStorage.removeItem("user");
+    document.cookie = "gachard_uid=; path=/; max-age=0; SameSite=Lax";
+    window.location.href = "/";
+  };
+
   return (
     <header
       className="sticky top-0 z-50 w-full"
@@ -99,24 +110,34 @@ export default function Navbar() {
           {/* Right side */}
           <div className="flex items-center gap-3">
             {user ? (
-              <div
-                className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full"
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                }}
-                data-testid="nav-user-chip"
-              >
-                <span
-                  className="w-2 h-2 rounded-full"
+              <div className="hidden sm:flex items-center gap-2">
+                <div
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-full"
                   style={{
-                    background: "var(--aurora-gold)",
-                    boxShadow: "0 0 8px var(--aurora-gold)",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.10)",
                   }}
-                />
-                <span className="text-xs font-medium text-white/85">
-                  @{user.username}
-                </span>
+                  data-testid="nav-user-chip"
+                >
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      background: "var(--aurora-gold)",
+                      boxShadow: "0 0 8px var(--aurora-gold)",
+                    }}
+                  />
+                  <span className="text-xs font-medium text-white/85">
+                    @{user.username}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-3.5 py-2 rounded-full text-xs font-medium uppercase tracking-[0.12em] text-white/70 hover:text-white transition-colors"
+                  style={{ border: "1px solid rgba(255,255,255,0.10)" }}
+                  data-testid="nav-logout-btn"
+                >
+                  Logout
+                </button>
               </div>
             ) : (
               <Link
@@ -208,11 +229,20 @@ export default function Navbar() {
             })}
             <div className="mt-3 pt-3 border-t border-white/10">
               {user ? (
-                <div className="text-sm text-white/70 px-3 py-2">
-                  Signed in as{" "}
-                  <span className="text-white font-semibold">
-                    @{user.username}
-                  </span>
+                <div className="px-3 py-2">
+                  <div className="text-sm text-white/70 mb-2">
+                    Signed in as{" "}
+                    <span className="text-white font-semibold">
+                      @{user.username}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="btn-ghost w-full !justify-center"
+                    data-testid="mobile-nav-logout-btn"
+                  >
+                    Logout
+                  </button>
                 </div>
               ) : (
                 <Link
