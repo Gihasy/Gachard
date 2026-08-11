@@ -41,9 +41,9 @@ export default function AuthCallbackPage() {
           })
         );
 
-        // Strip the session_id fragment, then enter the app.
+        // Strip the session_id fragment, then enter the app on the profile.
         window.history.replaceState(null, "", "/auth-callback");
-        window.location.replace("/collection");
+        window.location.replace("/profile");
       } catch (e) {
         setError((e as Error).message || "Authentication failed");
       }
