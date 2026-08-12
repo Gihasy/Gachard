@@ -5,7 +5,25 @@ export async function GET() {
   try {
     const cardsCollection = await getCollection("cards");
     const usersCollection = await getCollection("users");
-    const cards = await cardsCollection.find({}).toArray();
+    const cards = await cardsCollection
+      .find(
+        {},
+        {
+          projection: {
+            cardId: 1,
+            tokenId: 1,
+            templateId: 1,
+            rarity: 1,
+            status: 1,
+            fulfillmentStatus: 1,
+            ownerAddress: 1,
+            createdAt: 1,
+          },
+        }
+      )
+      .sort({ createdAt: -1 })
+      .limit(1000)
+      .toArray();
 
     // Build address → username map (only for card owners)
     const ownerAddresses = [...new Set(cards.map((c) => c.ownerAddress?.toLowerCase()).filter(Boolean))];

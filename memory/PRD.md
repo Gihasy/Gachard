@@ -40,3 +40,11 @@ Buat tampilan https://www.gachard.com/profile menyesuaikan ukuran iPhone 12 Pro 
 
 ### Env note (preview only, gitignored)
 - `frontend/.env` created for local run: MONGODB_URL, DATABASE_NAME, NEXT_PUBLIC_APP_URL, ADMIN_USERNAME/PASSWORD, ENABLE_DEMO_LOGIN, ENCRYPTION_SECRET_KEY, BSC_TESTNET_RPC. No real contract/admin key — on-chain flows remain unconfigured in this preview.
+
+---
+## Update — Deployment fix (Aug 2026)
+- **Root cause of failed production deploy**: build context required `/app/backend/.env`, which did not exist ("read env file backend/.env: no such file or directory").
+- **Fixes (code/config only)**: created `backend/.env` (MONGO_URL, DB_NAME); `frontend/lib/mongodb.ts` now reads `MONGODB_URL||MONGO_URL` and `DATABASE_NAME||DB_NAME||'gachard'` (so prod Atlas injected as MONGO_URL/DB_NAME works); `EMERGENT_SESSION_URL` env-overridable; added projections+limits to `/api/admin/users`, `/api/admin/cards`, `/api/cards`; added `memory/test_credentials.md` + `auth_testing.md` to `.gitignore`.
+- **Verified**: deployment_agent — env-file blocker cleared (env_files_ok=true, compilation_passed=true, unoptimized_queries_detected=false). Regression suite iteration_15: backend 18/18, frontend 4/4.
+- **Note**: deployment_agent still flags `ethers` as "not deployable" — a generic heuristic, NOT the cause of the K8s failure (which was purely the missing env file). ethers only calls a public BNB Testnet RPC.
+- **Prod runtime reminder**: for full on-chain features (buy-pack reveal via mintBatch, print, redeem) set these secrets in the production env: CONTRACT_ADDRESS, ADMIN_WALLET_ADDRESS, ADMIN_PRIVATE_KEY, BSC_TESTNET_RPC, ENCRYPTION_SECRET_KEY, plus ADMIN_USERNAME/PASSWORD, ENABLE_DEMO_LOGIN, NEXT_PUBLIC_APP_URL. MongoDB Atlas is auto-injected as MONGO_URL/DB_NAME.

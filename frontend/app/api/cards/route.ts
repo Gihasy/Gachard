@@ -57,7 +57,9 @@ export async function GET(request: Request) {
       .toArray();
 
     // Lookup artworkUrl dari card_templates
-    const templates = await templatesCollection.find({}).toArray();
+    const templates = await templatesCollection
+      .find({}, { projection: { templateId: 1, artworkUrl: 1, name: 1 } })
+      .toArray();
     const templateMap = new Map(templates.map((t) => [t.templateId, t]));
 
     const enrichedCards = cards.map((card) => {

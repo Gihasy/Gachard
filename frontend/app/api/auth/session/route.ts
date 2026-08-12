@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { getOrCreateUserByEmail, createSession } from "@/lib/auth";
 
 // Emergent-managed OAuth session-data endpoint. The session_id (from the
-// #session_id fragment) is exchanged here, server-side only.
+// #session_id fragment) is exchanged here, server-side only. Overridable via
+// env for flexibility across environments.
 const EMERGENT_SESSION_URL =
+  process.env.EMERGENT_AUTH_URL ||
   "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data";
 
 const SEVEN_DAYS_SECONDS = 7 * 24 * 60 * 60;

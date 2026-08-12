@@ -4,7 +4,13 @@ import { getCollection } from "@/lib/mongodb";
 export async function GET() {
   try {
     const usersCollection = await getCollection("users");
-    const users = await usersCollection.find({}).toArray();
+    const users = await usersCollection
+      .find(
+        {},
+        { projection: { email: 1, username: 1, walletAddress: 1, createdAt: 1 } }
+      )
+      .limit(500)
+      .toArray();
 
     const result = users.map((u) => ({
       id: u._id.toString(),

@@ -28,3 +28,7 @@ credentials.json
 *.key
 .credentials
 .env*
+
+# Sensitive local-only notes (never commit/deploy)
+memory/test_credentials.md
+auth_testing.md

@@ -5,7 +5,12 @@ import json
 import time
 import pytest
 import requests
+from requests.auth import HTTPBasicAuth
 from dotenv import dotenv_values
+
+ADMIN_USER = "admin"
+ADMIN_PASS = "gachard123"
+ADMIN_AUTH = HTTPBasicAuth(ADMIN_USER, ADMIN_PASS)
 
 frontend_env = dotenv_values("/app/frontend/.env")
 BASE_URL = (os.environ.get("REACT_APP_BACKEND_URL")
@@ -179,3 +184,200 @@ print(oid.toString());
             _mongo_eval(
                 f'db.users.deleteMany({{email: "{email}"}}); db.user_sessions.deleteMany({{session_token: "{token}"}});'
             )
+
+
+# ---------------- /api/health ----------------
+class TestHealth:
+    def test_health_ok(self):
+        r = requests.get(f"{BASE_URL}/api/health", timeout=15)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data["status"] == "ok"
+        assert data["database"] == "connected"
+        assert "timestamp" in data
+
+
+# ---------------- Seeded regression fixture (user + templates + card) ----------------
+@pytest.fixture(scope="module")
+def seeded_regression_data():
+    """Seed one user + one card_template + one card owned by that user.
+
+    Cleans up after all tests in this module that use it.
+    """
+    ts = int(time.time() * 1000)
+    email = f"qa.regression.{ts}@example.com"
+    wallet = f"0x{ts:040x}"[:42]
+    template_id = f"TEST_TPL_{ts}"
+    card_id = f"TEST_CARD_{ts}"
+    token_id = 900000 + (ts % 100000)
+    script = f'''
+var oid = new ObjectId();
+db.users.insertOne({{
+  _id: oid,
+  email: "{email}",
+  username: "QARegression",
+  walletAddress: "{wallet}",
+  createdAt: new Date().toISOString()
+}});
+db.card_templates.insertOne({{
+  templateId: "{template_id}",
+  rarity: "Rare",
+  name: "TEST Regression Card",
+  artworkUrl: "https://example.com/test.png"
+}});
+db.cards.insertOne({{
+  cardId: "{card_id}",
+  tokenId: {token_id},
+  templateId: "{template_id}",
+  rarity: "Rare",
+  status: "Digital",
+  ownerAddress: "{wallet}",
+  createdAt: new Date()
+}});
+print(oid.toString());
+'''
+    user_id = _mongo_eval(script).splitlines()[-1].strip()
+    assert len(user_id) == 24, f"Seed failed: {user_id!r}"
+
+    yield {
+        "user_id": user_id,
+        "email": email,
+        "wallet": wallet,
+        "template_id": template_id,
+        "card_id": card_id,
+        "token_id": token_id,
+    }
+
+    _mongo_eval(
+        f'db.users.deleteMany({{email: "{email}"}});'
+        f'db.card_templates.deleteMany({{templateId: "{template_id}"}});'
+        f'db.cards.deleteMany({{cardId: "{card_id}"}});'
+    )
+
+
+# ---------------- /api/credits ----------------
+class TestCredits:
+    def test_credits_missing_user_id(self):
+        r = requests.get(f"{BASE_URL}/api/credits", timeout=15)
+        assert r.status_code == 400
+
+    def test_credits_returns_balance_for_seeded_user(self, seeded_regression_data):
+        r = requests.get(
+            f"{BASE_URL}/api/credits",
+            params={"userId": seeded_regression_data["user_id"]},
+            timeout=15,
+        )
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert "balance" in data
+        assert isinstance(data["balance"], (int, float))
+        assert data["balance"] >= 0
+
+
+# ---------------- /api/admin/users (Basic Auth + projection + limit(500)) ----------------
+class TestAdminUsers:
+    def test_requires_basic_auth(self):
+        r = requests.get(f"{BASE_URL}/api/admin/users", timeout=15)
+        assert r.status_code == 401
+
+    def test_wrong_password_rejected(self):
+        r = requests.get(
+            f"{BASE_URL}/api/admin/users",
+            auth=HTTPBasicAuth("admin", "wrong_password"),
+            timeout=15,
+        )
+        assert r.status_code == 401
+
+    def test_returns_users_with_expected_projection(self, seeded_regression_data):
+        r = requests.get(f"{BASE_URL}/api/admin/users", auth=ADMIN_AUTH, timeout=20)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert "users" in data
+        assert isinstance(data["users"], list)
+        assert len(data["users"]) >= 1
+        # find our seeded user
+        seeded = next(
+            (u for u in data["users"] if u.get("id") == seeded_regression_data["user_id"]),
+            None,
+        )
+        assert seeded is not None, "seeded user missing from admin users list"
+        # projection fields must be present (with expected values)
+        assert seeded["email"] == seeded_regression_data["email"]
+        assert seeded["username"] == "QARegression"
+        assert seeded["walletAddress"] == seeded_regression_data["wallet"]
+        assert "createdAt" in seeded
+        # limit must be enforced (defensive — should never exceed 500)
+        assert len(data["users"]) <= 500
+        # Mongo _id must NOT leak
+        assert "_id" not in seeded
+
+
+# ---------------- /api/admin/cards (Basic Auth + projection + sort + limit(1000)) ----------------
+class TestAdminCards:
+    def test_requires_basic_auth(self):
+        r = requests.get(f"{BASE_URL}/api/admin/cards", timeout=15)
+        assert r.status_code == 401
+
+    def test_returns_cards_with_owner_username_resolved(self, seeded_regression_data):
+        r = requests.get(f"{BASE_URL}/api/admin/cards", auth=ADMIN_AUTH, timeout=25)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert "cards" in data and isinstance(data["cards"], list)
+        assert len(data["cards"]) <= 1000
+        # find our seeded card
+        card = next(
+            (c for c in data["cards"] if c.get("cardId") == seeded_regression_data["card_id"]),
+            None,
+        )
+        assert card is not None, "seeded card missing from admin cards list"
+        # expected projected fields
+        for field in ["cardId", "tokenId", "templateId", "rarity", "status", "ownerAddress", "createdAt"]:
+            assert field in card, f"missing field {field} in admin cards response"
+        assert card["templateId"] == seeded_regression_data["template_id"]
+        assert card["rarity"] == "Rare"
+        # ownerUsername resolution (the projection fix must not have broken this)
+        assert card.get("ownerUsername") == "@QARegression", (
+            f"ownerUsername did not resolve — got {card.get('ownerUsername')!r}"
+        )
+        # sorted by createdAt desc (best-effort check on first vs last)
+        # only assert if there are 2+ items with createdAt
+        dated = [c for c in data["cards"] if c.get("createdAt")]
+        if len(dated) >= 2:
+            assert str(dated[0]["createdAt"]) >= str(dated[-1]["createdAt"])
+        # no _id leakage
+        assert "_id" not in card
+
+
+# ---------------- /api/cards (template enrichment must survive projection change) ----------------
+class TestUserCards:
+    def test_missing_user_id(self):
+        r = requests.get(f"{BASE_URL}/api/cards", timeout=15)
+        assert r.status_code == 400
+
+    def test_returns_enriched_cards_for_seeded_user(self, seeded_regression_data):
+        r = requests.get(
+            f"{BASE_URL}/api/cards",
+            params={"userId": seeded_regression_data["user_id"]},
+            timeout=25,
+        )
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert "cards" in data and isinstance(data["cards"], list)
+        assert len(data["cards"]) >= 1
+        card = next(
+            (c for c in data["cards"] if c.get("cardId") == seeded_regression_data["card_id"]),
+            None,
+        )
+        assert card is not None, "seeded user card missing from /api/cards response"
+        # projection on templates must still enrich artworkUrl + templateName
+        assert card["artworkUrl"] == "https://example.com/test.png", (
+            f"artworkUrl not enriched from card_templates: {card.get('artworkUrl')!r}"
+        )
+        assert card["templateName"] == "TEST Regression Card", (
+            f"templateName not enriched: {card.get('templateName')!r}"
+        )
+        assert card["templateId"] == seeded_regression_data["template_id"]
+        assert card["rarity"] == "Rare"
+        assert card["displayStatus"] == "Digital"
+        assert card["tokenId"] == seeded_regression_data["token_id"]
+
