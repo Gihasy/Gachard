@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://gachard.vercel.app";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
 /**
  * Generate QR data URL untuk kartu.
