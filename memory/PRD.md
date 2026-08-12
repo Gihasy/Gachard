@@ -48,3 +48,9 @@ Buat tampilan https://www.gachard.com/profile menyesuaikan ukuran iPhone 12 Pro 
 - **Verified**: deployment_agent — env-file blocker cleared (env_files_ok=true, compilation_passed=true, unoptimized_queries_detected=false). Regression suite iteration_15: backend 18/18, frontend 4/4.
 - **Note**: deployment_agent still flags `ethers` as "not deployable" — a generic heuristic, NOT the cause of the K8s failure (which was purely the missing env file). ethers only calls a public BNB Testnet RPC.
 - **Prod runtime reminder**: for full on-chain features (buy-pack reveal via mintBatch, print, redeem) set these secrets in the production env: CONTRACT_ADDRESS, ADMIN_WALLET_ADDRESS, ADMIN_PRIVATE_KEY, BSC_TESTNET_RPC, ENCRYPTION_SECRET_KEY, plus ADMIN_USERNAME/PASSWORD, ENABLE_DEMO_LOGIN, NEXT_PUBLIC_APP_URL. MongoDB Atlas is auto-injected as MONGO_URL/DB_NAME.
+
+---
+## Update — Deployment fix #2 (frontend-build-push)
+- **Root cause:** `/app/frontend` had BOTH `package-lock.json` and `yarn.lock`. `package-lock.json` was out of sync with `package.json` (`Missing: @emnapi/runtime@1.11.3, @emnapi/core@1.11.3`). The Emergent cloud builder ran `npm ci`, which requires a perfectly synced lockfile → exit 1 → `frontend-build-push` failed. Local builds worked because we use yarn.
+- **Fix:** deleted the stale `frontend/package-lock.json` so the builder uses the valid `yarn.lock` (verified `yarn install --frozen-lockfile` passes; `npm ci` was the failing path). Build-config-only change; no source/runtime code touched.
+- **Verified:** clean `yarn build` passes; regression iteration_16 — backend 18/18, frontend 4/4, no regressions.

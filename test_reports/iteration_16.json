@@ -1,0 +1,19 @@
+{
+  "summary": "Regression smoke test after deleting stale frontend/package-lock.json (build-config-only change). Re-ran the full pytest backend suite (18/18 passed) and executed a focused Playwright smoke test covering login page + Emergent OAuth redirect and the gated /profile route (with/without seeded session). All 4 frontend checks passed. No regressions detected.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "Ephemeral Mongo docs seeded and cleaned up per test: qa.test.<ts>@example.com users + test_session_<ts> sessions (backend), qa.regression.<ts> user + TEST_TPL_<ts> template + TEST_CARD_<ts> card, qa.fe.<ts>@example.com user + test_session_fe_<ts> (frontend). All deleted at teardown.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": false,
+  "test_credentials": "Admin Basic Auth admin/gachard123; seeded Mongo sessions per /app/auth_testing.md (no real Google OAuth).",
+  "context_for_next_testing_agent": "Backend suite at /app/backend/tests/backend_test.py fully passes (18/18) against preview URL. Covers /api/health, /api/auth/{me,session,logout} including the FastAPI proxy Set-Cookie duplication fix (gachard_uid + session_token), /api/credits, /api/admin/{users,cards} Basic Auth + projections + limits + ownerUsername resolution, and /api/cards template enrichment (artworkUrl/templateName). Frontend smoke: login-google-btn text + redirect to https://auth.emergentagent.com/?redirect=<origin>%2Fauth-callback (URL-encoded), /profile gate → /login without gachard_uid, /profile renders profile-page/profile-username/profile-balance with seeded session_token + gachard_uid + localStorage.user. Note: the Emergent auth redirect URL is URL-encoded — check for '%2Fauth-callback' not '/auth-callback' when asserting substrings.",
+  "rca_of_the_issue": "N/A — the change under review was pure build config (deletion of stale /app/frontend/package-lock.json to unblock npm ci → yarn.lock path). No runtime code changed and no regression observed."
+}
