@@ -1,8 +1,13 @@
 import { MongoClient } from "mongodb";
 import { randomBytes } from "crypto";
 
-const MONGODB_URL = process.env.MONGODB_URL || "mongodb+srv://gihasy:%23Gihasy2811@gachard-cluster.4ttukup.mongodb.net/gachard?retryWrites=true&w=majority";
-const DATABASE_NAME = "gachard";
+const MONGODB_URL = process.env.MONGODB_URL || process.env.MONGO_URL;
+const DATABASE_NAME = process.env.DATABASE_NAME || process.env.DB_NAME || "gachard";
+
+if (!MONGODB_URL) {
+  console.error("Refusing to run: set MONGODB_URL explicitly (no hardcoded fallback).");
+  process.exit(1);
+}
 
 function generateCardId() {
   return randomBytes(3).toString("hex").slice(0, 5);

@@ -64,3 +64,11 @@ Buat tampilan https://www.gachard.com/profile menyesuaikan ukuran iPhone 12 Pro 
   4. Confirmed via from-scratch: fresh `npm install` then `npm ci` both EXIT=0 and produce an executable `.bin/next`; `npm run build` passes. The earlier `npm ci` failure was a STALE lockfile, not npm itself.
 - **Fix:** regenerated a fresh, in-sync `frontend/package-lock.json` (so `npm ci` works at BOTH build and runtime) and REMOVED `yarn.lock` (npm-only, eliminates dual-lockfile ambiguity that caused fix #2's build failure). Full npm reinstall of node_modules.
 - **Verified:** `npm ci` EXIT=0, `.bin/next` present+executable, `npm run build` passes, preview health/login 200, regression iteration_17 backend 18/18 + frontend 4/4.
+
+---
+## Update — Production isolation audit (pre-retry-deploy)
+- **CRITICAL fix:** `frontend/scripts/assign-card-ids.mjs` and `frontend/scripts/clean-state.mjs` had HARDCODED live Vercel Atlas prod creds (`mongodb+srv://gihasy:...@gachard-cluster.4ttukup...`) as fallback. `clean-state.mjs` is destructive. Removed the fallback → both now fail-fast if MONGODB_URL/MONGO_URL unset (verified: refuses with exit 1). No hardcoded Atlas creds remain in executable code (lib/app/scripts).
+- **DB isolation:** committed env (frontend/.env, backend/.env) point ONLY to `mongodb://localhost:27017`. The Vercel prod Atlas URI appears only in historical docs (UPDATE_REPORT.md, LAPORAN_AKHIR.md, MEMORY.md, docs/SESSION_CHANGELOG.md, memory/test_credentials.md) — not used at runtime. Emergent injects its OWN Atlas at deploy (separate from Vercel).
+- **Contract isolation:** No CONTRACT_ADDRESS/ADMIN_* set in this branch's env. Prod contract `0x0bb3dd543ff752bd15a50cbb3cba059bea6a278a` + admin wallet `0xF7DEd49...` live in docs only.
+- **SECURITY:** live Atlas password (`#Gihasy2811`) and admin private key prefix (`0xf77d...`) are committed in docs — user should ROTATE both.
+- Fresh strong ENCRYPTION_SECRET_KEY generated for prod (not committed).
