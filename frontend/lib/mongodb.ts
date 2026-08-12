@@ -1,7 +1,7 @@
 import { MongoClient, Db, ObjectId } from "mongodb";
 
-const MONGODB_URL = process.env.MONGODB_URL || process.env.MONGO_URL || "";
-const DATABASE_NAME = process.env.DATABASE_NAME || process.env.DB_NAME || "gachard";
+const MONGODB_URL = process.env.MONGO_URL || process.env.MONGODB_URL || "";
+const DATABASE_NAME = process.env.DB_NAME || process.env.DATABASE_NAME || "gachard";
 
 let client: MongoClient;
 let db: Db;

@@ -8,11 +8,10 @@ import requests
 from requests.auth import HTTPBasicAuth
 from dotenv import dotenv_values
 
-ADMIN_USER = "admin"
-ADMIN_PASS = "gachard123"
-ADMIN_AUTH = HTTPBasicAuth(ADMIN_USER, ADMIN_PASS)
-
 frontend_env = dotenv_values("/app/frontend/.env")
+ADMIN_USER = frontend_env.get("ADMIN_USERNAME") or os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASS = frontend_env.get("ADMIN_PASSWORD") or os.environ.get("ADMIN_PASSWORD", "gachard123")
+ADMIN_AUTH = HTTPBasicAuth(ADMIN_USER, ADMIN_PASS)
 BASE_URL = (os.environ.get("REACT_APP_BACKEND_URL")
             or frontend_env.get("NEXT_PUBLIC_APP_URL")
             or "https://9db77cb0-3df7-4a50-96db-66965a097236.preview.emergentagent.com").rstrip("/")

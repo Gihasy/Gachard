@@ -1,0 +1,26 @@
+{
+  "summary": "Follow-up visual-refinement test for the 'digital-physical-loop' sub-section in HomeHowItWorks.tsx (iteration_18 -> iteration_19). All 4 requested visual/content changes verified present and correct: (1) physical-card.webp regenerated as RGBA webp with alpha extrema (0,255) confirming genuine transparent background (verified via PIL, not just visual similarity) - screenshot confirms card blends into dark page bg with only card+case glow visible, no white box; (2) both loop-digital-card and loop-physical-card computed style shows '--r:-6deg' via shared .floaty class (globals.css line 250: animation floaty 6s + transform rotate(var(--r))), both visually tilted at matching angle in screenshot; (3) loop-connector SVG now renders two opposing horizontal arrow paths (M3 8h13...4 4-4-4 and M21 16H8...-4-4 4-4) forming a left-right double arrow, no circular/spin classes present, confirmed visually in both desktop and mobile screenshots with Print/Redeem (desktop, stacked) and 'Print / Redeem' (mobile, combined single label) text; (4) caption text scanned programmatically - zero occurrences of 'on-chain'/'blockchain'/'NFT', and text confirmed to contain 'digital collection' (not 'digital vault'). Regression: homepage loads with zero console errors on both 1920x1080 desktop and 390x844 mobile viewports; hero (COLLECT.PLAY.TRADE.), featured cards, how-it-works steps (step-01 found), and CTA band all render correctly. Quick smoke test of Demo Account login also passed - clicked LOGIN -> Demo button, successfully landed on homepage authenticated as '@Demo4' with LOGOUT button visible, no errors. Did not re-test Google-session simulation or mint flow in depth per instructions since no backend/auth code changed this round.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "HomeHowItWorks.tsx changes are clean and minimal: reused existing .floaty CSS utility (DRY, no duplicate keyframes), object-contain + drop-shadow filter correctly replaces object-cover so transparent PNG/webp edges render properly instead of being cropped, connector icon SVG properly swapped with no leftover spin/rotate animation classes, caption copy updated as requested with no blockchain/NFT terminology remaining.",
+    "Minor observation (not a bug): data-testid='hero' was not found on the homepage hero section during regression check - existing pages seem to use a different testid there; not in scope for this round's changes so not flagged as an issue, just noting for future testid coverage."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only testing requested)", "frontend": "100%"},
+  "test_credentials": "Demo Account login used (self-service, no creds needed). Did not use admin or Google-session creds this round per instructions (quick smoke check only, already verified in iteration_18).",
+  "seed_data_creation": "One additional demo user created via UI Demo login button (@Demo4) during smoke check, not cleaned up (low risk, isolated preview env, consistent with prior iteration's demo account creation pattern).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All 4 visual changes to digital-physical-loop section fully verified visually (screenshots) and programmatically (computed styles, image alpha channel, SVG markup, text content scan). No issues found. Robust scrolling approach used to solve the mid-page screenshot problem mentioned by main agent: used page.evaluate() to compute getBoundingClientRect().top and window.scrollTo() directly, combined with scroll_into_view_if_needed() as first pass, then wait_for_timeout(800-1000ms) before screenshot - this reliably scrolled to the target section on both desktop and mobile viewports.",
+  "rca_of_the_issue": "N/A - no bugs found, this was a verification-only pass of a previously-implemented visual refinement."
+}

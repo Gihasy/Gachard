@@ -1,0 +1,29 @@
+{
+  "summary": "Regression + new feature test for: (1) MongoDB env-var priority fix in lib/mongodb.ts, (2) qr.ts hardcoded URL removal, (3) lockfile conflict fix, (4) NEW homepage Digital<->Physical loop showcase in HomeHowItWorks.tsx. All PRIORITY REGRESSION flows pass: Demo Account creation (POST /api/auth/demo + UI button), seeded Google-session flow (GET /api/auth/me + gated pages /collection, /profile, /topup all render correctly, no 'Signing you in'/'Authentication failed' loops), and pack buy/mint flow (credits deducted 1000->500, 5 cards correctly appear in /collection with correct rarity breakdown Legendary/Epic/Rare/Common). NEW homepage section (data-testid=digital-physical-loop) verified present with loop-digital-card, loop-connector, loop-physical-card all rendering actual images (naturalWidth=240, not broken), visually coherent with dark cosmic violet/gold theme, responsive on both 1920x1000 desktop and 390x844 mobile viewports. Backend health check confirms database:connected in this preview env (as expected, the actual bug was production-only). Fixed 2 stale backend test failures caused by rotated admin credentials (test file hardcoded old admin/gachard123 instead of reading current .env values) - not a functional bug, just an outdated test fixture.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "HomeHowItWorks.tsx is well structured, uses next/image with proper alt text and sizes attr, no issues found.",
+    "No regressions detected from the mongodb.ts env-var priority swap or qr.ts fallback URL removal in this preview environment (DB was already connected here); fix is production-targeted per problem statement and cannot be verified against production from this environment."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py"],
+  "success_rate": {"backend": "100% (18/18 after credential fix)", "frontend": "100%"},
+  "test_credentials": "Used /app/memory/test_credentials.md exactly as documented: demo login via UI button, seeded Google session via mongosh recipe, rotated admin creds (gachard_admin_be2cb9 / WR0iYnXd7IBobNb7Lg7L4_rM) now correctly read from frontend/.env in backend_test.py instead of stale hardcoded admin/gachard123.",
+  "seed_data_creation": "Created 2 demo users via POST /api/auth/demo (Demo2, Demo3), 1 seeded Google-session user (qa.playwright.*@example.com, user_id 6a7c65c3094a0cf73b32fec3) with credits doc balance 1000, used for mint test which reduced balance to 500 and created 5 cards. Not cleaned up (test/QA data, low risk, isolated preview env with fresh isolated admin wallet/contract per problem statement).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "This session's changes (mongodb.ts priority fix, qr.ts fix, lockfile fix, new homepage loop section) all verified with NO regressions in preview. The mongodb.ts fix specifically targets production (gachard.com) and cannot be verified from preview since preview's local mongod was never broken - this is expected per problem statement, not a gap. Backend test file backend_test.py now correctly sources ADMIN_USERNAME/ADMIN_PASSWORD from frontend/.env via dotenv_values instead of hardcoding, so it will stay correct even if admin creds rotate again.",
+  "rca_of_the_issue": "N/A - no bugs found this session. The 2 initial pytest failures (TestAdminUsers, TestAdminCards) were a stale test fixture issue (hardcoded admin/gachard123 in backend_test.py after admin creds were rotated to gachard_admin_be2cb9/WR0iYnXd7IBobNb7Lg7L4_rM this session), fixed by reading credentials from frontend/.env at runtime."
+}
