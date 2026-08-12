@@ -30,9 +30,9 @@ export default function Home() {
   return (
     <div data-testid="home-page">
       <HomeHero isAuthenticated={!!user} />
-      <HomeFeaturedCards />
       <HomeWhyGachard />
       <HomeHowItWorks />
+      <HomeFeaturedCards />
       <HomeCtaBand />
     </div>
   );
