@@ -1,0 +1,19 @@
+{
+  "summary": "Regression run after npm reinstall (regenerated package-lock.json + removed yarn.lock). Backend pytest suite 18/18 passed against the public preview URL. Frontend smoke passed: /login renders 'Continue with Google' (data-testid=login-google-btn), clicking redirects to https://auth.emergentagent.com/... with URL-encoded %2Fauth-callback; /profile without gachard_uid redirects to /login?next=%2Fprofile; /profile with seeded session_token + gachard_uid cookies + localStorage.user renders profile-page, profile-username='@QAProfile', profile-balance element. No regressions from the lockfile/reinstall change.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "Ephemeral Mongo docs created and cleaned up in-test: backend fixtures (qa.test.<ts>, qa.regression.<ts>, TEST_TPL_<ts>, TEST_CARD_<ts>) and frontend smoke (qa.fe.<ts>@example.com + test_session_fe_<ts>). All deleted at teardown.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": false,
+  "test_credentials": "Admin Basic Auth admin/gachard123; Mongo-seeded session tokens per /app/auth_testing.md.",
+  "context_for_next_testing_agent": "Same suite as iteration_16 (18 pytest cases + 4 frontend smoke assertions) still fully green after regenerated package-lock.json and yarn.lock removal. Emergent auth redirect URL is URL-encoded (assert '%2Fauth-callback', not '/auth-callback'). Middleware redirect target for /profile is '/login?next=%2Fprofile'. The pre-existing ethers 'invalid private key' warning in preview logs is expected and out of scope.",
+  "rca_of_the_issue": "N/A — change under review was build/deps (regenerate package-lock.json + drop yarn.lock + npm reinstall). Runtime code unchanged; no regression."
+}

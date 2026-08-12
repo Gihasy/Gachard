@@ -54,3 +54,13 @@ Buat tampilan https://www.gachard.com/profile menyesuaikan ukuran iPhone 12 Pro 
 - **Root cause:** `/app/frontend` had BOTH `package-lock.json` and `yarn.lock`. `package-lock.json` was out of sync with `package.json` (`Missing: @emnapi/runtime@1.11.3, @emnapi/core@1.11.3`). The Emergent cloud builder ran `npm ci`, which requires a perfectly synced lockfile → exit 1 → `frontend-build-push` failed. Local builds worked because we use yarn.
 - **Fix:** deleted the stale `frontend/package-lock.json` so the builder uses the valid `yarn.lock` (verified `yarn install --frozen-lockfile` passes; `npm ci` was the failing path). Build-config-only change; no source/runtime code touched.
 - **Verified:** clean `yarn build` passes; regression iteration_16 — backend 18/18, frontend 4/4, no regressions.
+
+---
+## Update — Deployment fix #3 (runtime 502: spawnerr node_modules/.bin/next)
+- **Diagnosis:**
+  1. Preview `[program:frontend]` = `yarn start`, `directory=/app/frontend` (works). Production uses a platform-generated `nextjs` supervisor program that spawns the relative command `node_modules/.bin/next` — so node_modules MUST exist in its working dir at runtime.
+  2. `node_modules/.bin/next` symlink is created correctly by install (verified: -> ../next/dist/bin/next, executable, Next 16.2.11). So install is fine WHEN it runs.
+  3. Platform uses npm. Deploy fix #2 DELETED package-lock.json. The platform's runtime install runs `npm ci`, which REQUIRES a package-lock.json — with none present, runtime install produced no node_modules → `node_modules/.bin/next` missing → spawnerr → 502 (even though the build stage still had a .next → "[OK] Next.js build found").
+  4. Confirmed via from-scratch: fresh `npm install` then `npm ci` both EXIT=0 and produce an executable `.bin/next`; `npm run build` passes. The earlier `npm ci` failure was a STALE lockfile, not npm itself.
+- **Fix:** regenerated a fresh, in-sync `frontend/package-lock.json` (so `npm ci` works at BOTH build and runtime) and REMOVED `yarn.lock` (npm-only, eliminates dual-lockfile ambiguity that caused fix #2's build failure). Full npm reinstall of node_modules.
+- **Verified:** `npm ci` EXIT=0, `.bin/next` present+executable, `npm run build` passes, preview health/login 200, regression iteration_17 backend 18/18 + frontend 4/4.
