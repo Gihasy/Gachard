@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Logo from "@/components/Logo";
+import { useCart } from "@/hooks/useCart";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [user, setUser] = useState<{ username?: string } | null>(null);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { count: cartCount } = useCart();
 
   // Mount-only: read the persisted user + attach the scroll listener.
   // State setters from useState are guaranteed stable by React and don't need
@@ -98,7 +100,41 @@ export default function Navbar() {
           </nav>
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Wishlist */}
+            <Link
+              href="/wishlist"
+              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center transition-all hover:brightness-125"
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+              title="Wishlist"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--silver-mist-dim)" }}>
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            </Link>
+
+            {/* Cart */}
+            <Link
+              href="/trade"
+              className="hidden sm:flex relative w-9 h-9 rounded-full items-center justify-center transition-all hover:brightness-125"
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+              title="Cart"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--silver-mist-dim)" }}>
+                <circle cx="9" cy="21" r="1" />
+                <circle cx="20" cy="21" r="1" />
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              </svg>
+              {cartCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                  style={{ background: "var(--aurora-pink)", color: "white" }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+
             {user ? (
               <div
                 className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full"
