@@ -11,6 +11,7 @@ const GACHARD_ABI = [
   "function mintBatch(address to, uint8[] calldata rarities) external returns (uint256[] memory tokenIds)",
   "function requestPrint(uint256 tokenId, bytes32 redeemHash, address ownerAddress) external",
   "function redeemCard(uint256 tokenId, bytes32 redeemHash, address recipientAddress) external",
+  "function marketplaceTransfer(uint256 tokenId, address from, address to) external",
   "function cardStatus(uint256 tokenId) external view returns (uint8)",
   "function cardRarity(uint256 tokenId) external view returns (uint8)",
   "function storedHash(uint256 tokenId) external view returns (bytes32)",
@@ -18,6 +19,7 @@ const GACHARD_ABI = [
   "function balanceOf(address account, uint256 id) external view returns (uint256)",
   "event CardMinted(uint256 indexed tokenId, address indexed to, uint8 status, uint8 rarity)",
   "event CardStatusChanged(uint256 indexed tokenId, uint8 oldStatus, uint8 newStatus)",
+  "event MarketplaceTransfer(uint256 indexed tokenId, address indexed from, address indexed to)",
 ];
 
 /**
@@ -127,6 +129,12 @@ export async function getLastOwner(tokenId: number): Promise<string> {
     const contract = getContract();
     return contract.lastOwner(tokenId);
   }, `lastOwner(${tokenId})`);
+}
+
+export async function marketplaceTransfer(tokenId: number, fromAddress: string, toAddress: string): Promise<string> {
+  const contract = getContract();
+  const tx = await contract.marketplaceTransfer(tokenId, fromAddress, toAddress);
+  return tx.hash;
 }
 
 export async function getBalance(address: string, tokenId: number): Promise<bigint> {

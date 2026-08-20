@@ -32,6 +32,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Card does not belong to this user" }, { status: 403 });
     }
 
+    // Block print while card is listed for sale
+    if (card.isListed) {
+      return NextResponse.json({ error: "Card is listed for sale. Cancel listing before requesting print." }, { status: 400 });
+    }
+
     // Generate redeem code (plaintext TIDAK pernah ke frontend atau on-chain)
     const code = generateRedeemCode();
     const hash = hashRedeemCode(code);
