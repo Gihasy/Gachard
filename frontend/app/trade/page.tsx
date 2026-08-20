@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
-import CartModal from "@/components/CartModal";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
 
@@ -37,12 +36,13 @@ export default function MarketplacePage() {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [filter, setFilter] = useState<number | null>(null);
+  const [sort, setSort] = useState<string>("newest");
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [showCart, setShowCart] = useState(false);
+  const [wishlistCounts, setWishlistCounts] = useState<Record<string, number>>({});
   const [user, setUser] = useState<{ user_id: string; username: string } | null>(null);
   const { toggleWishlist, isWishlisted } = useWishlist();
-  const { addToCart, removeFromCart, clearCart, isInCart: isInCartFn, count: cartCount, cart } = useCart();
+  const { addToCart, isInCart: isInCartFn } = useCart();
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -59,7 +59,20 @@ export default function MarketplacePage() {
     try {
       const res = await fetch("/api/marketplace/listings");
       const data = await res.json();
-      setListings(data.listings || []);
+      const listingsData = data.listings || [];
+      setListings(listingsData);
+
+      // Fetch wishlist counts for all listings
+      if (listingsData.length > 0) {
+        const cardIds = listingsData.map((l: Listing) => l.cardId).join(",");
+        try {
+          const statsRes = await fetch(`/api/marketplace/wishlist-stats?cardIds=${cardIds}`);
+          const statsData = await statsRes.json();
+          setWishlistCounts(statsData.stats || {});
+        } catch {
+          setWishlistCounts({});
+        }
+      }
     } catch {
       setListings([]);
     }
@@ -101,9 +114,19 @@ export default function MarketplacePage() {
     setBuying(null);
   }
 
-  const filtered = filter !== null
+  const filtered = (filter !== null
     ? listings.filter((l) => l.rarity === filter)
-    : listings;
+    : listings
+  ).sort((a, b) => {
+    switch (sort) {
+      case "price-high": return b.price - a.price;
+      case "price-low": return a.price - b.price;
+      case "newest": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case "oldest": return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case "popular": return (b.fvm || 0) - (a.fvm || 0);
+      default: return 0;
+    }
+  });
 
   return (
     <PageShell
@@ -125,27 +148,7 @@ export default function MarketplacePage() {
       )}
 
       <div className="flex items-center gap-2 mb-6 flex-wrap">
-        {/* Cart badge */}
-        <button
-          onClick={() => setShowCart(true)}
-          className="relative w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: "rgba(0,204,255,0.08)", border: "1px solid rgba(0,204,255,0.25)" }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--electric-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="9" cy="21" r="1" />
-            <circle cx="20" cy="21" r="1" />
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-          </svg>
-          {cartCount > 0 && (
-            <span
-              className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-              style={{ background: "var(--aurora-pink)", color: "white" }}
-            >
-              {cartCount}
-            </span>
-          )}
-        </button>
-
+        {/* Rarity filter */}
         <button
           onClick={() => setFilter(null)}
           className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
@@ -165,6 +168,25 @@ export default function MarketplacePage() {
             {RARITY_NAMES[r]}
           </button>
         ))}
+
+        {/* Sort dropdown */}
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="ml-auto px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            color: "var(--silver-mist)",
+            outline: "none",
+          }}
+        >
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="popular">Popular (FVM)</option>
+        </select>
       </div>
 
       {loading ? (
@@ -229,8 +251,16 @@ export default function MarketplacePage() {
               <p className="text-sm font-semibold truncate" style={{ color: "var(--silver-mist)" }}>
                 {listing.templateName}
               </p>
-              <p className="text-xs mb-1" style={{ color: "var(--silver-mist-dim)" }}>
+              <p className="text-xs mb-1 flex items-center gap-2" style={{ color: "var(--silver-mist-dim)" }}>
                 #{listing.cardId}
+                {(wishlistCounts[listing.cardId] || 0) > 0 && (
+                  <span className="flex items-center gap-0.5" title={`${wishlistCounts[listing.cardId]} wishlisted`}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="#FF6BBA" stroke="#FF6BBA" strokeWidth="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    <span style={{ color: "var(--aurora-pink)" }}>{wishlistCounts[listing.cardId]}</span>
+                  </span>
+                )}
               </p>
 
               {listing.fvm !== null && (
@@ -394,18 +424,6 @@ export default function MarketplacePage() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Cart Modal */}
-      {showCart && (
-        <CartModal
-          cartIds={cart}
-          userId={user?.user_id || null}
-          onClose={() => setShowCart(false)}
-          onRemove={removeFromCart}
-          onClear={clearCart}
-          onCheckoutComplete={() => fetchListings()}
-        />
       )}
 
       {/* Login Prompt Modal */}

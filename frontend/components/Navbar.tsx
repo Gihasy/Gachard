@@ -115,7 +115,7 @@ export default function Navbar() {
 
             {/* Cart */}
             <Link
-              href="/trade"
+              href="/cart"
               className="hidden sm:flex relative w-9 h-9 rounded-full items-center justify-center transition-all hover:brightness-125"
               style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
               title="Cart"

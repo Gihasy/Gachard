@@ -10,8 +10,17 @@ export function useWishlist() {
   }, []);
 
   const toggleWishlist = useCallback((cardId: string) => {
+    const wasWishlisted = getWishlist().includes(cardId);
     const updated = toggle(cardId);
     setWishlist([...updated]);
+
+    // Update backend count
+    const action = wasWishlisted ? "remove" : "add";
+    fetch("/api/marketplace/wishlist-stats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cardId, action }),
+    }).catch(() => {});
   }, []);
 
   const isWishlisted = useCallback((cardId: string) => {
