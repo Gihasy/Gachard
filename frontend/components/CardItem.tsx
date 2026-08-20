@@ -310,10 +310,10 @@ export default function CardItem({
             {!isListed && canList && (
               <button
                 onClick={() => setShowListingModal(true)}
-                className="btn-ghost !py-2 !px-3 !text-[0.65rem] w-full"
+                className="!py-2 !px-3 !text-[0.65rem] w-full font-semibold uppercase tracking-widest rounded-xl transition-all"
                 style={{
-                  background: "rgba(255,196,102,0.08)",
-                  border: "1px solid rgba(255,196,102,0.25)",
+                  background: "linear-gradient(135deg, rgba(255,196,102,0.18), rgba(255,196,102,0.08))",
+                  border: "1px solid rgba(255,196,102,0.45)",
                   color: "var(--aurora-gold)",
                 }}
               >

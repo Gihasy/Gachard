@@ -25,6 +25,8 @@ type Card = {
   deliveredAt?: string | null;
   claimId?: string | null;
   isNew?: boolean;
+  isListed?: boolean;
+  listingId?: string | null;
 };
 
 export default function Koleksi() {
@@ -216,6 +218,8 @@ export default function Koleksi() {
               }}
               claimId={card.claimId}
               userId={user.user_id}
+              isListed={card.isListed}
+              listingId={card.listingId}
             />
           ))}
         </div>

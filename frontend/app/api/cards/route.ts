@@ -74,6 +74,8 @@ export async function GET(request: Request) {
         deliveredAt: card.deliveredAt || null,
         claimId: card.claimId || null,
         isNew: !card.viewed,
+        isListed: card.isListed || false,
+        listingId: card.listingId || null,
         createdAt: card.createdAt || null,
       };
     });
