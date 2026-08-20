@@ -77,7 +77,16 @@ export default function ListingModal({ cardId, templateId, userId, onClose, onLi
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
-      <div className="glass p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="p-6 w-full max-w-sm"
+        style={{
+          background: "rgba(15, 19, 36, 0.95)",
+          border: "1px solid rgba(255,196,102,0.3)",
+          borderRadius: "20px",
+          boxShadow: "0 0 40px rgba(0,0,0,0.5), 0 0 20px rgba(255,196,102,0.1)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--silver-mist)" }}>
           List for Sale
         </h3>
@@ -116,8 +125,8 @@ export default function ListingModal({ cardId, templateId, userId, onClose, onLi
             placeholder={floor ? `Min ${floor}` : "Enter price"}
             className="w-full p-3 rounded-lg mb-3 text-sm"
             style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.14)",
+              background: "rgba(0,0,0,0.3)",
+              border: "1px solid rgba(255,255,255,0.2)",
               color: "var(--silver-mist)",
             }}
           />
