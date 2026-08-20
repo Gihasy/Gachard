@@ -119,7 +119,7 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 - **Marketplace Fee**: 8% — seller receives price * 0.92
 - **API Routes**: POST/GET `/api/marketplace/listings`, POST cancel, POST buy (async pattern ADR-018 with pending transfer), GET `/api/marketplace/fvm`, GET `/api/marketplace/insight`, GET `/api/marketplace/suggest`
 - **AI Features**: Market Insight (Gemini, cached 1 hour) + Price Suggestion (per-template, in listing modal)
-- **UI**: `/marketplace` page (listing grid + FVM + Market Insight + rarity filter), ListingModal (price input + FVM + AI suggestion), CardItem (List for Sale / Cancel Listing buttons, Listed badge, print guard)
+- **UI**: `/trade` page (listing grid + FVM + Market Insight + rarity filter + clickable cards with quick info popup), ListingModal (price input + FVM + AI suggestion), CardItem (List for Sale / Cancel Listing buttons, Listed badge, print guard)
 - **Seed Script**: `frontend/scripts/seed-marketplace.ts` — ~25 dummy sold transactions with 3 ownership chains (Legendary 5x, Epic 4x, Rare 3x)
 - **ADR-024**: Supersedes ADR-010 (marketplace "Coming Soon" → functional)
 
@@ -200,7 +200,7 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 - Tanggal Demo Day pasti belum diumumkan — cek grup peserta hackathon
 - Rencana kerja sama cetak-dan-segel dengan Millennium Print Group (MPG) — hanya untuk tahap produksi, bukan hackathon
 - Jalankan `/dream` di akhir setiap sprint untuk merangkum pembelajaran sesi ke file ini
-- **Routes sudah English**: `/collection` (bukan /koleksi), `/profile` (bukan /profil), `/marketplace`, `/scan`, `/topup`
+- **Routes sudah English**: `/collect` (packs), `/play`, `/trade` (marketplace), `/collection`, `/profile`, `/scan`, `/topup`
 - **Service Worker**: sw.js sekarang punya cache versioning + network-first untuk HTML. Bump version di sw.js setiap deploy jika ada perubahan UI signifikan.
 - **Google OAuth**: Login menggunakan Google Identity Services SDK. Backend decode JWT langsung. Jika login gagal, cek: (1) cache browser, (2) Authorized JavaScript origins di Google Cloud Console, (3) env vars di Vercel.
 
