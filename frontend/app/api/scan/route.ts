@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { friendlyTxStatus, friendlyCardStatus } from "@/lib/status-map";
 import { generateInvoiceId } from "@/lib/invoice";
+import { getFVM } from "@/lib/fvm";
 
 const STATUS_LABELS = ["Digital", "Vaulted"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
@@ -40,18 +41,30 @@ export async function GET(request: Request) {
       template = await templatesCollection.findOne({ templateId: card.templateId });
     }
 
-    // Ambil purchase price dari mint transaction
+    // Ambil purchase price dari transaksi "sold" terakhir untuk kartu ini
     const txCollection = await getCollection("transactions");
     let purchasePrice: number | null = null;
 
-    const mintTx = await txCollection.findOne({
-      type: "mint",
-      tokenIds: card.tokenId,
-    });
+    const lastSoldTx = await txCollection.findOne(
+      { type: "sold", tokenId: card.tokenId, status: "confirmed" },
+      { sort: { createdAt: -1 } }
+    );
 
-    if (mintTx?.purchasePrice) {
-      purchasePrice = mintTx.purchasePrice;
+    if (lastSoldTx?.amount) {
+      purchasePrice = lastSoldTx.amount;
+    } else {
+      // Fallback: harga dari mint transaction
+      const mintTx = await txCollection.findOne({
+        type: "mint",
+        tokenIds: card.tokenId,
+      });
+      if (mintTx?.purchasePrice) {
+        purchasePrice = mintTx.purchasePrice;
+      }
     }
+
+    // Ambil FVM untuk template ini
+    const fvmResult = card.templateId ? await getFVM(card.templateId) : { fvm: null, source: "none" as const };
 
     // Ambil ownership history
     const history = await txCollection
@@ -115,6 +128,8 @@ export async function GET(request: Request) {
         artworkUrl: template?.artworkUrl || null,
       },
       purchasePrice,
+      fvm: fvmResult.fvm,
+      fvmSource: fvmResult.source,
       verification: {
         verified: verificationFlag === "verified",
         statusMatch,
@@ -124,6 +139,7 @@ export async function GET(request: Request) {
         invoiceId: generateInvoiceId(tx._id.toString()),
         type: tx.type,
         status: friendlyTxStatus(tx.status),
+        price: tx.amount || null,
         from: tx.fromAddress === "vault" ? "Gachard Vault" : tx.fromAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() ? "Gachard" : addressToUsername.get(tx.fromAddress?.toLowerCase()) || tx.fromAddress,
         to: tx.toAddress === "vault" ? "Gachard Vault" : tx.toAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() ? "Gachard" : addressToUsername.get(tx.toAddress?.toLowerCase()) || tx.toAddress,
         timestamp: tx.createdAt,

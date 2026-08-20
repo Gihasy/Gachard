@@ -16,6 +16,7 @@ interface ScanTx {
   invoiceId?: string;
   type: string;
   status: string;
+  price?: number | null;
   timestamp: string | number;
   from?: string;
   to?: string;
@@ -37,6 +38,8 @@ interface ScanData {
   verification: { flag: "verified" | "warning" | string };
   history?: ScanTx[];
   purchasePrice: number | null;
+  fvm: number | null;
+  fvmSource?: string;
 }
 
 export default function CardDetailModal({
@@ -224,14 +227,24 @@ export default function CardDetailModal({
                       </span>
                     }
                   />
-                  <MetaRow label="Last Owner" value={<span className="text-[0.65rem] text-white/70">{data.onChain.lastOwner || "—"} </span>} />
-                  {data.purchasePrice !== null && (
-                    <MetaRow
-                      label="Purchase Price"
-                      value={<span className="font-semibold text-[0.65rem]" style={{ color: "var(--aurora-gold)" }}>{data.purchasePrice} Credit</span>}
-                      last
-                    />
-                  )}
+                  <MetaRow label="Last Owner" value={<span className="text-[0.65rem] text-white/70">{data.onChain.lastOwner || "—"}</span>} />
+                  <MetaRow
+                    label="Purchase Price"
+                    value={
+                      data.purchasePrice !== null
+                        ? <span className="font-semibold text-[0.65rem]" style={{ color: "var(--aurora-gold)" }}>{data.purchasePrice} Credit</span>
+                        : <span className="text-[0.65rem] text-white/40">—</span>
+                    }
+                  />
+                  <MetaRow
+                    label="Fair Value Market"
+                    value={
+                      data.fvm !== null
+                        ? <span className="font-semibold text-[0.65rem]" style={{ color: "var(--aurora-gold)" }}>{data.fvm} Credit</span>
+                        : <span className="text-[0.65rem] text-white/40">—</span>
+                    }
+                    last
+                  />
                 </div>
 
                 {/* History */}
@@ -284,13 +297,17 @@ export default function CardDetailModal({
                             >
                               {tx.status}
                             </span>
-                            {tx.from && tx.to && (
-                              <span className="text-[0.55rem] text-white/40 truncate">{tx.from} → {tx.to}</span>
-                            )}
                           </div>
-                          <span className="text-[0.55rem] text-white/50 shrink-0 ml-2">
-                            {new Date(tx.timestamp).toLocaleDateString()}
-                          </span>
+                          <div className="flex items-center gap-2 shrink-0 ml-2">
+                            {tx.price && tx.price > 0 && (
+                              <span className="text-[0.55rem] font-semibold" style={{ color: "var(--aurora-gold)" }}>
+                                {tx.price} Credit
+                              </span>
+                            )}
+                            <span className="text-[0.55rem] text-white/50">
+                              {new Date(tx.timestamp).toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
