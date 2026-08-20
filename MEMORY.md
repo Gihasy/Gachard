@@ -21,7 +21,8 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 - Hosting: Vercel (frontend + backend via API routes) + MongoDB Atlas (database), semua free tier
 - **Arsitektur final**: Next.js API routes sebagai SATU-SATUNYA backend (lihat ADR-017). FastAPI sudah dihapus.
 - **Enkripsi**: Private key + redeem code dienkripsi AES-256-GCM (ADR-020)
-- Kontrak aktif: `0x0bb3dd543ff752bd15a50cbb3cba059bea6a278a` (28 Juli 2026 — tanpa vault transfer)
+- Kontrak aktif: `0x9409fcc78fa2b08f6300bfcfe7dcf43e6be7d58a` (20 Agustus 2026 — dengan marketplaceTransfer)
+- Kontrak sebelumnya: `0x0bb3dd543ff752bd15a50cbb3cba059bea6a278a` (28 Juli 2026)
 - Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
 - **29 file** berubah di sesi terakhir (10 baru, 18 ubah, 1 hapus), commit `3fc40c7`
 - Deploy: https://www.gachard.com (Vercel Production)
@@ -109,6 +110,18 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 - Transaction History: from/to tampilkan `@username` (bukan address)
 - Admin wallet address → label "Gachard"
 - Vault address → label "Gachard Vault"
+
+### Trade Marketplace: SELESAI (20 Agustus 2026)
+- **Smart Contract**: `marketplaceTransfer()` added to GachardCard.sol — owner-only, verifies Digital status + holder, transfers NFT, updates lastOwner. 38/38 Foundry tests pass.
+- **New Contract**: `0x9409fcc78fa2b08f6300bfcfe7dcf43e6be7d58a` (replaces `0x0bb3dd543ff752bd15a50cbb3cba059bea6a278a`)
+- **Data Model**: `listings` MongoDB collection (listingId, cardId, sellerId, price, status), `cards.isListed`/`cards.listingId` fields, transaction types "listed"/"sold"
+- **FVM**: Fair Value Market — calculates average sold price per template, fallback to rarity average, floor = FVM * 0.7
+- **Marketplace Fee**: 8% — seller receives price * 0.92
+- **API Routes**: POST/GET `/api/marketplace/listings`, POST cancel, POST buy (async pattern ADR-018 with pending transfer), GET `/api/marketplace/fvm`, GET `/api/marketplace/insight`, GET `/api/marketplace/suggest`
+- **AI Features**: Market Insight (Gemini, cached 1 hour) + Price Suggestion (per-template, in listing modal)
+- **UI**: `/marketplace` page (listing grid + FVM + Market Insight + rarity filter), ListingModal (price input + FVM + AI suggestion), CardItem (List for Sale / Cancel Listing buttons, Listed badge, print guard)
+- **Seed Script**: `frontend/scripts/seed-marketplace.ts` — ~25 dummy sold transactions with 3 ownership chains (Legendary 5x, Epic 4x, Rare 3x)
+- **ADR-024**: Supersedes ADR-010 (marketplace "Coming Soon" → functional)
 
 ### Open Items (belum selesai)
 1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: NS1 → ns1.vercel-dns.com + NS2 → ns2.vercel-dns.com
