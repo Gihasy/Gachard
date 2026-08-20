@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import QRScanner from "./QRScanner";
 import CardDetailModal from "./CardDetailModal";
+import ListingModal from "./ListingModal";
 
 const RARITY_COLORS = [
   "var(--rarity-common)",
@@ -27,6 +28,8 @@ interface CardItemProps {
   claimId?: string | null;
   userId: string;
   isNew?: boolean;
+  isListed?: boolean;
+  listingId?: string | null;
   onStatusChange?: (tokenId: number, newStatus: string) => void;
 }
 
@@ -61,6 +64,8 @@ export default function CardItem({
   claimId,
   userId,
   isNew,
+  isListed: initialIsListed,
+  listingId: initialListingId,
   onStatusChange,
 }: CardItemProps) {
   const [printing, setPrinting] = useState(false);
@@ -73,8 +78,13 @@ export default function CardItem({
   const [showClaimScanner, setShowClaimScanner] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showDetail, setShowDetail] = useState(false);
+  const [isListed, setIsListed] = useState(initialIsListed || false);
+  const [listingId, setListingId] = useState(initialListingId || null);
+  const [showListingModal, setShowListingModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
-  const canPrint = currentStatus === "Digital" && tokenId !== null;
+  const canPrint = currentStatus === "Digital" && tokenId !== null && !isListed;
+  const canList = currentStatus === "Digital" && !isListed && tokenId !== null;
   const isInProgress = currentStatus === "In Progress";
   const isShipping = currentStatus === "Shipping";
   const isReal = currentStatus === "Real";
@@ -175,6 +185,28 @@ export default function CardItem({
     }
   };
 
+  const handleCancelListing = async () => {
+    if (!listingId) return;
+    setCancelling(true);
+    try {
+      const res = await fetch(`/api/marketplace/listings/${listingId}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      if (res.ok) {
+        setIsListed(false);
+        setListingId(null);
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to cancel listing");
+      }
+    } catch {
+      alert("Network error");
+    }
+    setCancelling(false);
+  };
+
   const rarityLevel = Math.max(0, Math.min(3, rarity)) as 0 | 1 | 2 | 3;
 
   return (
@@ -240,14 +272,18 @@ export default function CardItem({
             <span
               className="text-[0.55rem] uppercase tracking-widest px-1.5 py-0.5 rounded whitespace-nowrap"
               style={{
-                background: isReal
+                background: isListed
+                  ? "rgba(255,196,102,0.15)"
+                  : isReal
                   ? "rgba(0,255,136,0.15)"
                   : isShipping
                   ? "rgba(138,92,255,0.15)"
                   : isInProgress
                   ? "rgba(255,196,102,0.15)"
                   : "rgba(0,204,255,0.15)",
-                color: isReal
+                color: isListed
+                  ? "var(--aurora-gold)"
+                  : isReal
                   ? "#00ff88"
                   : isShipping
                   ? "var(--cosmic-violet)"
@@ -256,13 +292,35 @@ export default function CardItem({
                   : "#00ccff",
               }}
             >
-              {currentStatus}
+              {isListed ? "Listed" : currentStatus}
             </span>
           </div>
 
           {/* Action buttons */}
           <div className="mt-2">
-            {status === "Digital" && (
+            {isListed && (
+              <button
+                onClick={handleCancelListing}
+                disabled={cancelling}
+                className="btn-ghost !py-2 !px-3 !text-[0.65rem] disabled:opacity-50 w-full"
+              >
+                {cancelling ? "…" : "Cancel Listing"}
+              </button>
+            )}
+            {!isListed && canList && (
+              <button
+                onClick={() => setShowListingModal(true)}
+                className="btn-ghost !py-2 !px-3 !text-[0.65rem] w-full"
+                style={{
+                  background: "rgba(255,196,102,0.08)",
+                  border: "1px solid rgba(255,196,102,0.25)",
+                  color: "var(--aurora-gold)",
+                }}
+              >
+                List for Sale
+              </button>
+            )}
+            {!isListed && status === "Digital" && (
               tokenId !== null ? (
                 <button
                   onClick={() => setShowForm(true)}
@@ -352,6 +410,20 @@ export default function CardItem({
           cardId={cardId}
           tokenId={tokenId}
           onClose={() => setShowDetail(false)}
+        />
+      )}
+
+      {/* Listing Modal */}
+      {showListingModal && cardId && (
+        <ListingModal
+          cardId={cardId}
+          templateId={templateId}
+          userId={userId}
+          onClose={() => setShowListingModal(false)}
+          onListed={() => {
+            setIsListed(true);
+            onStatusChange?.(tokenId!, "Digital");
+          }}
         />
       )}
 

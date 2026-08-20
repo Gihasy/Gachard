@@ -15,6 +15,16 @@ const CARD_STATUS_MAP: Record<string, string> = {
   Real: "Real",
 };
 
+const TX_TYPE_MAP: Record<string, string> = {
+  mint: "Pack Opened",
+  print: "Print Request",
+  redeem: "Redeemed",
+  transfer: "Transfer",
+  topup: "Top Up",
+  listed: "Listed for Sale",
+  sold: "Sold",
+};
+
 /**
  * Get friendly label for a transaction status.
  * Returns the original status if no mapping exists.
@@ -29,4 +39,8 @@ export function friendlyTxStatus(status: string): string {
  */
 export function friendlyCardStatus(status: string): string {
   return CARD_STATUS_MAP[status] ?? status;
+}
+
+export function friendlyTxType(type: string): string {
+  return TX_TYPE_MAP[type] ?? type;
 }

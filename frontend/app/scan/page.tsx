@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import PageShell from "@/components/PageShell";
 import QRScanner from "@/components/QRScanner";
+import { friendlyTxType } from "@/lib/status-map";
 
 const RARITY_COLORS = [
   "var(--rarity-common)",
@@ -547,7 +548,7 @@ function ScanContent() {
                             </span>
                           )}
                           <span className="text-sm font-medium capitalize text-white shrink-0">
-                            {tx.type}
+                            {friendlyTxType(tx.type)}
                           </span>
                           <span
                             className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded shrink-0"

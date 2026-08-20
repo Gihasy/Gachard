@@ -1,158 +1,217 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import PageShell from "@/components/PageShell";
 
-const PREVIEW_CARDS = [
-  { name: "Lumora", price: "1,200", img: "/cards/legendary-1.webp", tier: "MYTHIC", color: "var(--aurora-gold)" },
-  { name: "Pyrax", price: "620", img: "/cards/epic-1.webp", tier: "EPIC", color: "var(--cosmic-violet)" },
-  { name: "Noxel", price: "340", img: "/cards/rare-1.webp", tier: "RARE", color: "var(--electric-blue)" },
-  { name: "Auren", price: "1,050", img: "/cards/legendary-2.webp", tier: "LEGENDARY", color: "var(--aurora-gold)" },
-  { name: "Nyxthalon", price: "580", img: "/cards/epic-2.webp", tier: "EPIC", color: "var(--cosmic-violet)" },
-  { name: "Aquoris", price: "300", img: "/cards/rare-2.webp", tier: "RARE", color: "var(--electric-blue)" },
-];
-
-export default function Marketplace() {
-  return (
-    <PageShell
-      testId="marketplace-page"
-      eyebrow="Open Trading Floor"
-      title={
-        <>
-          <span className="text-gradient-aurora">Marketplace</span>
-        </>
-      }
-      description="Buy, sell, and trade cards with the entire Gachard universe. Peer-to-peer trades open soon."
-    >
-      {/* Coming soon banner */}
-      <div
-        className="relative overflow-hidden rounded-3xl p-8 sm:p-10 mb-12"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(138,92,255,0.15), rgba(255,107,186,0.10) 50%, rgba(0,204,255,0.12))",
-          border: "1px solid rgba(184,172,255,0.28)",
-        }}
-        data-testid="market-coming-soon"
-      >
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 15% 20%, rgba(184,172,255,0.3), transparent 55%), radial-gradient(ellipse at 85% 80%, rgba(255,196,102,0.2), transparent 55%)",
-          }}
-        />
-        <div className="relative z-10 grid gap-8 lg:grid-cols-[1.4fr_1fr] items-center">
-          <div>
-            <div className="chip mb-5" data-testid="market-status-chip">
-              <span className="chip-dot" />
-              <span>Launching Season 1 — Coming Soon</span>
-            </div>
-            <h2 className="font-display uppercase text-3xl sm:text-4xl text-white mb-4 leading-tight">
-              Peer-to-peer trading,{" "}
-              <span className="text-gradient-gold">fully verified.</span>
-            </h2>
-            <p className="text-white/70 max-w-xl leading-relaxed">
-              List cards for any price. Every trade is verified against the
-              rarity signature — no counterfeits, no middlemen. Escrow
-              is atomic, and payouts settle in credits instantly.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <FeatureRow
-              n="01"
-              t="Verified rarity"
-              d="Every listing carries a verified rarity signature."
-            />
-            <FeatureRow
-              n="02"
-              t="Atomic escrow"
-              d="No trust required — trade or cancel, no in-between."
-            />
-            <FeatureRow
-              n="03"
-              t="Global liquidity"
-              d="Trade across 50+ countries with credits or tokens."
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Preview grid */}
-      <div className="flex items-end justify-between mb-8">
-        <div>
-          <p
-            className="text-[0.72rem] uppercase tracking-[0.22em] mb-2"
-            style={{ color: "var(--cosmic-violet)" }}
-          >
-            Sneak Peek
-          </p>
-          <h3 className="font-display uppercase text-2xl sm:text-3xl text-white">
-            What you'll be trading
-          </h3>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-        {PREVIEW_CARDS.map((c) => (
-          <div
-            key={c.name}
-            className="glass glass-hover overflow-hidden p-2.5"
-            data-testid={`market-preview-${c.name.toLowerCase()}`}
-          >
-            <div
-              className="relative aspect-[3/4] rounded-xl overflow-hidden mb-3"
-              style={{
-                background: `linear-gradient(180deg, rgba(11,14,26,0.2), rgba(11,14,26,0.85)), url(${c.img}) center/cover`,
-              }}
-            >
-              <div
-                className="absolute top-2 right-2 text-[0.55rem] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
-                style={{
-                  background: "rgba(11,14,26,0.75)",
-                  backdropFilter: "blur(6px)",
-                  color: c.color,
-                  border: `1px solid ${c.color}`,
-                }}
-              >
-                {c.tier}
-              </div>
-            </div>
-            <div className="px-1 pb-1">
-              <div className="flex items-center justify-between">
-                <p className="font-display uppercase text-white text-sm tracking-wider">
-                  {c.name}
-                </p>
-              </div>
-              <div className="mt-1 text-[0.7rem] uppercase tracking-widest text-white/50">
-                From{" "}
-                <span
-                  className="font-bold"
-                  style={{ color: "var(--aurora-gold)" }}
-                >
-                  {c.price}
-                </span>{" "}
-                Credit
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </PageShell>
-  );
+interface Listing {
+  listingId: string;
+  cardId: string;
+  tokenId: number;
+  templateId: string;
+  sellerId: string;
+  price: number;
+  status: string;
+  artworkUrl: string | null;
+  templateName: string;
+  rarity: number;
+  fvm: number | null;
+  fvmSource: string;
+  createdAt: string;
 }
 
-function FeatureRow({ n, t, d }: { n: string; t: string; d: string }) {
+const RARITY_NAMES = ["Common", "Rare", "Epic", "Legendary"];
+const RARITY_COLORS: Record<number, string> = {
+  0: "#9CA3AF",
+  1: "var(--electric-blue)",
+  2: "var(--cosmic-violet)",
+  3: "var(--aurora-gold)",
+};
+
+export default function MarketplacePage() {
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [insight, setInsight] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [buying, setBuying] = useState<string | null>(null);
+  const [filter, setFilter] = useState<number | null>(null);
+  const [user, setUser] = useState<{ user_id: string; username: string } | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) setUser(JSON.parse(stored));
+  }, []);
+
+  useEffect(() => {
+    fetchListings();
+    fetchInsight();
+  }, []);
+
+  async function fetchListings() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/marketplace/listings");
+      const data = await res.json();
+      setListings(data.listings || []);
+    } catch {
+      setListings([]);
+    }
+    setLoading(false);
+  }
+
+  async function fetchInsight() {
+    try {
+      const res = await fetch("/api/marketplace/insight");
+      const data = await res.json();
+      setInsight(data.insight || null);
+    } catch {
+      setInsight(null);
+    }
+  }
+
+  async function handleBuy(listingId: string) {
+    if (!user) return;
+    setBuying(listingId);
+    try {
+      const res = await fetch(`/api/marketplace/listings/${listingId}/buy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.user_id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchListings();
+        alert("Purchase successful!");
+      } else {
+        alert(data.error || "Purchase failed");
+      }
+    } catch {
+      alert("Network error");
+    }
+    setBuying(null);
+  }
+
+  const filtered = filter !== null
+    ? listings.filter((l) => l.rarity === filter)
+    : listings;
+
   return (
-    <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
-      <span
-        className="font-display text-lg shrink-0 w-10"
-        style={{ color: "var(--cosmic-violet)" }}
-      >
-        {n}
-      </span>
-      <div>
-        <p className="text-sm font-medium text-white">{t}</p>
-        <p className="text-xs text-white/60 mt-0.5 leading-relaxed">{d}</p>
+    <PageShell
+      eyebrow="Marketplace"
+      title="Trade Cards"
+      description="Buy and sell digital cards with other collectors."
+    >
+      {insight && (
+        <div className="glass p-4 sm:p-5 mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--aurora-gold)" }}>
+              Market Insight
+            </span>
+          </div>
+          <p className="text-sm" style={{ color: "var(--silver-mist)" }}>
+            {insight}
+          </p>
+        </div>
+      )}
+
+      <div className="flex gap-2 mb-6 flex-wrap">
+        <button
+          onClick={() => setFilter(null)}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            filter === null ? "btn-primary !py-1.5 !px-3 !text-xs" : "btn-ghost !py-1.5 !px-3 !text-xs"
+          }`}
+        >
+          All
+        </button>
+        {[0, 1, 2, 3].map((r) => (
+          <button
+            key={r}
+            onClick={() => setFilter(filter === r ? null : r)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              filter === r ? "btn-primary !py-1.5 !px-3 !text-xs" : "btn-ghost !py-1.5 !px-3 !text-xs"
+            }`}
+          >
+            {RARITY_NAMES[r]}
+          </button>
+        ))}
       </div>
-    </div>
+
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="glass animate-pulse h-64 rounded-2xl" />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="glass p-8 sm:p-12 text-center">
+          <p className="text-lg font-semibold mb-2" style={{ color: "var(--silver-mist)" }}>
+            No listings yet
+          </p>
+          <p className="text-sm mb-4" style={{ color: "var(--silver-mist-dim)" }}>
+            Be the first to list a card for trade!
+          </p>
+          <Link href="/collection" className="btn-primary inline-block">
+            Go to Collection
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filtered.map((listing) => (
+            <div key={listing.listingId} className="glass glass-hover p-3 flex flex-col">
+              <div className="relative mb-3">
+                {listing.artworkUrl ? (
+                  <img
+                    src={listing.artworkUrl}
+                    alt={listing.templateName}
+                    className="w-full aspect-[5/7] object-contain rounded-lg"
+                  />
+                ) : (
+                  <div className="w-full aspect-[5/7] bg-white/5 rounded-lg flex items-center justify-center text-xs" style={{ color: "var(--silver-mist-dim)" }}>
+                    No artwork
+                  </div>
+                )}
+                <span
+                  className="absolute top-2 right-2 tag-common text-[10px] px-2 py-0.5 rounded-full"
+                  style={{
+                    backgroundColor: `${RARITY_COLORS[listing.rarity]}20`,
+                    color: RARITY_COLORS[listing.rarity],
+                    borderColor: `${RARITY_COLORS[listing.rarity]}40`,
+                  }}
+                >
+                  {RARITY_NAMES[listing.rarity]}
+                </span>
+              </div>
+
+              <p className="text-sm font-semibold truncate" style={{ color: "var(--silver-mist)" }}>
+                {listing.templateName}
+              </p>
+              <p className="text-xs mb-1" style={{ color: "var(--silver-mist-dim)" }}>
+                #{listing.cardId}
+              </p>
+
+              {listing.fvm !== null && (
+                <p className="text-[11px] mb-2" style={{ color: "var(--silver-mist-dim)" }}>
+                  FVM: <span style={{ color: "var(--aurora-gold)" }}>{listing.fvm} Credit</span>
+                </p>
+              )}
+
+              <div className="mt-auto flex items-center justify-between">
+                <span className="text-base font-bold" style={{ color: "var(--aurora-gold)" }}>
+                  {listing.price} Credit
+                </span>
+                {user && listing.sellerId !== user.user_id && (
+                  <button
+                    onClick={() => handleBuy(listing.listingId)}
+                    disabled={buying === listing.listingId}
+                    className="btn-primary !py-1 !px-3 !text-xs"
+                  >
+                    {buying === listing.listingId ? "..." : "Buy"}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </PageShell>
   );
 }
