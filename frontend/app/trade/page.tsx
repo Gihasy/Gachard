@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
+import CartModal from "@/components/CartModal";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useCart } from "@/hooks/useCart";
 
 interface Listing {
   listingId: string;
@@ -36,7 +39,10 @@ export default function MarketplacePage() {
   const [filter, setFilter] = useState<number | null>(null);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [showCart, setShowCart] = useState(false);
   const [user, setUser] = useState<{ user_id: string; username: string } | null>(null);
+  const { toggleWishlist, isWishlisted } = useWishlist();
+  const { addToCart, removeFromCart, clearCart, isInCart: isInCartFn, count: cartCount, cart } = useCart();
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -118,7 +124,28 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
+        {/* Cart badge */}
+        <button
+          onClick={() => setShowCart(true)}
+          className="relative w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: "rgba(0,204,255,0.08)", border: "1px solid rgba(0,204,255,0.25)" }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--electric-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+          {cartCount > 0 && (
+            <span
+              className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+              style={{ background: "var(--aurora-pink)", color: "white" }}
+            >
+              {cartCount}
+            </span>
+          )}
+        </button>
+
         <button
           onClick={() => setFilter(null)}
           className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
@@ -216,15 +243,60 @@ export default function MarketplacePage() {
                 <span className="text-base font-bold" style={{ color: "var(--aurora-gold)" }}>
                   {listing.price} Credit
                 </span>
-                {(!user || listing.sellerId !== user.user_id) && (
+                <div className="flex items-center gap-1.5">
+                  {/* Wishlist heart */}
                   <button
-                    onClick={() => handleBuy(listing.listingId)}
-                    disabled={buying === listing.listingId}
-                    className="btn-primary !py-1 !px-3 !text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!user) { setShowLoginPrompt(true); return; }
+                      toggleWishlist(listing.cardId);
+                    }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                      background: isWishlisted(listing.cardId) ? "rgba(255,107,186,0.2)" : "rgba(255,255,255,0.05)",
+                      border: `1px solid ${isWishlisted(listing.cardId) ? "rgba(255,107,186,0.5)" : "rgba(255,255,255,0.1)"}`,
+                    }}
+                    title={isWishlisted(listing.cardId) ? "Remove from wishlist" : "Add to wishlist"}
                   >
-                    {buying === listing.listingId ? "..." : "Buy"}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill={isWishlisted(listing.cardId) ? "#FF6BBA" : "none"} stroke={isWishlisted(listing.cardId) ? "#FF6BBA" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
                   </button>
-                )}
+
+                  {/* Cart */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!user) { setShowLoginPrompt(true); return; }
+                      addToCart(listing.listingId);
+                    }}
+                    disabled={isInCartFn(listing.listingId)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                      background: isInCartFn(listing.listingId) ? "rgba(0,204,255,0.2)" : "rgba(255,255,255,0.05)",
+                      border: `1px solid ${isInCartFn(listing.listingId) ? "rgba(0,204,255,0.5)" : "rgba(255,255,255,0.1)"}`,
+                      opacity: isInCartFn(listing.listingId) ? 0.5 : 1,
+                    }}
+                    title={isInCartFn(listing.listingId) ? "Already in cart" : "Add to cart"}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isInCartFn(listing.listingId) ? "var(--electric-blue)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="9" cy="21" r="1" />
+                      <circle cx="20" cy="21" r="1" />
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                  </button>
+
+                  {/* Buy */}
+                  {(!user || listing.sellerId !== user.user_id) && (
+                    <button
+                      onClick={() => handleBuy(listing.listingId)}
+                      disabled={buying === listing.listingId}
+                      className="btn-primary !py-1 !px-3 !text-xs"
+                    >
+                      {buying === listing.listingId ? "..." : "Buy"}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -319,6 +391,18 @@ export default function MarketplacePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Cart Modal */}
+      {showCart && (
+        <CartModal
+          cartIds={cart}
+          userId={user?.user_id || null}
+          onClose={() => setShowCart(false)}
+          onRemove={removeFromCart}
+          onClear={clearCart}
+          onCheckoutComplete={() => fetchListings()}
+        />
       )}
 
       {/* Login Prompt Modal */}

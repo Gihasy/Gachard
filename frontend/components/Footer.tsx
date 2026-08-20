@@ -7,6 +7,7 @@ const productLinks = [
   { label: "Collect", href: "/collect" },
   { label: "Play", href: "/play" },
   { label: "Trade", href: "/trade" },
+  { label: "Wishlist", href: "/wishlist" },
   { label: "Scan", href: "/scan" },
   { label: "Redeem", href: "/profile" },
 ];
