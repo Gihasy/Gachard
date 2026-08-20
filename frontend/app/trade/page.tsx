@@ -123,7 +123,7 @@ export default function MarketplacePage() {
       case "price-low": return a.price - b.price;
       case "newest": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       case "oldest": return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      case "popular": return (b.fvm || 0) - (a.fvm || 0);
+      case "popular": return (wishlistCounts[b.cardId] || 0) - (wishlistCounts[a.cardId] || 0);
       default: return 0;
     }
   });
@@ -293,6 +293,11 @@ export default function MarketplacePage() {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill={isWishlisted(listing.cardId) ? "#FF6BBA" : "none"} stroke={isWishlisted(listing.cardId) ? "#FF6BBA" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                       </svg>
+                      {(wishlistCounts[listing.cardId] || 0) > 0 && (
+                        <span className="text-[9px] font-bold ml-0.5" style={{ color: "var(--aurora-pink)" }}>
+                          {wishlistCounts[listing.cardId]}
+                        </span>
+                      )}
                     </button>
 
                     {/* Cart */}
