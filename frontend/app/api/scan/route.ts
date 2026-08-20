@@ -41,7 +41,7 @@ export async function GET(request: Request) {
       template = await templatesCollection.findOne({ templateId: card.templateId });
     }
 
-    // Ambil purchase price dari transaksi "sold" terakhir untuk kartu ini
+    // Ambil purchase price HANYA dari transaksi "sold" (marketplace trade)
     const txCollection = await getCollection("transactions");
     let purchasePrice: number | null = null;
 
@@ -52,15 +52,6 @@ export async function GET(request: Request) {
 
     if (lastSoldTx?.amount) {
       purchasePrice = lastSoldTx.amount;
-    } else {
-      // Fallback: harga dari mint transaction
-      const mintTx = await txCollection.findOne({
-        type: "mint",
-        tokenIds: card.tokenId,
-      });
-      if (mintTx?.purchasePrice) {
-        purchasePrice = mintTx.purchasePrice;
-      }
     }
 
     // Ambil FVM untuk template ini
