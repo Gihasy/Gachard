@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
@@ -24,8 +24,14 @@ function pastDate(daysAgo: number, jitterDays = 3) {
   return d.toISOString();
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
+    // Simple token auth — only allow with correct secret
+    const { searchParams } = new URL(req.url);
+    const token = searchParams.get("token");
+    if (token !== process.env.ENCRYPTION_SECRET_KEY) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const usersCol = await getCollection("users");
     const cardsCol = await getCollection("cards");
     const txCol = await getCollection("transactions");
