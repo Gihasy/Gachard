@@ -5,6 +5,7 @@ import Image from "next/image";
 import QRScanner from "./QRScanner";
 import CardDetailModal from "./CardDetailModal";
 import ListingModal from "./ListingModal";
+import SellButton from "./SellButton";
 
 const RARITY_COLORS = [
   "var(--rarity-common)",
@@ -314,29 +315,7 @@ export default function CardItem({
               </button>
             )}
             {!isListed && canList && (
-              <button
-                onClick={() => setShowListingModal(true)}
-                style={{
-                  display: "block",
-                  width: "100%",
-                  padding: "0.5rem 0.75rem",
-                  background: "linear-gradient(135deg, #FFD68A, #FFC466)",
-                  color: "#0B0E1A",
-                  border: "0",
-                  borderRadius: "999px",
-                  fontWeight: 700,
-                  fontSize: "0.65rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.12em",
-                  cursor: "pointer",
-                  boxShadow: "0 8px 26px -8px rgba(255,196,102,0.55)",
-                  backdropFilter: "none",
-                  WebkitBackdropFilter: "none",
-                  isolation: "isolate",
-                }}
-              >
-                List for Sale
-              </button>
+              <SellButton onClick={() => setShowListingModal(true)} />
             )}
             {!isListed && status === "Digital" && (
               tokenId !== null ? (
