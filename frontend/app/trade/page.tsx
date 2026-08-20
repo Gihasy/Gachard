@@ -251,16 +251,8 @@ export default function MarketplacePage() {
               <p className="text-sm font-semibold truncate" style={{ color: "var(--silver-mist)" }}>
                 {listing.templateName}
               </p>
-              <p className="text-xs mb-1 flex items-center gap-2" style={{ color: "var(--silver-mist-dim)" }}>
+              <p className="text-xs mb-1" style={{ color: "var(--silver-mist-dim)" }}>
                 #{listing.cardId}
-                {(wishlistCounts[listing.cardId] || 0) > 0 && (
-                  <span className="flex items-center gap-0.5" title={`${wishlistCounts[listing.cardId]} wishlisted`}>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="#FF6BBA" stroke="#FF6BBA" strokeWidth="2">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                    <span style={{ color: "var(--aurora-pink)" }}>{wishlistCounts[listing.cardId]}</span>
-                  </span>
-                )}
               </p>
 
               {listing.fvm !== null && (
