@@ -81,6 +81,7 @@ export default function CardItem({
   const [isListed, setIsListed] = useState(initialIsListed || false);
   const [listingId, setListingId] = useState(initialListingId || null);
   const [showListingModal, setShowListingModal] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
   const canPrint = currentStatus === "Digital" && tokenId !== null && !isListed;
@@ -187,8 +188,11 @@ export default function CardItem({
 
   const handleCancelListing = async () => {
     if (!listingId) return;
-    const confirmed = window.confirm("Are you sure you want to cancel this listing?");
-    if (!confirmed) return;
+    setShowCancelConfirm(true);
+  };
+
+  const confirmCancelListing = async () => {
+    setShowCancelConfirm(false);
     setCancelling(true);
     try {
       const res = await fetch(`/api/marketplace/listings/${listingId}/cancel`, {
@@ -302,7 +306,7 @@ export default function CardItem({
           <div className="mt-2">
             {isListed && (
               <button
-                onClick={handleCancelListing}
+                onClick={() => setShowCancelConfirm(true)}
                 disabled={cancelling}
                 className="btn-ghost !py-2 !px-3 !text-[0.65rem] disabled:opacity-50 w-full"
               >
@@ -312,7 +316,13 @@ export default function CardItem({
             {!isListed && canList && (
               <button
                 onClick={() => setShowListingModal(true)}
-                className="btn-gold !py-2 !px-3 !text-[0.65rem] w-full"
+                className="!py-2 !px-3 !text-[0.65rem] w-full font-bold uppercase tracking-widest rounded-full transition-transform hover:-translate-y-px cursor-pointer"
+                style={{
+                  background: "linear-gradient(135deg, #FFD68A, #FFC466)",
+                  color: "#0B0E1A",
+                  border: "none",
+                  boxShadow: "0 8px 26px -8px rgba(255,196,102,0.55)",
+                }}
               >
                 List for Sale
               </button>
@@ -422,6 +432,52 @@ export default function CardItem({
             onStatusChange?.(tokenId!, "Digital");
           }}
         />
+      )}
+
+      {/* Cancel Listing Confirm Modal */}
+      {showCancelConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+          onClick={() => setShowCancelConfirm(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-6"
+            style={{
+              background: "rgba(15,19,36,0.95)",
+              border: "1px solid rgba(255,107,186,0.3)",
+              boxShadow: "0 0 40px rgba(255,107,186,0.15)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold mb-2" style={{ color: "var(--silver-mist)" }}>
+              Cancel Listing?
+            </h3>
+            <p className="text-sm mb-5" style={{ color: "var(--silver-mist-dim)" }}>
+              Your card will be removed from the marketplace. You can list it again anytime.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="btn-ghost flex-1 !py-2.5"
+              >
+                Keep Listed
+              </button>
+              <button
+                onClick={confirmCancelListing}
+                className="flex-1 !py-2.5 font-semibold rounded-full transition-transform hover:-translate-y-px cursor-pointer"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255,107,186,0.9), rgba(184,172,255,0.9))",
+                  color: "#fff",
+                  border: "none",
+                  boxShadow: "0 8px 26px -8px rgba(255,107,186,0.55)",
+                }}
+              >
+                Cancel Listing
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Shipping Address Modal */}
