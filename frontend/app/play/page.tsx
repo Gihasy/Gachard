@@ -9,10 +9,10 @@ export default function PlayTradePage() {
       testId="play-trade-page"
       title={
         <>
-          <span className="text-gradient-aurora">Play & Trade</span>
+          <span className="text-gradient-aurora">Play</span>
         </>
       }
-      description="Two worlds. One ecosystem. Play for fun or play to win — then trade what you've earned."
+      description="Two worlds. One ecosystem. Play for fun or play to win."
     >
       {/* Coming Soon Banner */}
       <div
@@ -43,7 +43,7 @@ export default function PlayTradePage() {
       {/* PLAY Section */}
       <section className="mb-20" data-testid="play-section">
         <div className="flex items-center gap-4 mb-10">
-          <SectionIcon variant="play" />
+          <SectionIcon />
           <h3 className="font-display uppercase text-2xl sm:text-3xl text-white">
             Play
           </h3>
@@ -134,110 +134,29 @@ export default function PlayTradePage() {
         </div>
       </section>
 
-      {/* TRADE Section */}
-      <section data-testid="trade-section">
-        <div className="flex items-center gap-4 mb-10">
-          <SectionIcon variant="trade" />
-          <h3 className="font-display uppercase text-2xl sm:text-3xl text-white">
-            Trade
-          </h3>
-        </div>
 
-        <div
-          className="glass p-8 sm:p-10 relative overflow-hidden"
-          style={{ borderColor: "rgba(255,196,102,0.2)" }}
-        >
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse at 20% 30%, rgba(255,196,102,0.12), transparent 60%), radial-gradient(ellipse at 80% 70%, rgba(255,107,186,0.08), transparent 60%)",
-            }}
-          />
-          <div className="relative z-10">
-            <h4 className="font-display uppercase text-xl text-white mb-3">
-              Your cards. Your marketplace.
-            </h4>
-            <p className="text-white/70 leading-relaxed mb-8 max-w-2xl">
-              Every Digital card you own is a tradeable asset. List it at a 
-              fixed price, or put it up for auction and let the community 
-              decide its value. Every transaction will be fully verified — 
-              no fakes, no scams, no middlemen.
-            </p>
-
-            <div className="grid gap-5 sm:grid-cols-3">
-              <TradeFeature
-                icon={
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="1" x2="12" y2="23" />
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                }
-                title="Buy & Sell"
-                desc="Set your price, list your card. Buyers pay with credits — sellers get paid instantly."
-              />
-              <TradeFeature
-                icon={
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="1" y="3" width="15" height="13" />
-                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-                    <circle cx="5.5" cy="18.5" r="2.5" />
-                    <circle cx="18.5" cy="18.5" r="2.5" />
-                  </svg>
-                }
-                title="Auction"
-                desc="Got a rare Legendary? Let collectors bid. The highest offer wins — simple as that."
-              />
-              <TradeFeature
-                icon={
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                }
-                title="Verified"
-                desc="Every listing carries a verified rarity signature. What you see is what you get."
-              />
-            </div>
-          </div>
-        </div>
-      </section>
     </PageShell>
   );
 }
 
-function SectionIcon({ variant }: { variant: "play" | "trade" }) {
-  const cfg =
-    variant === "play"
-      ? {
-          grad: "linear-gradient(150deg, var(--electric-blue), var(--cosmic-violet))",
-          glow: "rgba(0,204,255,0.55)",
-          ring: "rgba(0,204,255,0.5)",
-          icon: (
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="6 3 20 12 6 21 6 3" fill="rgba(255,255,255,0.15)" />
-            </svg>
-          ),
-        }
-      : {
-          grad: "linear-gradient(150deg, var(--aurora-gold), var(--aurora-pink))",
-          glow: "rgba(255,196,102,0.55)",
-          ring: "rgba(255,196,102,0.5)",
-          icon: (
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M7 17V5M7 5L3.5 8.5M7 5l3.5 3.5" />
-              <path d="M17 7v12m0 0l3.5-3.5M17 19l-3.5-3.5" />
-            </svg>
-          ),
-        };
+function SectionIcon() {
+  const cfg = {
+    grad: "linear-gradient(150deg, var(--electric-blue), var(--cosmic-violet))",
+    glow: "rgba(0,204,255,0.55)",
+    ring: "rgba(0,204,255,0.5)",
+    icon: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="6 3 20 12 6 21 6 3" fill="rgba(255,255,255,0.15)" />
+      </svg>
+    ),
+  };
 
   return (
     <div className="relative shrink-0 floaty" aria-hidden>
-      {/* soft outer glow */}
       <div
         className="absolute -inset-2 rounded-[1.4rem] blur-lg opacity-70"
         style={{ background: cfg.grad }}
       />
-      {/* gradient ring */}
       <div
         className="relative w-16 h-16 rounded-2xl p-[1.5px]"
         style={{ background: `linear-gradient(150deg, ${cfg.ring}, rgba(255,255,255,0.15))` }}
@@ -249,7 +168,6 @@ function SectionIcon({ variant }: { variant: "play" | "trade" }) {
             boxShadow: `inset 0 1px 0 rgba(255,255,255,0.35), 0 14px 34px -10px ${cfg.glow}`,
           }}
         >
-          {/* animated diagonal sheen */}
           <span
             className="absolute inset-y-0 w-1/2 pointer-events-none"
             style={{
@@ -284,30 +202,4 @@ function FeatureItem({ text }: { text: string }) {
   );
 }
 
-function TradeFeature({
-  icon,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div
-      className="p-5 rounded-2xl bg-white/[0.04] border border-white/[0.08]"
-    >
-      <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-        style={{
-          background: "rgba(255,196,102,0.1)",
-          color: "var(--aurora-gold)",
-        }}
-      >
-        {icon}
-      </div>
-      <h5 className="text-sm font-medium text-white mb-1.5">{title}</h5>
-      <p className="text-xs text-white/60 leading-relaxed">{desc}</p>
-    </div>
-  );
-}
+
