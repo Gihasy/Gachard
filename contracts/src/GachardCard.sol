@@ -24,6 +24,7 @@ contract GachardCard is ERC1155, Ownable {
 
     event CardMinted(uint256 indexed tokenId, address indexed to, CardStatus status, Rarity rarity);
     event CardStatusChanged(uint256 indexed tokenId, CardStatus oldStatus, CardStatus newStatus);
+    event MarketplaceTransfer(uint256 indexed tokenId, address indexed from, address indexed to);
 
     constructor() ERC1155("") Ownable(msg.sender) {}
 
@@ -126,6 +127,28 @@ contract GachardCard is ERC1155, Ownable {
         _update(previousOwner, recipientAddress, ids, values);
 
         emit CardStatusChanged(tokenId, CardStatus.Vaulted, CardStatus.Digital);
+    }
+
+    /**
+     * @notice Transfer kartu antar user via marketplace — hanya untuk kartu Digital
+     * @dev onlyOwner — backend yang memanggil (ADR-003, custodial model)
+     * @param tokenId ID kartu yang ditransfer
+     * @param from Alamat penjual (harus pemilik kartu saat ini)
+     * @param to Alamat pembeli
+     */
+    function marketplaceTransfer(uint256 tokenId, address from, address to) external onlyOwner {
+        require(cardStatus[tokenId] == CardStatus.Digital, "Card is not digital");
+        require(balanceOf(from, tokenId) == 1, "Sender does not own card");
+
+        uint256[] memory ids = new uint256[](1);
+        ids[0] = tokenId;
+        uint256[] memory values = new uint256[](1);
+        values[0] = 1;
+        _update(from, to, ids, values);
+
+        lastOwner[tokenId] = to;
+
+        emit MarketplaceTransfer(tokenId, from, to);
     }
 
     /**

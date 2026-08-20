@@ -359,4 +359,63 @@ contract GachardCardTest is Test {
             assertEq(card.lastOwner(tokenId), recipients[i]);
         }
     }
+
+    // ==================== marketplaceTransfer tests ====================
+
+    function test_marketplaceTransfer_moves_token_to_buyer() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        card.marketplaceTransfer(tokenId, user1, user2);
+
+        assertEq(card.balanceOf(user1, tokenId), 0);
+        assertEq(card.balanceOf(user2, tokenId), 1);
+    }
+
+    function test_marketplaceTransfer_updates_last_owner() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        card.marketplaceTransfer(tokenId, user1, user2);
+
+        assertEq(card.lastOwner(tokenId), user2);
+    }
+
+    function test_marketplaceTransfer_keeps_digital_status() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        card.marketplaceTransfer(tokenId, user1, user2);
+
+        assertEq(uint8(card.cardStatus(tokenId)), uint8(GachardCard.CardStatus.Digital));
+    }
+
+    function test_marketplaceTransfer_emits_event() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        vm.expectEmit(true, true, false, true);
+        emit GachardCard.MarketplaceTransfer(tokenId, user1, user2);
+        card.marketplaceTransfer(tokenId, user1, user2);
+    }
+
+    function test_marketplaceTransfer_reverts_when_vaulted() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("code");
+        card.requestPrint(tokenId, hash, user1);
+
+        vm.expectRevert("Card is not digital");
+        card.marketplaceTransfer(tokenId, user1, user2);
+    }
+
+    function test_marketplaceTransfer_reverts_when_not_owner() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        vm.prank(user1);
+        vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user1));
+        card.marketplaceTransfer(tokenId, user1, user2);
+    }
+
+    function test_marketplaceTransfer_reverts_when_from_not_holder() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        vm.expectRevert("Sender does not own card");
+        card.marketplaceTransfer(tokenId, user2, user1);
+    }
 }
