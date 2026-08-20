@@ -187,6 +187,8 @@ export default function CardItem({
 
   const handleCancelListing = async () => {
     if (!listingId) return;
+    const confirmed = window.confirm("Are you sure you want to cancel this listing?");
+    if (!confirmed) return;
     setCancelling(true);
     try {
       const res = await fetch(`/api/marketplace/listings/${listingId}/cancel`, {
@@ -310,12 +312,7 @@ export default function CardItem({
             {!isListed && canList && (
               <button
                 onClick={() => setShowListingModal(true)}
-                className="!py-2 !px-3 !text-[0.65rem] w-full font-semibold uppercase tracking-widest rounded-xl transition-all"
-                style={{
-                  background: "linear-gradient(135deg, rgba(255,196,102,0.18), rgba(255,196,102,0.08))",
-                  border: "1px solid rgba(255,196,102,0.45)",
-                  color: "var(--aurora-gold)",
-                }}
+                className="btn-gold !py-2 !px-3 !text-[0.65rem] w-full"
               >
                 List for Sale
               </button>
