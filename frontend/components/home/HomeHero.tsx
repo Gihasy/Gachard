@@ -48,7 +48,7 @@ export default function HomeHero({
 
             <div className="reveal reveal-5 flex flex-wrap items-center gap-4 mb-12" data-testid="hero-cta-row">
               <Link
-                href="/packs"
+                href="/collect"
                 className="btn-primary"
                 data-testid="hero-collect-cards-btn"
               >

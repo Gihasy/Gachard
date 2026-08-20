@@ -4,9 +4,9 @@ import Link from "next/link";
 import Logo from "@/components/Logo";
 
 const productLinks = [
-  { label: "Collect", href: "/collection" },
-  { label: "Play", href: "/play-trade" },
-  { label: "Trade", href: "/play-trade" },
+  { label: "Collect", href: "/collect" },
+  { label: "Play", href: "/play" },
+  { label: "Trade", href: "/trade" },
   { label: "Scan", href: "/scan" },
   { label: "Redeem", href: "/profile" },
 ];

@@ -32,7 +32,7 @@ export default function HomeCtaBand() {
           </div>
           <div className="flex flex-wrap gap-4 justify-start lg:justify-end">
             <Link
-              href="/packs"
+              href="/collect"
               className="btn-gold"
               data-testid="cta-collect-cards-btn"
             >

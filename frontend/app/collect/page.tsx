@@ -45,7 +45,7 @@ export default function PacksPage() {
   const handleBuy = useCallback(
     async (packType: "standard" | "booster") => {
       if (!user) {
-        router.push("/login?next=/packs");
+        router.push("/login?next=/collect");
         return;
       }
       setLoadingType(packType);

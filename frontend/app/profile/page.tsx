@@ -410,7 +410,7 @@ export default function Profil() {
                 You haven't opened any packs yet. Your journey starts with your
                 first card.
               </p>
-              <Link href="/packs" className="btn-primary" data-testid="profile-first-pack">
+              <Link href="/collect" className="btn-primary" data-testid="profile-first-pack">
                 Open First Pack
               </Link>
             </div>
