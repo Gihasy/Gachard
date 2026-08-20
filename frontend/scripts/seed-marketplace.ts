@@ -7,8 +7,22 @@
  */
 
 import { MongoClient, ObjectId } from "mongodb";
+import * as fs from "fs";
+import * as path from "path";
 
-const MONGODB_URL = process.env.MONGODB_URL || "";
+// Read .env.local manually (same pattern as clean-slate.ts)
+const envPath = path.resolve(__dirname, "../.env.local");
+const envContent = fs.readFileSync(envPath, "utf-8");
+const env: Record<string, string> = {};
+for (const line of envContent.split("\n")) {
+  const match = line.match(/^([^#=]+)=(.*)$/);
+  if (match) {
+    env[match[1].trim()] = match[2].trim();
+  }
+}
+
+const MONGODB_URL = env.MONGODB_URL || process.env.MONGODB_URL || "";
+const CONTRACT_ADDRESS = env.CONTRACT_ADDRESS || process.env.CONTRACT_ADDRESS || "";
 
 // Rarity price ranges (in cents/Credit)
 const PRICE_RANGES: Record<number, { min: number; max: number; count: [number, number] }> = {
@@ -123,7 +137,7 @@ async function seed() {
         purchasePrice: price,
         txHash: null,
         status: "confirmed",
-        contractAddress: process.env.CONTRACT_ADDRESS || "",
+        contractAddress: CONTRACT_ADDRESS,
         fromAddress: fromUser.walletAddress || "0x0000000000000000000000000000000000000000",
         toAddress: toUser.walletAddress || "0x0000000000000000000000000000000000000000",
         error: "",
@@ -168,7 +182,7 @@ async function seed() {
         purchasePrice: price,
         txHash: null,
         status: "confirmed",
-        contractAddress: process.env.CONTRACT_ADDRESS || "",
+        contractAddress: CONTRACT_ADDRESS,
         fromAddress: seller.walletAddress || "0x0000000000000000000000000000000000000000",
         toAddress: buyer.walletAddress || "0x0000000000000000000000000000000000000000",
         error: "",
