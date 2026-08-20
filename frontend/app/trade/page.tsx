@@ -35,6 +35,7 @@ export default function MarketplacePage() {
   const [buying, setBuying] = useState<string | null>(null);
   const [filter, setFilter] = useState<number | null>(null);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [user, setUser] = useState<{ user_id: string; username: string } | null>(null);
 
   useEffect(() => {
@@ -70,7 +71,10 @@ export default function MarketplacePage() {
   }
 
   async function handleBuy(listingId: string) {
-    if (!user) return;
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
     setBuying(listingId);
     try {
       const res = await fetch(`/api/marketplace/listings/${listingId}/buy`, {
@@ -212,7 +216,7 @@ export default function MarketplacePage() {
                 <span className="text-base font-bold" style={{ color: "var(--aurora-gold)" }}>
                   {listing.price} Credit
                 </span>
-                {user && listing.sellerId !== user.user_id && (
+                {(!user || listing.sellerId !== user.user_id) && (
                   <button
                     onClick={() => handleBuy(listing.listingId)}
                     disabled={buying === listing.listingId}
@@ -312,6 +316,47 @@ export default function MarketplacePage() {
                   View Details
                 </a>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Login Prompt Modal */}
+      {showLoginPrompt && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+          onClick={() => setShowLoginPrompt(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-6"
+            style={{
+              background: "rgba(15, 19, 36, 0.95)",
+              border: "1px solid rgba(184,172,255,0.3)",
+              boxShadow: "0 0 40px rgba(0,0,0,0.5), 0 0 20px rgba(184,172,255,0.1)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold mb-2" style={{ color: "var(--silver-mist)" }}>
+              Login Required
+            </h3>
+            <p className="text-sm mb-5" style={{ color: "var(--silver-mist-dim)" }}>
+              You need to login to buy cards on the marketplace.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLoginPrompt(false)}
+                className="btn-ghost flex-1 !py-2.5"
+              >
+                Cancel
+              </button>
+              <Link
+                href="/login?next=/trade"
+                className="btn-primary flex-1 !py-2.5 text-center"
+                onClick={() => setShowLoginPrompt(false)}
+              >
+                Login
+              </Link>
             </div>
           </div>
         </div>
