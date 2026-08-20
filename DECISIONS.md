@@ -132,3 +132,8 @@
 **Alasan penundaan**: Prioritas dialihkan ke stabilisasi fitur inti dan branding terlebih dahulu, dengan timeline project yang lebih panjang dari perkiraan awal.
 **WAJIB dikerjakan kembali sebelum deadline submission final**, karena ini syarat kelayakan tema hackathon "AI x Web3" yang wajib di semua track — bukan fitur opsional yang boleh hilang dari submission akhir.
 **Target revisit**: 2-3 minggu sebelum deadline submission final (tanggal pasti perlu ditentukan user).
+
+## ADR-024: Marketplace — Functional Trade System
+**Status**: Accepted — supersedes ADR-010
+**Decision**: Implement full marketplace with listing, buying, cancelling. Cards listed via `isListed` flag (MongoDB) + `marketplaceTransfer()` on-chain. Marketplace fee 8%. FVM (Fair Value Market) calculates average sold price per template. AI-powered market insight and price suggestion via Gemini API. Print blocked while card is listed.
+**Reason**: Enhances demo value for hackathon. Shows full card lifecycle: mint → collect → trade → print → redeem. Blockchain abstraction maintained — users see Credit prices, not crypto.
