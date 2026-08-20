@@ -156,6 +156,24 @@ body {
 }
 .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 14px 34px -10px rgba(255,196,102,0.75); }
 
+.btn-list-sale {
+  display: block !important;
+  width: 100% !important;
+  padding: 0.5rem 0.75rem !important;
+  background: linear-gradient(135deg, #FFD68A, #FFC466) !important;
+  color: #0B0E1A !important;
+  border: none !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  font-size: 0.65rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  cursor: pointer !important;
+  box-shadow: 0 8px 26px -8px rgba(255,196,102,0.55) !important;
+  transition: transform 200ms ease !important;
+}
+.btn-list-sale:hover { transform: translateY(-1px) !important; box-shadow: 0 14px 34px -10px rgba(255,196,102,0.75) !important; }
+
 /* Legacy compat (still used elsewhere in codebase) */
 .btn-cta {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;

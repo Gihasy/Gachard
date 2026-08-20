@@ -316,13 +316,7 @@ export default function CardItem({
             {!isListed && canList && (
               <button
                 onClick={() => setShowListingModal(true)}
-                className="!py-2 !px-3 !text-[0.65rem] w-full font-bold uppercase tracking-widest rounded-full transition-transform hover:-translate-y-px cursor-pointer"
-                style={{
-                  background: "linear-gradient(135deg, #FFD68A, #FFC466)",
-                  color: "#0B0E1A",
-                  border: "none",
-                  boxShadow: "0 8px 26px -8px rgba(255,196,102,0.55)",
-                }}
+                className="btn-list-sale"
               >
                 List for Sale
               </button>
