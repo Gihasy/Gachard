@@ -62,7 +62,7 @@ export default function HomeCoreLoop() {
                 }}
               >
                 <Image
-                  src="/cards/legendary-1.webp"
+                  src="/cards/digital-card.webp"
                   alt="Digital Gachard card"
                   fill
                   sizes="(max-width: 640px) 160px, (max-width: 1024px) 220px, 260px"
@@ -118,7 +118,7 @@ export default function HomeCoreLoop() {
                 }}
               >
                 <Image
-                  src="/cards/legendary-2.webp"
+                  src="/cards/real-card.webp"
                   alt="Physical Gachard card in holographic sleeve"
                   fill
                   sizes="(max-width: 640px) 160px, (max-width: 1024px) 220px, 260px"
