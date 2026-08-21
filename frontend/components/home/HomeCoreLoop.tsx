@@ -70,66 +70,56 @@ export default function HomeCoreLoop() {
               </div>
             </div>
 
-            {/* Arrow center */}
-            <div className="flex flex-col items-center gap-3 shrink-0">
-              {/* Print arrow (right) */}
-              <div className="flex items-center gap-2">
-                <span
-                  className="text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.2em] font-semibold"
-                  style={{ color: "#B89F5A" }}
-                >
-                  Print
-                </span>
+            {/* Arrow center icon */}
+            <div className="flex flex-col items-center shrink-0">
+              <span
+                className="text-[0.6rem] sm:text-[0.65rem] uppercase tracking-[0.2em] font-semibold mb-1.5"
+                style={{ color: "#B89F5A" }}
+              >
+                Print
+              </span>
+              <div
+                className="relative flex items-center justify-center rounded-full"
+                style={{
+                  width: "clamp(56px, 6vw, 80px)",
+                  height: "clamp(56px, 6vw, 80px)",
+                  border: "1.5px solid rgba(201,168,76,0.5)",
+                  background: "rgba(12,15,25,0.6)",
+                }}
+              >
                 <svg
-                  width="36"
-                  height="24"
-                  viewBox="0 0 36 24"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 32 32"
                   fill="none"
                   className="hidden sm:block"
                 >
-                  <line x1="4" y1="12" x2="28" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
-                  <polyline points="24,6 30,12 24,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* Right arrow (Print) */}
+                  <line x1="6" y1="11" x2="22" y2="11" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
+                  <polyline points="18,7 23,11 18,15" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* Left arrow (Redeem) */}
+                  <line x1="10" y1="21" x2="26" y2="21" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
+                  <polyline points="14,17 9,21 14,25" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <svg
                   width="24"
-                  height="18"
-                  viewBox="0 0 36 24"
-                  fill="none"
-                  className="sm:hidden"
-                >
-                  <line x1="4" y1="12" x2="28" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
-                  <polyline points="24,6 30,12 24,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              {/* Redeem arrow (left) */}
-              <div className="flex items-center gap-2">
-                <svg
-                  width="36"
                   height="24"
-                  viewBox="0 0 36 24"
-                  fill="none"
-                  className="hidden sm:block"
-                >
-                  <line x1="6" y1="12" x2="32" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
-                  <polyline points="10,6 4,12 10,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <svg
-                  width="24"
-                  height="18"
-                  viewBox="0 0 36 24"
+                  viewBox="0 0 32 32"
                   fill="none"
                   className="sm:hidden"
                 >
-                  <line x1="6" y1="12" x2="32" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
-                  <polyline points="10,6 4,12 10,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  <line x1="6" y1="11" x2="22" y2="11" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
+                  <polyline points="18,7 23,11 18,15" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  <line x1="10" y1="21" x2="26" y2="21" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" />
+                  <polyline points="14,17 9,21 14,25" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span
-                  className="text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.2em] font-semibold"
-                  style={{ color: "#B89F5A" }}
-                >
-                  Redeem
-                </span>
               </div>
+              <span
+                className="text-[0.6rem] sm:text-[0.65rem] uppercase tracking-[0.2em] font-semibold mt-1.5"
+                style={{ color: "#B89F5A" }}
+              >
+                Redeem
+              </span>
             </div>
 
             {/* Physical card */}
