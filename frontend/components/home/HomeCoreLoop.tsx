@@ -151,29 +151,6 @@ export default function HomeCoreLoop() {
             </div>
           </div>
 
-          {/* Labels */}
-          <div className="flex items-center gap-6 sm:gap-12 mt-8 sm:mt-10">
-            <span
-              className="px-5 py-2 rounded-full text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.2em] font-semibold"
-              style={{
-                border: "1px solid rgba(201,168,76,0.5)",
-                color: "#C9A84C",
-                background: "rgba(12,15,25,0.6)",
-              }}
-            >
-              Digital Card
-            </span>
-            <span
-              className="px-5 py-2 rounded-full text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.2em] font-semibold"
-              style={{
-                border: "1px solid rgba(201,168,76,0.5)",
-                color: "#C9A84C",
-                background: "rgba(12,15,25,0.6)",
-              }}
-            >
-              Physical Card
-            </span>
-          </div>
         </div>
       </div>
     </section>
