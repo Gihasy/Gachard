@@ -8,10 +8,10 @@ interface Feature {
 }
 
 const FEATURES: readonly Feature[] = [
-  { key: "ownership",  title: "True Ownership",     desc: "Your cards, your assets. Built on trust and security.", color: "#B8ACFF" },
-  { key: "play",       title: "Play to Win",        desc: "Strategic battles. Endless possibilities.",             color: "#FF6BBA" },
-  { key: "market",     title: "Open Market",        desc: "Trade freely. Anytime, anywhere.",                      color: "#00CCFF" },
-  { key: "community",  title: "Built for Community", desc: "Together we grow the Gachard universe.",               color: "#FFC466" },
+  { key: "ownership",  title: "Verified Ownership",  desc: "Your card is permanently recorded and cannot be counterfeited.", color: "#B8ACFF" },
+  { key: "play",       title: "Collect & Compete",   desc: "Build the ultimate collection. Battle system coming soon.",      color: "#FF6BBA" },
+  { key: "market",     title: "Open Market",         desc: "An open marketplace for free trading between collectors.",       color: "#00CCFF" },
+  { key: "community",  title: "Built for Community", desc: "Together we grow the Gachard universe.",                        color: "#FFC466" },
 ] as const;
 
 function Icon({ index, color }: { index: number; color: string }) {
