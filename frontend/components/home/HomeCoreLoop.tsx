@@ -5,23 +5,27 @@ import Image from "next/image";
 export default function HomeCoreLoop() {
   return (
     <section
-      className="relative py-20 sm:py-28 overflow-hidden"
+      className="relative py-6 sm:py-10"
       data-testid="coreloop-section"
-      style={{
-        background: "linear-gradient(180deg, transparent 0%, rgba(11,15,26,0.95) 30%, rgba(11,15,26,0.95) 70%, transparent 100%)",
-      }}
     >
-      {/* Warm radial glow behind cards */}
       <div
-        className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] pointer-events-none"
-        aria-hidden
-        style={{
-          background: "radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%)",
-          filter: "blur(40px)",
-        }}
-      />
-
-      <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+        className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10"
+      >
+        <div
+          className="relative overflow-hidden rounded-[20px] py-16 sm:py-24 px-6 sm:px-12 lg:px-16"
+          style={{
+            background: "linear-gradient(135deg, #171f35 0%, #111827 100%)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          {/* Warm glow top-left */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            aria-hidden
+            style={{
+              background: "radial-gradient(ellipse at 10% 10%, rgba(200,150,50,0.12) 0%, rgba(200,150,50,0.04) 30%, transparent 60%)",
+            }}
+          />
         {/* Text content */}
         <div className="mb-12 sm:mb-16">
           <p
@@ -142,6 +146,7 @@ export default function HomeCoreLoop() {
             </div>
           </div>
 
+        </div>
         </div>
       </div>
     </section>
