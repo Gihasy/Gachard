@@ -56,96 +56,97 @@ export default function HomeCoreLoop() {
               <div
                 className="relative overflow-hidden rounded-[16px]"
                 style={{
-                  width: "clamp(160px, 22vw, 260px)",
+                  width: "clamp(200px, 28vw, 340px)",
                   aspectRatio: "5/7",
-                  boxShadow: "0 25px 60px -15px rgba(201,168,76,0.3), 0 0 0 1px rgba(201,168,76,0.4), 0 0 40px -10px rgba(201,168,76,0.15)",
                 }}
               >
                 <Image
                   src="/cards/digital-card.webp"
                   alt="Digital Gachard card"
                   fill
-                  sizes="(max-width: 640px) 160px, (max-width: 1024px) 220px, 260px"
+                  sizes="(max-width: 640px) 200px, (max-width: 1024px) 280px, 340px"
                   className="object-cover"
                 />
               </div>
             </div>
 
             {/* Arrow center */}
-            <div className="flex flex-col items-center gap-2 shrink-0">
-              <span
-                className="text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.2em] font-semibold"
-                style={{ color: "#B89F5A" }}
-              >
-                Print
-              </span>
-              <svg
-                width="36"
-                height="24"
-                viewBox="0 0 36 24"
-                fill="none"
-                className="hidden sm:block"
-              >
-                <line x1="0" y1="12" x2="28" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
-                <polyline points="24,6 30,12 24,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <svg
-                width="24"
-                height="18"
-                viewBox="0 0 36 24"
-                fill="none"
-                className="sm:hidden"
-              >
-                <line x1="0" y1="12" x2="28" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
-                <polyline points="24,6 30,12 24,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span
-                className="text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.2em] font-semibold"
-                style={{ color: "#B89F5A" }}
-              >
-                Redeem
-              </span>
+            <div className="flex flex-col items-center gap-3 shrink-0">
+              {/* Print arrow (right) */}
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.2em] font-semibold"
+                  style={{ color: "#B89F5A" }}
+                >
+                  Print
+                </span>
+                <svg
+                  width="36"
+                  height="24"
+                  viewBox="0 0 36 24"
+                  fill="none"
+                  className="hidden sm:block"
+                >
+                  <line x1="4" y1="12" x2="28" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
+                  <polyline points="24,6 30,12 24,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <svg
+                  width="24"
+                  height="18"
+                  viewBox="0 0 36 24"
+                  fill="none"
+                  className="sm:hidden"
+                >
+                  <line x1="4" y1="12" x2="28" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
+                  <polyline points="24,6 30,12 24,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              {/* Redeem arrow (left) */}
+              <div className="flex items-center gap-2">
+                <svg
+                  width="36"
+                  height="24"
+                  viewBox="0 0 36 24"
+                  fill="none"
+                  className="hidden sm:block"
+                >
+                  <line x1="6" y1="12" x2="32" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
+                  <polyline points="10,6 4,12 10,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <svg
+                  width="24"
+                  height="18"
+                  viewBox="0 0 36 24"
+                  fill="none"
+                  className="sm:hidden"
+                >
+                  <line x1="6" y1="12" x2="32" y2="12" stroke="#C9A84C" strokeWidth="1.5" />
+                  <polyline points="10,6 4,12 10,18" stroke="#C9A84C" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span
+                  className="text-[0.65rem] sm:text-[0.7rem] uppercase tracking-[0.2em] font-semibold"
+                  style={{ color: "#B89F5A" }}
+                >
+                  Redeem
+                </span>
+              </div>
             </div>
 
-            {/* Physical card (holographic sleeve effect) */}
+            {/* Physical card */}
             <div className="relative" style={{ transform: "rotate(8deg)" }}>
               <div
                 className="relative overflow-hidden rounded-[16px]"
                 style={{
-                  width: "clamp(160px, 22vw, 260px)",
+                  width: "clamp(200px, 28vw, 340px)",
                   aspectRatio: "5/7",
-                  boxShadow: "0 25px 60px -15px rgba(64,224,208,0.15), 0 0 0 1px rgba(255,255,255,0.12)",
                 }}
               >
                 <Image
                   src="/cards/real-card.webp"
-                  alt="Physical Gachard card in holographic sleeve"
+                  alt="Physical Gachard card"
                   fill
-                  sizes="(max-width: 640px) 160px, (max-width: 1024px) 220px, 260px"
+                  sizes="(max-width: 640px) 200px, (max-width: 1024px) 280px, 340px"
                   className="object-cover"
-                />
-                {/* Holographic overlay */}
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(64,224,208,0.12) 0%, rgba(224,64,192,0.1) 30%, rgba(232,194,74,0.08) 60%, rgba(64,224,208,0.12) 100%)",
-                    mixBlendMode: "color-dodge",
-                  }}
-                />
-                {/* Holographic shimmer line */}
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.08) 55%, transparent 70%)",
-                  }}
-                />
-                {/* Plastic case edge highlight */}
-                <div
-                  className="absolute inset-0 rounded-[16px] pointer-events-none"
-                  style={{
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.05)",
-                  }}
                 />
               </div>
             </div>
