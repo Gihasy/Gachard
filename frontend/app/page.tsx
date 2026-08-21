@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import HomeHero from "@/components/home/HomeHero";
 import HomeFeaturedCards from "@/components/home/HomeFeaturedCards";
+import HomeCoreLoop from "@/components/home/HomeCoreLoop";
 import HomeWhyGachard from "@/components/home/HomeWhyGachard";
 import HomeHowItWorks from "@/components/home/HomeHowItWorks";
 import HomeCtaBand from "@/components/home/HomeCtaBand";
@@ -31,6 +32,7 @@ export default function Home() {
     <div data-testid="home-page">
       <HomeHero isAuthenticated={!!user} />
       <HomeFeaturedCards />
+      <HomeCoreLoop />
       <HomeWhyGachard />
       <HomeHowItWorks />
       <HomeCtaBand />
