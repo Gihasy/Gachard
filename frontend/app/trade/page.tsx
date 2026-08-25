@@ -285,16 +285,6 @@ export default function MarketplacePage() {
                     View Info
                   </span>
                 </div>
-                <span
-                  className="absolute top-2 right-2 tag-common text-[10px] px-2 py-0.5 rounded-full"
-                  style={{
-                    backgroundColor: `${RARITY_COLORS[listing.rarity]}20`,
-                    color: RARITY_COLORS[listing.rarity],
-                    borderColor: `${RARITY_COLORS[listing.rarity]}40`,
-                  }}
-                >
-                  {RARITY_NAMES[listing.rarity]}
-                </span>
               </button>
 
               <p className="text-sm font-semibold truncate" style={{ color: "var(--silver-mist)" }}>
