@@ -200,6 +200,31 @@ export default function CardDetailModal({
                   </div>
                 </div>
 
+                {/* QR Code */}
+                {data.tokenId !== null && (
+                  <div
+                    className="flex items-center gap-3 p-2.5 rounded-xl"
+                    style={{
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <img
+                      src={`/api/cards/${data.tokenId}/qr`}
+                      alt={`QR for #${data.cardId ?? data.tokenId}`}
+                      className="w-14 h-14 rounded-lg shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-wide" style={{ color: "var(--electric-blue)" }}>
+                        Scan for Details
+                      </p>
+                      <p className="text-[0.5rem] text-white/50 mt-0.5">
+                        Scan this QR to verify ownership, rarity, and full card history.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Metadata */}
                 <div className="glass p-3">
                   <MetaRow label="Card ID" value={`#${data.cardId || data.tokenId}`} mono />
