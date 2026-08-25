@@ -147,53 +147,36 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-3 mb-6 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
         {/* Rarity filter */}
-        <div className="flex items-center gap-2 shrink-0">
+        <button
+          onClick={() => setFilter(null)}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            filter === null ? "btn-primary !py-1.5 !px-3 !text-xs" : "btn-ghost !py-1.5 !px-3 !text-xs"
+          }`}
+        >
+          All
+        </button>
+        {[0, 1, 2, 3].map((r) => (
           <button
-            onClick={() => setFilter(null)}
-            className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap"
-            style={filter === null ? {
-              background: "linear-gradient(135deg, var(--cosmic-violet), var(--aurora-pink))",
-              color: "white",
-              boxShadow: "0 0 12px rgba(184,172,255,0.3)",
-            } : {
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "rgba(230,232,240,0.7)",
-            }}
+            key={r}
+            onClick={() => setFilter(filter === r ? null : r)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              filter === r ? "btn-primary !py-1.5 !px-3 !text-xs" : "btn-ghost !py-1.5 !px-3 !text-xs"
+            }`}
           >
-            All
+            {RARITY_NAMES[r]}
           </button>
-          {[0, 1, 2, 3].map((r) => (
-            <button
-              key={r}
-              onClick={() => setFilter(filter === r ? null : r)}
-              className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap"
-              style={filter === r ? {
-                background: `${RARITY_COLORS[r]}20`,
-                border: `1px solid ${RARITY_COLORS[r]}60`,
-                color: RARITY_COLORS[r],
-                boxShadow: `0 0 10px ${RARITY_COLORS[r]}25`,
-              } : {
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                color: "rgba(230,232,240,0.7)",
-              }}
-            >
-              {RARITY_NAMES[r]}
-            </button>
-          ))}
-        </div>
+        ))}
 
         {/* Sort dropdown */}
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value)}
-          className="px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer shrink-0"
+          className="ml-auto px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer"
           style={{
             background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            border: "1px solid rgba(255,255,255,0.14)",
             color: "var(--silver-mist)",
             outline: "none",
           }}
