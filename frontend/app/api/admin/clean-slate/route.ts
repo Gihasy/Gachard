@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 
+export async function GET() {
+  return doCleanSlate();
+}
+
 export async function POST() {
+  return doCleanSlate();
+}
+
+async function doCleanSlate() {
   try {
     const collections = [
       "cards",
