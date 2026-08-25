@@ -123,8 +123,11 @@ export default function Profil() {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("gachard_cart");
+    localStorage.removeItem("gachard_wishlist");
     document.cookie = "gachard_uid=; path=/; max-age=0; SameSite=Lax";
     window.dispatchEvent(new Event("auth-change"));
+    window.dispatchEvent(new CustomEvent("gachard-cart-change"));
     router.push("/");
   };
 
