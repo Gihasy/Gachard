@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
+import CardDetailModal from "@/components/CardDetailModal";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
 
@@ -47,7 +48,7 @@ export default function MarketplacePage() {
   const [sort, setSort] = useState<string>("newest");
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
-  const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [detailCard, setDetailCard] = useState<{ cardId: string; tokenId: number } | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [wishlistCounts, setWishlistCounts] = useState<Record<string, number>>({});
   const [user, setUser] = useState<{ user_id: string; username: string } | null>(null);
@@ -262,7 +263,7 @@ export default function MarketplacePage() {
               <button
                 type="button"
                 className="relative mb-3 cursor-pointer group rounded-lg overflow-hidden"
-                onClick={() => setSelectedListing(listing)}
+                onClick={() => setDetailCard({ cardId: listing.cardId, tokenId: listing.tokenId })}
                 style={{ background: "none", border: "none", padding: 0 }}
               >
                 {listing.artworkUrl ? (
@@ -381,94 +382,13 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      {/* Quick Info Modal */}
-      {selectedListing && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
-          onClick={() => setSelectedListing(null)}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{
-              background: "rgba(15, 19, 36, 0.95)",
-              border: "1px solid rgba(255,196,102,0.3)",
-              boxShadow: "0 0 40px rgba(0,0,0,0.5), 0 0 20px rgba(255,196,102,0.1)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Artwork */}
-            <div className="relative" style={{ background: "rgba(0,0,0,0.3)" }}>
-              {selectedListing.artworkUrl ? (
-                <img
-                  src={selectedListing.artworkUrl}
-                  alt={selectedListing.templateName}
-                  className="w-full max-h-64 object-contain"
-                />
-              ) : (
-                <div className="w-full h-40 flex items-center justify-center text-xs" style={{ color: "var(--silver-mist-dim)" }}>
-                  No artwork
-                </div>
-              )}
-              <span
-                className="absolute top-3 right-3 tag-common text-[10px] px-2 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: `${RARITY_COLORS[selectedListing.rarity]}20`,
-                  color: RARITY_COLORS[selectedListing.rarity],
-                  borderColor: `${RARITY_COLORS[selectedListing.rarity]}40`,
-                }}
-              >
-                {RARITY_NAMES[selectedListing.rarity]}
-              </span>
-            </div>
-
-            {/* Info */}
-            <div className="p-5 space-y-3">
-              <h3 className="text-base font-semibold" style={{ color: "var(--silver-mist)" }}>
-                {selectedListing.templateName}
-              </h3>
-
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span style={{ color: "var(--silver-mist-dim)" }}>Card ID</span>
-                  <span className="font-mono" style={{ color: "var(--silver-mist)" }}>#{selectedListing.cardId}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span style={{ color: "var(--silver-mist-dim)" }}>Rarity</span>
-                  <span style={{ color: RARITY_COLORS[selectedListing.rarity] }}>{RARITY_NAMES[selectedListing.rarity]}</span>
-                </div>
-                {selectedListing.fvm !== null && (
-                  <div className="flex justify-between text-sm">
-                    <span style={{ color: "var(--silver-mist-dim)" }}>Fair Value Market</span>
-                    <span style={{ color: "var(--aurora-gold)" }}>{selectedListing.fvm} Credit</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm font-semibold">
-                  <span style={{ color: "var(--silver-mist-dim)" }}>Listing Price</span>
-                  <span style={{ color: "var(--aurora-gold)" }}>{selectedListing.price} Credit</span>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={() => setSelectedListing(null)}
-                  className="btn-ghost flex-1 !py-2.5 !text-xs"
-                >
-                  Close
-                </button>
-                <a
-                  href={`/scan?cardId=${selectedListing.cardId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary flex-1 !py-2.5 !text-xs text-center"
-                  onClick={() => setSelectedListing(null)}
-                >
-                  View Details
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Card Detail Modal */}
+      {detailCard && (
+        <CardDetailModal
+          cardId={detailCard.cardId}
+          tokenId={detailCard.tokenId}
+          onClose={() => setDetailCard(null)}
+        />
       )}
 
       {/* Login Prompt Modal */}
