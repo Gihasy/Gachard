@@ -36,7 +36,9 @@ const SORT_OPTIONS = [
   { value: "oldest", label: "Oldest" },
   { value: "price-high", label: "Price: High to Low" },
   { value: "price-low", label: "Price: Low to High" },
-  { value: "popular", label: "Popular (FVM)" },
+  { value: "fvm-high", label: "FVM: High to Low" },
+  { value: "fvm-low", label: "FVM: Low to High" },
+  { value: "popular", label: "Popular (Wishlist)" },
 ];
 
 export default function MarketplacePage() {
@@ -144,6 +146,8 @@ export default function MarketplacePage() {
       case "price-low": return a.price - b.price;
       case "newest": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       case "oldest": return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case "fvm-high": return (b.fvm ?? 0) - (a.fvm ?? 0);
+      case "fvm-low": return (a.fvm ?? 0) - (b.fvm ?? 0);
       case "popular": return (wishlistCounts[b.cardId] || 0) - (wishlistCounts[a.cardId] || 0);
       default: return 0;
     }
