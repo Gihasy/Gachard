@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
 import { createListing } from "@/lib/listings";
-import { getFVM, getFVMFloor } from "@/lib/fvm";
+import { getFVM, getFVMFloor, type FVMResult } from "@/lib/fvm";
 
 export async function POST(req: NextRequest) {
   try {
@@ -89,20 +89,63 @@ export async function GET(req: NextRequest) {
     const templates = await templatesCol.find({}).toArray();
     const templateMap = new Map(templates.map((t) => [t.templateId, t]));
 
-    const enriched = await Promise.all(
-      listings.map(async (listing) => {
-        const template = templateMap.get(listing.templateId);
-        const fvmResult = await getFVM(listing.templateId);
-        return {
-          ...listing,
-          artworkUrl: template?.artworkUrl || null,
-          templateName: template?.name || listing.templateId,
-          rarity: template?.rarity ?? 0,
-          fvm: fvmResult.fvm,
-          fvmSource: fvmResult.source,
-        };
-      })
-    );
+    // Batch FVM: fetch all sold transactions once, compute in-memory
+    const txCol = await getCollection("transactions");
+    const uniqueTemplateIds = [...new Set(listings.map((l) => l.templateId))];
+    const soldTxs = await txCol
+      .find({ type: "sold", status: "confirmed", templateId: { $in: uniqueTemplateIds } })
+      .toArray();
+
+    const soldByTemplate = new Map<string, number[]>();
+    for (const tx of soldTxs) {
+      if (!soldByTemplate.has(tx.templateId)) soldByTemplate.set(tx.templateId, []);
+      soldByTemplate.get(tx.templateId)!.push(tx.amount || 0);
+    }
+
+    // For templates with no direct sales, gather rarity-level sales
+    const templatesWithSales = new Set(soldByTemplate.keys());
+    const missingTemplateIds = uniqueTemplateIds.filter((id) => !templatesWithSales.has(id));
+    const missingRarities = new Set<number>();
+    for (const id of missingTemplateIds) {
+      const t = templateMap.get(id);
+      if (t) missingRarities.add(t.rarity);
+    }
+    const raritySoldTxs = missingRarities.size > 0
+      ? await txCol.find({ type: "sold", status: "confirmed", rarity: { $in: [...missingRarities] } }).toArray()
+      : [];
+    const soldByRarity = new Map<number, number[]>();
+    for (const tx of raritySoldTxs) {
+      if (tx.rarity == null) continue;
+      if (!soldByRarity.has(tx.rarity)) soldByRarity.set(tx.rarity, []);
+      soldByRarity.get(tx.rarity)!.push(tx.amount || 0);
+    }
+
+    const enriched = listings.map((listing) => {
+      const template = templateMap.get(listing.templateId);
+      let fvm: number | null = null;
+      let fvmSource: FVMResult["source"] = "none";
+
+      const directSales = soldByTemplate.get(listing.templateId);
+      if (directSales && directSales.length > 0) {
+        fvm = Math.round(directSales.reduce((s, v) => s + v, 0) / directSales.length);
+        fvmSource = "template";
+      } else if (template) {
+        const raritySales = soldByRarity.get(template.rarity);
+        if (raritySales && raritySales.length > 0) {
+          fvm = Math.round(raritySales.reduce((s, v) => s + v, 0) / raritySales.length);
+          fvmSource = "rarity";
+        }
+      }
+
+      return {
+        ...listing,
+        artworkUrl: template?.artworkUrl || null,
+        templateName: template?.name || listing.templateId,
+        rarity: template?.rarity ?? 0,
+        fvm,
+        fvmSource,
+      };
+    });
 
     return NextResponse.json({ listings: enriched });
   } catch (error) {
