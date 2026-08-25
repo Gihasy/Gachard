@@ -53,6 +53,8 @@ export default function MarketplacePage() {
   const sortRef = useRef<HTMLDivElement>(null);
   const [detailCard, setDetailCard] = useState<{ cardId: string; tokenId: number } | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [confirmBuy, setConfirmBuy] = useState<Listing | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
   const [wishlistCounts, setWishlistCounts] = useState<Record<string, number>>({});
   const [user, setUser] = useState<{ user_id: string; username: string } | null>(null);
   const { toggleWishlist, isWishlisted } = useWishlist();
@@ -60,7 +62,14 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
-    if (stored) setUser(JSON.parse(stored));
+    if (stored) {
+      const u = JSON.parse(stored);
+      setUser(u);
+      fetch(`/api/credits?userId=${u.user_id}`)
+        .then((r) => r.json())
+        .then((d: { balance?: number }) => setBalance(d.balance ?? 0))
+        .catch(() => setBalance(0));
+    }
   }, []);
 
   useEffect(() => {
@@ -364,7 +373,10 @@ export default function MarketplacePage() {
                 {/* Buy button — full width */}
                 {(!user || listing.sellerId !== user.user_id) && (
                   <button
-                    onClick={() => handleBuy(listing.listingId)}
+                    onClick={() => {
+                      if (!user) { setShowLoginPrompt(true); return; }
+                      setConfirmBuy(listing);
+                    }}
                     disabled={buying === listing.listingId}
                     className="btn-primary !py-2 !text-xs w-full"
                   >
@@ -384,6 +396,69 @@ export default function MarketplacePage() {
           tokenId={detailCard.tokenId}
           onClose={() => setDetailCard(null)}
         />
+      )}
+
+      {/* Buy Confirmation Modal */}
+      {confirmBuy && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+          onClick={() => setConfirmBuy(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-6"
+            style={{
+              background: "rgba(15, 19, 36, 0.95)",
+              border: "1px solid rgba(255,196,102,0.3)",
+              boxShadow: "0 0 40px rgba(0,0,0,0.5), 0 0 20px rgba(255,196,102,0.1)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold mb-1" style={{ color: "var(--silver-mist)" }}>
+              Confirm Purchase
+            </h3>
+            <p className="text-sm mb-4" style={{ color: "var(--silver-mist-dim)" }}>
+              {confirmBuy.templateName} <span className="font-mono text-xs">#{confirmBuy.cardId}</span>
+            </p>
+
+            <div className="space-y-2 mb-4">
+              <div className="flex justify-between text-sm">
+                <span style={{ color: "var(--silver-mist-dim)" }}>Price</span>
+                <span className="font-semibold" style={{ color: "var(--aurora-gold)" }}>{confirmBuy.price} Credit</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: "var(--silver-mist-dim)" }}>Your Balance</span>
+                <span className="font-semibold" style={{ color: balance !== null && balance >= confirmBuy.price ? "#00ff88" : "var(--aurora-pink)" }}>
+                  {balance !== null ? `${balance.toLocaleString()} Credit` : "Loading…"}
+                </span>
+              </div>
+              {balance !== null && balance < confirmBuy.price && (
+                <p className="text-xs text-center py-1.5 rounded-lg" style={{ background: "rgba(255,107,186,0.1)", border: "1px solid rgba(255,107,186,0.2)", color: "var(--aurora-pink)" }}>
+                  Insufficient balance. You need {(confirmBuy.price - balance).toLocaleString()} more Credit.
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              {balance !== null && balance < confirmBuy.price ? (
+                <>
+                  <button onClick={() => setConfirmBuy(null)} className="btn-ghost flex-1 !py-2.5 !text-xs">Cancel</button>
+                  <Link href="/topup" className="btn-primary flex-1 !py-2.5 !text-xs text-center" onClick={() => setConfirmBuy(null)}>Top Up</Link>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => setConfirmBuy(null)} className="btn-ghost flex-1 !py-2.5 !text-xs">No</button>
+                  <button
+                    onClick={() => { handleBuy(confirmBuy.listingId); setConfirmBuy(null); }}
+                    className="btn-primary flex-1 !py-2.5 !text-xs"
+                  >
+                    Yes, Buy
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Login Prompt Modal */}
