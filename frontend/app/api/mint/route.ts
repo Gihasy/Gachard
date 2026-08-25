@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 
-// Auto-confirm waits up to 8s for receipt. Total process ~10-12s. Set 15s buffer.
 export const maxDuration = 15;
 import { getCollection, parseObjectId } from "@/lib/mongodb";
 import { mintBatch, waitForReceipt } from "@/lib/blockchain";
@@ -11,6 +10,44 @@ import { deductCredits, addCredits } from "@/lib/credits";
 import { generateInvoiceId } from "@/lib/invoice";
 import { friendlyTxStatus } from "@/lib/status-map";
 import { ethers } from "ethers";
+
+/** Background confirm: poll receipt and update cards/tokenIds */
+async function confirmMint(txHash: string, txId: string, contractAddress: string) {
+  try {
+    const receipt = await waitForReceipt(txHash, 10, 2000);
+    if (!receipt || receipt.status !== 1) return;
+
+    const CARD_MINTED_TOPIC = ethers.id("CardMinted(uint256,address,uint8,uint8)");
+    const cardsCollection = await getCollection("cards");
+    const txCollection = await getCollection("transactions");
+    const confirmedTokenIds: number[] = [];
+    let mintIndex = 0;
+
+    for (const log of receipt.logs) {
+      if (log.topics[0] === CARD_MINTED_TOPIC && log.address.toLowerCase() === contractAddress.toLowerCase()) {
+        const tokenId = parseInt(log.topics[1], 16);
+        const logData = log.data.slice(2);
+        const rarity = parseInt(logData.slice(64, 128), 16);
+        confirmedTokenIds.push(tokenId);
+
+        await cardsCollection.updateOne(
+          { txId, pickIndex: mintIndex },
+          { $set: { tokenId, status: "Digital", rarity, lastOnChainSync: new Date().toISOString() } }
+        );
+        mintIndex++;
+      }
+    }
+
+    if (confirmedTokenIds.length > 0) {
+      await txCollection.updateOne(
+        { _id: parseObjectId(txId) },
+        { $set: { status: "confirmed", tokenIds: confirmedTokenIds } }
+      );
+    }
+  } catch (err) {
+    console.error("[mint] background confirm failed:", err);
+  }
+}
 
 /** Generate a unique 5-character hex Card ID (e.g. "a3f1b"), with collision retry */
 async function generateUniqueCardId(cardsCollection: { findOne: (q: Record<string, unknown>) => Promise<unknown> }): Promise<string> {
@@ -68,11 +105,8 @@ export async function POST(request: Request) {
     // Build rarities based on pack type
     const rarities = await buildPackRarities(pack.cards, pack.guaranteed);
 
-    // Pick template untuk setiap kartu
-    const templates = [];
-    for (const rarity of rarities) {
-      templates.push(await pickCardTemplate(rarity));
-    }
+    // Pick templates in parallel
+    const templates = await Promise.all(rarities.map((r) => pickCardTemplate(r)));
 
     // Mint batch — 1 tx untuk seluruh pack (atomik)
     const txHash = await mintBatch(user.walletAddress, rarities);
@@ -97,56 +131,27 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    // Simpan card records
+    // Generate card IDs in parallel and save
     const cardsCollection = await getCollection("cards");
-    const cardDocs = [];
-    for (let i = 0; i < templates.length; i++) {
-      cardDocs.push({
-        cardId: await generateUniqueCardId(cardsCollection),
-        tokenId: null,
-        txId: txResult.insertedId.toString(),
-        pickIndex: i,
-        templateId: templates[i].templateId,
-        rarity: rarities[i],
+    const cardIds = await Promise.all(
+      templates.map(() => generateUniqueCardId(cardsCollection))
+    );
+    const cardDocs = templates.map((template, i) => ({
+      cardId: cardIds[i],
+      tokenId: null,
+      txId: txResult.insertedId.toString(),
+      pickIndex: i,
+      templateId: template.templateId,
+      rarity: rarities[i],
       ownerAddress: user.walletAddress,
       status: "pending",
       contractAddress,
       viewed: false,
       createdAt: new Date().toISOString(),
-      });
-    }
+    }));
     await cardsCollection.insertMany(cardDocs);
 
-    // Poll for receipt with retries (up to ~6s, within 15s maxDuration)
-    let confirmedTokenIds: number[] = [];
-    const receipt = await waitForReceipt(txHash, 3, 1000);
-    if (receipt && receipt.status === 1) {
-      const CARD_MINTED_TOPIC = ethers.id("CardMinted(uint256,address,uint8,uint8)");
-      let mintIndex = 0;
-      for (const log of receipt.logs) {
-        if (log.topics[0] === CARD_MINTED_TOPIC && log.address.toLowerCase() === contractAddress.toLowerCase()) {
-          const tokenId = parseInt(log.topics[1], 16);
-          const logData = log.data.slice(2);
-          const rarity = parseInt(logData.slice(64, 128), 16);
-          confirmedTokenIds.push(tokenId);
-
-          await cardsCollection.updateOne(
-            { txId: txResult.insertedId.toString(), pickIndex: mintIndex },
-            { $set: { tokenId, status: "Digital", rarity, lastOnChainSync: new Date().toISOString() } }
-          );
-          mintIndex++;
-        }
-      }
-
-      if (confirmedTokenIds.length > 0) {
-        await txCollection.updateOne(
-          { _id: txResult.insertedId },
-          { $set: { status: "confirmed", tokenIds: confirmedTokenIds } }
-        );
-      }
-    }
-
-    // Build response array
+    // Build response array — return immediately (ADR-018: async blockchain pattern)
     const cards = templates.map((template, i) => ({
       rarity: rarities[i],
       template: {
@@ -156,10 +161,11 @@ export async function POST(request: Request) {
       },
     }));
 
-    const finalStatus = confirmedTokenIds.length > 0 ? "confirmed" : "pending";
+    // Fire-and-forget: confirm on-chain in background
+    confirmMint(txHash, txResult.insertedId.toString(), contractAddress);
 
     return NextResponse.json({
-      status: friendlyTxStatus(finalStatus),
+      status: friendlyTxStatus("pending"),
       txId: generateInvoiceId(txResult.insertedId.toString()),
       cards,
       newBalance,
