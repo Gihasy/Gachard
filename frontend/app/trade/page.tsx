@@ -303,24 +303,6 @@ export default function MarketplacePage() {
                 #{listing.cardId}
               </p>
 
-              {/* QR Code for card scan */}
-              <div className="flex items-center gap-2 mb-2 p-2 rounded-lg" style={{ background: "rgba(255,255,255,0.03)" }}>
-                <img
-                  src={`/api/cards/${listing.tokenId}/qr`}
-                  alt={`QR for #${listing.cardId}`}
-                  className="w-10 h-10 rounded"
-                  loading="lazy"
-                />
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--electric-blue)" }}>
-                    Scan for Details
-                  </p>
-                  <p className="text-[9px]" style={{ color: "var(--silver-mist-dim)" }}>
-                    Verify ownership & history
-                  </p>
-                </div>
-              </div>
-
               {listing.fvm !== null && (
                 <p className="text-[11px] mb-2" style={{ color: "var(--silver-mist-dim)" }}>
                   FVM: <span style={{ color: "var(--aurora-gold)" }}>{listing.fvm} Credit</span>
