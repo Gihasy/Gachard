@@ -44,6 +44,7 @@ export default function MarketplacePage() {
   const [insight, setInsight] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ text: string; ok: boolean } | null>(null);
   const [filter, setFilter] = useState<number | null>(null);
   const [sort, setSort] = useState<string>("newest");
   const [sortOpen, setSortOpen] = useState(false);
@@ -124,12 +125,12 @@ export default function MarketplacePage() {
       const data = await res.json();
       if (res.ok) {
         await fetchListings();
-        alert("Purchase successful!");
+        setNotification({ text: "Purchase successful!", ok: true });
       } else {
-        alert(data.error || "Purchase failed");
+        setNotification({ text: data.error || "Purchase failed", ok: false });
       }
     } catch {
-      alert("Network error");
+      setNotification({ text: "Network error", ok: false });
     }
     setBuying(null);
   }
@@ -418,6 +419,54 @@ export default function MarketplacePage() {
                 Login
               </Link>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Purchase Notification Modal */}
+      {notification && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+          onClick={() => setNotification(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-6 text-center"
+            style={{
+              background: "rgba(15, 19, 36, 0.95)",
+              border: `1px solid ${notification.ok ? "rgba(0,255,136,0.3)" : "rgba(255,107,186,0.3)"}`,
+              boxShadow: `0 0 40px rgba(0,0,0,0.5), 0 0 20px ${notification.ok ? "rgba(0,255,136,0.1)" : "rgba(255,107,186,0.1)"}`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center"
+              style={{
+                background: notification.ok ? "rgba(0,255,136,0.15)" : "rgba(255,107,186,0.15)",
+              }}
+            >
+              {notification.ok ? (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12l4 4 10-10" />
+                </svg>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6bba" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              )}
+            </div>
+            <h3 className="text-base font-semibold mb-2" style={{ color: notification.ok ? "#00ff88" : "var(--aurora-pink)" }}>
+              {notification.ok ? "Purchase Successful" : "Purchase Failed"}
+            </h3>
+            <p className="text-sm mb-5" style={{ color: "var(--silver-mist-dim)" }}>
+              {notification.text}
+            </p>
+            <button
+              onClick={() => setNotification(null)}
+              className="btn-primary w-full !py-2.5"
+            >
+              OK
+            </button>
           </div>
         </div>
       )}
