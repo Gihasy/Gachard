@@ -24,18 +24,21 @@ export default function Navbar() {
   const [showCartDropdown, setShowCartDropdown] = useState(false);
   const { count: cartCount, cart, removeFromCart } = useCart();
 
-  // Mount-only: read the persisted user + attach the scroll listener.
-  // State setters from useState are guaranteed stable by React and don't need
-  // to be in the deps array; `localStorage` and `window` are globals.
   useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) setUser(JSON.parse(stored));
+    const readUser = () => {
+      const stored = localStorage.getItem("user");
+      setUser(stored ? JSON.parse(stored) : null);
+    };
+    readUser();
 
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.addEventListener("auth-change", readUser);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("auth-change", readUser);
+    };
   }, []);
 
   // Close the mobile drawer and cart dropdown whenever the route changes.

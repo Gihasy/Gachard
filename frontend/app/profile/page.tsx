@@ -124,6 +124,7 @@ export default function Profil() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     document.cookie = "gachard_uid=; path=/; max-age=0; SameSite=Lax";
+    window.dispatchEvent(new Event("auth-change"));
     router.push("/");
   };
 
