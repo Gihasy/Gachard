@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -30,6 +30,14 @@ const RARITY_COLORS: Record<number, string> = {
   3: "var(--aurora-gold)",
 };
 
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "price-high", label: "Price: High to Low" },
+  { value: "price-low", label: "Price: Low to High" },
+  { value: "popular", label: "Popular (FVM)" },
+];
+
 export default function MarketplacePage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [insight, setInsight] = useState<string | null>(null);
@@ -37,6 +45,8 @@ export default function MarketplacePage() {
   const [buying, setBuying] = useState<string | null>(null);
   const [filter, setFilter] = useState<number | null>(null);
   const [sort, setSort] = useState<string>("newest");
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [wishlistCounts, setWishlistCounts] = useState<Record<string, number>>({});
@@ -53,6 +63,15 @@ export default function MarketplacePage() {
     fetchListings();
     fetchInsight();
   }, []);
+
+  useEffect(() => {
+    if (!sortOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [sortOpen]);
 
   async function fetchListings() {
     setLoading(true);
@@ -170,23 +189,52 @@ export default function MarketplacePage() {
         ))}
 
         {/* Sort dropdown */}
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          className="ml-auto px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer"
-          style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.14)",
-            color: "var(--silver-mist)",
-            outline: "none",
-          }}
-        >
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="popular">Popular (FVM)</option>
-        </select>
+        <div ref={sortRef} className="relative ml-auto">
+          <button
+            onClick={() => setSortOpen((v) => !v)}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              color: "var(--silver-mist)",
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+              <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="14" y2="12" /><line x1="4" y1="18" x2="8" y2="18" />
+            </svg>
+            {SORT_OPTIONS.find((o) => o.value === sort)?.label || "Sort"}
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, transform: sortOpen ? "rotate(180deg)" : "none", transition: "transform 150ms" }}>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          {sortOpen && (
+            <div
+              className="absolute right-0 mt-1.5 py-1.5 rounded-xl z-40 min-w-[180px]"
+              style={{
+                background: "rgba(15, 19, 36, 0.95)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(16px)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+              }}
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setSort(opt.value); setSortOpen(false); }}
+                  className="w-full text-left px-4 py-2 text-xs font-medium transition-colors"
+                  style={{
+                    color: sort === opt.value ? "var(--aurora-gold)" : "var(--silver-mist)",
+                    background: sort === opt.value ? "rgba(255,196,102,0.08)" : "transparent",
+                  }}
+                  onMouseEnter={(e) => { if (sort !== opt.value) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                  onMouseLeave={(e) => { if (sort !== opt.value) e.currentTarget.style.background = "transparent"; }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {loading ? (
