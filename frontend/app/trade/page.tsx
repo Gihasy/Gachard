@@ -38,7 +38,7 @@ const SORT_OPTIONS = [
   { value: "price-low", label: "Price: Low to High" },
   { value: "fvm-high", label: "FVM: High to Low" },
   { value: "fvm-low", label: "FVM: Low to High" },
-  { value: "popular", label: "Popular (Wishlist)" },
+  { value: "popular", label: "Popular" },
 ];
 
 export default function MarketplacePage() {
