@@ -12,7 +12,7 @@ export default function HomeCoreLoop() {
         className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10"
       >
         <div
-          className="relative overflow-hidden rounded-[20px] py-16 sm:py-24 px-6 sm:px-12 lg:px-16"
+          className="relative rounded-[20px] py-10 sm:py-14 lg:py-16 px-6 sm:px-10 lg:px-14"
           style={{
             background: "linear-gradient(135deg, #171f35 0%, #111827 100%)",
             border: "1px solid rgba(255,255,255,0.08)",
@@ -27,7 +27,7 @@ export default function HomeCoreLoop() {
             }}
           />
         {/* Text content */}
-        <div className="mb-12 sm:mb-16">
+        <div className="mb-8 sm:mb-12">
           <p
             className="text-[0.72rem] uppercase tracking-[0.25em] mb-3 font-semibold"
             style={{ color: "#C9A84C" }}
@@ -56,11 +56,11 @@ export default function HomeCoreLoop() {
         <div className="flex flex-col items-center">
           <div className="relative flex items-center justify-center gap-4 sm:gap-8 lg:gap-12">
             {/* Digital card */}
-            <div className="relative" style={{ transform: "rotate(-8deg)" }}>
+            <div className="relative" style={{ transform: "rotate(-6deg)" }}>
               <div
                 className="relative overflow-hidden rounded-[16px]"
                 style={{
-                  width: "clamp(200px, 28vw, 340px)",
+                  width: "clamp(140px, 28vw, 380px)",
                   aspectRatio: "5/7",
                 }}
               >
@@ -68,7 +68,7 @@ export default function HomeCoreLoop() {
                   src="/cards/digital-card.webp"
                   alt="Digital Gachard card"
                   fill
-                  sizes="(max-width: 640px) 200px, (max-width: 1024px) 280px, 340px"
+                  sizes="(max-width: 640px) 140px, (max-width: 1024px) 280px, 380px"
                   className="object-cover"
                 />
               </div>
@@ -127,11 +127,11 @@ export default function HomeCoreLoop() {
             </div>
 
             {/* Physical card */}
-            <div className="relative" style={{ transform: "rotate(8deg)" }}>
+            <div className="relative" style={{ transform: "rotate(6deg)" }}>
               <div
                 className="relative overflow-hidden rounded-[16px]"
                 style={{
-                  width: "clamp(200px, 28vw, 340px)",
+                  width: "clamp(140px, 28vw, 380px)",
                   aspectRatio: "5/7",
                 }}
               >
@@ -139,7 +139,7 @@ export default function HomeCoreLoop() {
                   src="/cards/real-card.webp"
                   alt="Physical Gachard card"
                   fill
-                  sizes="(max-width: 640px) 200px, (max-width: 1024px) 280px, 340px"
+                  sizes="(max-width: 640px) 140px, (max-width: 1024px) 280px, 380px"
                   className="object-cover"
                 />
               </div>
