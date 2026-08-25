@@ -270,6 +270,24 @@ export default function CardItem({
           <p className="text-xs font-medium text-white truncate">
             {cardId ? `Card ID: #${cardId}` : tokenId !== null ? `Card #${tokenId}` : templateId}
           </p>
+
+          {/* QR Code for scan */}
+          {tokenId !== null && (
+            <div className="flex items-center gap-2 mt-1.5 mb-1.5 p-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.03)" }}>
+              <img
+                src={`/api/cards/${tokenId}/qr`}
+                alt={`QR #${cardId ?? tokenId}`}
+                className="w-8 h-8 rounded shrink-0"
+                loading="lazy"
+              />
+              <div className="min-w-0">
+                <p className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: "var(--electric-blue)" }}>
+                  Scan for Details
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center justify-between gap-1 mt-1">
             <span
               className={`tag tag-${RARITY_LABELS[rarityLevel].toLowerCase()} text-[0.55rem]`}
