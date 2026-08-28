@@ -19,6 +19,9 @@ export async function connectToDatabase(): Promise<Db> {
   await client.connect();
   db = client.db(DATABASE_NAME);
 
+  // Ensure unique index on supporters.email (idempotent, runs once per cold start)
+  await db.collection("supporters").createIndex({ email: 1 }, { unique: true }).catch(() => {});
+
   return db;
 }
 

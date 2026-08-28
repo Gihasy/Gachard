@@ -22,6 +22,7 @@ async function doCleanSlate(req: NextRequest) {
       "payments",
       "listings",
       "wishlist",
+      "supporters",
     ];
 
     if (includeUsers) {
