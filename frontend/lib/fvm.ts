@@ -10,7 +10,7 @@ export async function getFVM(templateId: string): Promise<FVMResult> {
 
   // Level 1: same templateId
   const templateSold = await txCollection
-    .find({ type: "sold", templateId, status: "confirmed" })
+    .find({ type: "sold", templateId, status: "confirmed", flagged: { $ne: true } })
     .toArray();
 
   if (templateSold.length > 0) {
@@ -26,7 +26,7 @@ export async function getFVM(templateId: string): Promise<FVMResult> {
   if (!template) return { fvm: null, source: "none" };
 
   const raritySold = await txCollection
-    .find({ type: "sold", rarity: template.rarity, status: "confirmed" })
+    .find({ type: "sold", rarity: template.rarity, status: "confirmed", flagged: { $ne: true } })
     .toArray();
 
   if (raritySold.length > 0) {

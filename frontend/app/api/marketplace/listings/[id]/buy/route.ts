@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { ObjectId } from "mongodb";
 import { getListingById, markListingSold } from "@/lib/listings";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
 import { deductCredits, addCredits } from "@/lib/credits";
-import { marketplaceTransfer, waitForReceipt } from "@/lib/blockchain";
+import { marketplaceTransfer, waitForReceipt, recordVerification } from "@/lib/blockchain";
+import { calculateTradeSignals } from "@/lib/fraud-signals";
+import { calculateRiskScore } from "@/lib/risk-score";
 
 const MARKETPLACE_FEE_PERCENT = 8;
 
@@ -88,7 +91,7 @@ export async function POST(
 
     // Record transaction — use ACTUAL rarity from card
     const txCol = await getCollection("transactions");
-    await txCol.insertOne({
+    const soldTxResult = await txCol.insertOne({
       _id: new ObjectId(),
       userId,
       type: "sold",
@@ -107,6 +110,35 @@ export async function POST(
       error: "",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+    });
+
+    // Post-transaction risk scoring via after() — platform keeps function alive until complete
+    after(async () => {
+      try {
+        const signals = await calculateTradeSignals(
+          listing.tokenId,
+          buyer.walletAddress,
+          listing.sellerWalletAddress,
+          listing.price,
+          listing.templateId
+        );
+        const risk = await calculateRiskScore(signals);
+
+        // Update the exact sold transaction by its _id — no time-window guessing
+        await txCol.updateOne(
+          { _id: soldTxResult.insertedId },
+          { $set: { riskScore: risk.riskScore, flagged: risk.flagged, riskReasoning: risk.reasoning } }
+        );
+
+        // Post to on-chain oracle
+        try {
+          await recordVerification(listing.tokenId, risk.riskScore, risk.flagged);
+        } catch (err) {
+          console.error("[marketplace/buy] on-chain recordVerification failed:", err);
+        }
+      } catch (err) {
+        console.error("[marketplace/buy] risk scoring failed:", err);
+      }
     });
 
     // Record "listed" transaction for seller
