@@ -1,16 +1,17 @@
 /**
- * Seed marketplace demo data — dummy "sold" transactions for FVM and Trade page demo.
+ * Seed marketplace demo data — REAL on-chain transactions with txHash.
  * Run: cd frontend && npx tsx scripts/seed-marketplace.ts
  *
- * IMPORTANT: Uses existing demo users only. Does NOT create new users.
- * Creates ownership chains on specific cards (A->B->C->D) for demo richness.
+ * Every "sold" transaction executes marketplaceTransfer() on-chain
+ * and records the real txHash.
  */
 
 import { MongoClient, ObjectId } from "mongodb";
+import { ethers } from "ethers";
 import * as fs from "fs";
 import * as path from "path";
 
-// Read .env.local manually (same pattern as clean-slate.ts)
+// Read .env.local manually
 const envPath = path.resolve(__dirname, "../.env.local");
 const envContent = fs.readFileSync(envPath, "utf-8");
 const env: Record<string, string> = {};
@@ -23,8 +24,17 @@ for (const line of envContent.split("\n")) {
 
 const MONGODB_URL = env.MONGODB_URL || process.env.MONGODB_URL || "";
 const CONTRACT_ADDRESS = env.CONTRACT_ADDRESS || process.env.CONTRACT_ADDRESS || "";
+const RPC_URL = env.BSC_TESTNET_RPC || process.env.BSC_TESTNET_RPC || "";
+const PRIVATE_KEY = env.ADMIN_PRIVATE_KEY || process.env.ADMIN_PRIVATE_KEY || "";
 
-// Rarity price ranges (in cents/Credit)
+// Minimal ABI for seed operations
+const ABI = [
+  "function mintCard(address to, uint8 rarity) external returns (uint256 tokenId)",
+  "function marketplaceTransfer(uint256 tokenId, address from, address to) external",
+  "function balanceOf(address account, uint256 id) external view returns (uint256)",
+  "function nextTokenId() external view returns (uint256)",
+];
+
 const PRICE_RANGES: Record<number, { min: number; max: number; count: [number, number] }> = {
   0: { min: 50, max: 150, count: [6, 7] },
   1: { min: 200, max: 500, count: [5, 6] },
@@ -50,7 +60,35 @@ function pastDate(daysAgo: number, jitterDays = 3) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyDoc = any;
 
+async function mintCard(contract: ethers.Contract, toAddress: string, rarity: number): Promise<number> {
+  const tx = await contract.mintCard(toAddress, rarity);
+  const receipt = await tx.wait();
+  // Parse tokenId from CardMinted event
+  const log = receipt.logs.find((l: ethers.Log) => {
+    try {
+      const parsed = contract.interface.parseLog(l);
+      return parsed?.name === "CardMinted";
+    } catch { return false; }
+  });
+  if (!log) throw new Error("CardMinted event not found");
+  const parsed = contract.interface.parseLog(log);
+  return Number(parsed!.args[0]);
+}
+
+async function transferCard(contract: ethers.Contract, tokenId: number, from: string, to: string): Promise<string> {
+  const tx = await contract.marketplaceTransfer(tokenId, from, to);
+  const receipt = await tx.wait();
+  return receipt.hash;
+}
+
 async function seed() {
+  const provider = new ethers.JsonRpcProvider(RPC_URL);
+  const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+  const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, wallet);
+
+  console.log(`Admin wallet: ${wallet.address}`);
+  console.log(`Contract: ${CONTRACT_ADDRESS}`);
+
   const client = new MongoClient(MONGODB_URL);
   await client.connect();
   const db = client.db();
@@ -58,7 +96,6 @@ async function seed() {
   const usersCol = db.collection("users");
   const cardsCol = db.collection("cards");
   const txCol = db.collection("transactions");
-  const templatesCol = db.collection("card_templates");
 
   // Get existing demo users
   const users = await usersCol.find({}).toArray();
@@ -68,163 +105,170 @@ async function seed() {
   }
   console.log(`Found ${users.length} users`);
 
-  // Get existing cards (Digital status, not listed)
-  const cards = await cardsCol
-    .find({ status: "Digital" })
-    .sort({ tokenId: 1 })
-    .toArray();
-  if (cards.length < 10) {
-    console.error("Need at least 10 Digital cards. Found:", cards.length);
-    process.exit(1);
-  }
-  console.log(`Found ${cards.length} Digital cards`);
-
-  // Get templates for rarity info
-  const templates = await templatesCol.find({}).toArray();
-
   // Clear existing sold transactions
   const deleteResult = await txCol.deleteMany({ type: "sold" });
   console.log(`Deleted ${deleteResult.deletedCount} existing sold transactions`);
 
   const transactions: AnyDoc[] = [];
-  let txTimestamp = 21; // days ago, will count down
 
-  // === OWNERSHIP CHAINS (3 cards with multiple trades) ===
-  const cardsByRarity = new Map<number, typeof cards>();
-  for (const card of cards) {
-    const r = card.rarity ?? 0;
-    if (!cardsByRarity.has(r)) cardsByRarity.set(r, []);
-    cardsByRarity.get(r)!.push(card);
-  }
-
-  // Chain 1: Legendary card — 5 trades (needs 6 users)
-  const chain1Card = cardsByRarity.get(3)?.[0] || cardsByRarity.get(2)?.[0] || cards[0];
-  // Chain 2: Epic card — 4 trades (needs 5 users)
-  const chain2Card = cardsByRarity.get(2)?.[0] || cardsByRarity.get(1)?.[0] || cards[1];
-  // Chain 3: Rare card — 3 trades (needs 4 users)
-  const chain3Card = cardsByRarity.get(1)?.[0] || cards[2];
-
+  // === OWNERSHIP CHAINS (3 cards with multiple trades, REAL on-chain) ===
   const chainConfigs = [
-    { card: chain1Card, trades: 5, basePrice: chain1Card.rarity === 3 ? 2000 : 800, variance: 300 },
-    { card: chain2Card, trades: 4, basePrice: chain2Card.rarity === 2 ? 900 : 400, variance: 200 },
-    { card: chain3Card, trades: 3, basePrice: chain3Card.rarity === 1 ? 350 : 100, variance: 100 },
+    { rarity: 3, trades: 5, basePrice: 2000, variance: 300, label: "Legendary" },
+    { rarity: 2, trades: 4, basePrice: 900, variance: 200, label: "Epic" },
+    { rarity: 1, trades: 3, basePrice: 350, variance: 100, label: "Rare" },
   ];
+
+  const usedTokenIds = new Set<number>();
 
   for (const chain of chainConfigs) {
     const chainUsers = users.slice(0, chain.trades + 1);
+
+    // Mint card to first user in chain
+    const tokenId = await mintCard(contract, chainUsers[0].walletAddress, chain.rarity);
+    usedTokenIds.add(tokenId);
+    console.log(`Minted tokenId ${tokenId} (${chain.label}) to ${chainUsers[0].username}`);
+
+    // Update MongoDB card record
+    await cardsCol.updateOne(
+      { tokenId },
+      { $set: { ownerAddress: chainUsers[0].walletAddress, status: "Digital", updatedAt: new Date().toISOString() } }
+    );
+
     let price = chain.basePrice;
 
     for (let i = 0; i < chain.trades; i++) {
       price = Math.max(50, price + randomInt(-chain.variance, chain.variance));
       price = Math.round(price / 10) * 10;
 
-      const rarity = chain.card.rarity ?? 0;
-      const templateId = chain.card.templateId;
-      const daysBack = txTimestamp - i * 2;
       const fromUser = chainUsers[i];
       const toUser = chainUsers[i + 1];
+
+      // Execute REAL on-chain transfer
+      const txHash = await transferCard(contract, tokenId, fromUser.walletAddress, toUser.walletAddress);
+      console.log(`  Transfer ${tokenId}: ${fromUser.username} → ${toUser.username} | txHash=${txHash.slice(0, 18)}...`);
 
       transactions.push({
         _id: new ObjectId(),
         userId: toUser._id.toString(),
         type: "sold",
-        tokenId: chain.card.tokenId,
-        tokenIds: [chain.card.tokenId],
-        rarity,
-        rarities: [rarity],
-        templateIds: [templateId],
+        tokenId,
+        tokenIds: [tokenId],
+        rarity: chain.rarity,
+        rarities: [chain.rarity],
+        templateIds: [`template-${chain.label.toLowerCase()}`],
         amount: price,
         purchasePrice: price,
-        txHash: null,
+        txHash,
         status: "confirmed",
         contractAddress: CONTRACT_ADDRESS,
-        fromAddress: fromUser.walletAddress || "0x0000000000000000000000000000000000000000",
-        toAddress: toUser.walletAddress || "0x0000000000000000000000000000000000000000",
+        fromAddress: fromUser.walletAddress,
+        toAddress: toUser.walletAddress,
         error: "",
-        createdAt: pastDate(daysBack),
-        updatedAt: pastDate(daysBack),
+        createdAt: pastDate(21 - i * 2),
+        updatedAt: pastDate(21 - i * 2),
       });
     }
-    console.log(`Chain: ${chain.card.cardId} (${["Common", "Rare", "Epic", "Legendary"][chain.card.rarity ?? 0]}) — ${chain.trades} trades`);
+
+    // Update card owner to final buyer
+    const finalOwner = chainUsers[chain.trades];
+    await cardsCol.updateOne(
+      { tokenId },
+      { $set: { ownerAddress: finalOwner.walletAddress, updatedAt: new Date().toISOString() } }
+    );
+    console.log(`  Card ${tokenId} final owner: ${finalOwner.username}`);
   }
 
-  // === INDEPENDENT SOLD TRANSACTIONS (fill up per rarity) ===
-  const usedCardIds = new Set(chainConfigs.map((c) => c.card.cardId));
-
+  // === INDEPENDENT SOLD TRANSACTIONS (1 trade per card, REAL on-chain) ===
   for (const [rarityStr, config] of Object.entries(PRICE_RANGES)) {
     const rarity = parseInt(rarityStr);
     const count = randomInt(config.count[0], config.count[1]);
-    const rarityCards = cards.filter(
-      (c) => (c.rarity ?? 0) === rarity && !usedCardIds.has(c.cardId)
-    );
 
-    for (let i = 0; i < count && i < rarityCards.length; i++) {
-      const card = rarityCards[i];
-      usedCardIds.add(card.cardId);
-      const price = randomPrice(config.min, config.max);
+    for (let i = 0; i < count; i++) {
       const sellerIdx = randomInt(0, users.length - 1);
       let buyerIdx = randomInt(0, users.length - 1);
       while (buyerIdx === sellerIdx) buyerIdx = randomInt(0, users.length - 1);
 
       const seller = users[sellerIdx];
       const buyer = users[buyerIdx];
+      const price = randomPrice(config.min, config.max);
+
+      // Mint to seller, then transfer to buyer
+      const tokenId = await mintCard(contract, seller.walletAddress, rarity);
+      usedTokenIds.add(tokenId);
+      const txHash = await transferCard(contract, tokenId, seller.walletAddress, buyer.walletAddress);
+      console.log(`Independent ${["Common", "Rare", "Epic", "Legendary"][rarity]}: tokenId ${tokenId} | ${seller.username} → ${buyer.username} | txHash=${txHash.slice(0, 18)}...`);
+
+      // Update MongoDB card
+      await cardsCol.updateOne(
+        { tokenId },
+        { $set: { ownerAddress: buyer.walletAddress, status: "Digital", updatedAt: new Date().toISOString() } }
+      );
 
       transactions.push({
         _id: new ObjectId(),
         userId: buyer._id.toString(),
         type: "sold",
-        tokenId: card.tokenId,
-        tokenIds: [card.tokenId],
+        tokenId,
+        tokenIds: [tokenId],
         rarity,
         rarities: [rarity],
-        templateIds: [card.templateId],
+        templateIds: [`template-r${rarity}`],
         amount: price,
         purchasePrice: price,
-        txHash: null,
+        txHash,
         status: "confirmed",
         contractAddress: CONTRACT_ADDRESS,
-        fromAddress: seller.walletAddress || "0x0000000000000000000000000000000000000000",
-        toAddress: buyer.walletAddress || "0x0000000000000000000000000000000000000000",
+        fromAddress: seller.walletAddress,
+        toAddress: buyer.walletAddress,
         error: "",
-        createdAt: pastDate(txTimestamp - i * 3),
-        updatedAt: pastDate(txTimestamp - i * 3),
+        createdAt: pastDate(21 - i * 3),
+        updatedAt: pastDate(21 - i * 3),
       });
     }
     console.log(`Independent: ${count} ${["Common", "Rare", "Epic", "Legendary"][rarity]} transactions`);
   }
 
-  // === WASH-TRADING DEMO CASE ===
-  // 3 rapid trades between same 2 wallets, escalating prices
-  const washCard = cardsByRarity.get(1)?.[1] || cardsByRarity.get(1)?.[0] || cards[3];
+  // === WASH-TRADING DEMO CASE (3 rapid trades, REAL on-chain) ===
   const washUserA = users[0];
   const washUserB = users[1];
   const washPrices = [300, 600, 1200];
   const washRiskScores = [45, 72, 92];
 
+  // Mint wash-trading card to user A
+  const washTokenId = await mintCard(contract, washUserA.walletAddress, 1);
+  console.log(`Wash-trading: minted tokenId ${washTokenId} (Rare) to ${washUserA.username}`);
+
+  await cardsCol.updateOne(
+    { tokenId: washTokenId },
+    { $set: { ownerAddress: washUserA.walletAddress, status: "Digital", updatedAt: new Date().toISOString() } }
+  );
+
   for (let i = 0; i < 3; i++) {
     const fromUser = i % 2 === 0 ? washUserA : washUserB;
     const toUser = i % 2 === 0 ? washUserB : washUserA;
-    const daysBack = 5 - i; // 5, 4, 3 days ago — rapid succession
+
+    const txHash = await transferCard(contract, washTokenId, fromUser.walletAddress, toUser.walletAddress);
+    console.log(`  Wash trade ${i + 1}: ${fromUser.username} → ${toUser.username} | price=${washPrices[i]} | txHash=${txHash.slice(0, 18)}...`);
 
     transactions.push({
       _id: new ObjectId(),
       userId: toUser._id.toString(),
       type: "sold",
-      tokenId: washCard.tokenId,
-      tokenIds: [washCard.tokenId],
-      rarity: washCard.rarity ?? 1,
-      rarities: [washCard.rarity ?? 1],
-      templateIds: [washCard.templateId],
+      tokenId: washTokenId,
+      tokenIds: [washTokenId],
+      rarity: 1,
+      rarities: [1],
+      templateIds: ["template-rare"],
       amount: washPrices[i],
       purchasePrice: washPrices[i],
-      txHash: null,
+      txHash,
       status: "confirmed",
       contractAddress: CONTRACT_ADDRESS,
-      fromAddress: fromUser.walletAddress || "0x0000000000000000000000000000000000000000",
-      toAddress: toUser.walletAddress || "0x0000000000000000000000000000000000000000",
+      fromAddress: fromUser.walletAddress,
+      toAddress: toUser.walletAddress,
       error: "",
-      createdAt: pastDate(daysBack),
-      updatedAt: pastDate(daysBack),
+      createdAt: pastDate(5 - i),
+      updatedAt: pastDate(5 - i),
       riskScore: washRiskScores[i],
       flagged: washRiskScores[i] >= 70,
       riskReasoning: washRiskScores[i] >= 70
@@ -232,31 +276,19 @@ async function seed() {
         : "Transaksi awal dalam pola yang baru terbentuk",
     });
   }
-  console.log(`Wash-trading demo: 3 trades on ${washCard.cardId} between ${washUserA.username} and ${washUserB.username}`);
 
-  // Insert all
+  // Update wash card final owner
+  await cardsCol.updateOne(
+    { tokenId: washTokenId },
+    { $set: { ownerAddress: washUserB.walletAddress, updatedAt: new Date().toISOString() } }
+  );
+
+  // Insert all transactions
   if (transactions.length > 0) {
     await txCol.insertMany(transactions);
   }
 
-  // Update cards used in ownership chains to match final owner
-  for (const chain of chainConfigs) {
-    const chainUsers = users.slice(0, chain.trades + 1);
-    const finalOwner = chainUsers[chain.trades]; // last buyer in chain
-    await cardsCol.updateOne(
-      { cardId: chain.card.cardId },
-      {
-        $set: {
-          ownerAddress: finalOwner.walletAddress || "",
-          lastOwner: finalOwner.walletAddress || "",
-          updatedAt: new Date().toISOString(),
-        },
-      }
-    );
-    console.log(`Updated card ${chain.card.cardId} owner to ${finalOwner.username || finalOwner._id}`);
-  }
-
-  console.log(`\nSeeded ${transactions.length} sold transactions total`);
+  console.log(`\nSeeded ${transactions.length} sold transactions — ALL with real on-chain txHash`);
   await client.close();
 }
 
