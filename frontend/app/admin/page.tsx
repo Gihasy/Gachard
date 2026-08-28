@@ -26,6 +26,9 @@ type AdminTx = {
   createdAt: string;
   updatedAt: string;
   error: string | null;
+  riskScore: number | null;
+  flagged: boolean;
+  riskReasoning: string | null;
 };
 
 type AdminCard = {
@@ -340,30 +343,62 @@ function UsersTable({ users }: { users: AdminUser[] }) {
 
 /* ─── Transactions ─── */
 function TxsTable({ txs }: { txs: AdminTx[] }) {
+  const [expandedTx, setExpandedTx] = useState<string | null>(null);
+
   return (
-    <TableShell head={<><TH>Invoice ID</TH><TH>txHash</TH><TH>Status</TH><TH>Type</TH><TH>Timestamp</TH></>}>
+    <TableShell head={<><TH>Invoice ID</TH><TH>txHash</TH><TH>Status</TH><TH>Type</TH><TH>Risk</TH><TH>Timestamp</TH></>}>
       {txs.length === 0 ? (
-        <tr><td colSpan={5} className="p-8 text-center text-white/40">No transactions found</td></tr>
+        <tr><td colSpan={6} className="p-8 text-center text-white/40">No transactions found</td></tr>
       ) : (
         txs.map((tx) => (
-          <tr key={tx.rawId} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
-            <td className="px-4 py-3.5">
-              <div className="font-mono text-xs text-white/90">{tx.id}</div>
-              <div className="text-[0.6rem] text-white/35 font-mono">{tx.rawId}</div>
-            </td>
-            <td className="px-4 py-3.5 font-mono text-xs">
-              {tx.txHash ? (
-                <a href={`${BSC_TESTNET_TX}${tx.txHash}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--electric-blue)" }} className="hover:underline">
-                  {tx.txHash.slice(0, 10)}...{tx.txHash.slice(-6)}
-                </a>
-              ) : <span className="text-white/30">—</span>}
-            </td>
-            <td className="px-4 py-3.5">
-              <StatusPill status={tx.status} rgb={tx.rawStatus === "confirmed" ? "0,204,255" : tx.rawStatus === "failed" ? "255,107,186" : "255,196,102"} />
-            </td>
-            <td className="px-4 py-3.5 capitalize text-white/80">{tx.type}</td>
-            <td className="px-4 py-3.5 text-white/50">{new Date(tx.createdAt).toLocaleString()}</td>
-          </tr>
+          <>
+            <tr key={tx.rawId} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
+              <td className="px-4 py-3.5">
+                <div className="font-mono text-xs text-white/90">{tx.id}</div>
+                <div className="text-[0.6rem] text-white/35 font-mono">{tx.rawId}</div>
+              </td>
+              <td className="px-4 py-3.5 font-mono text-xs">
+                {tx.txHash ? (
+                  <a href={`${BSC_TESTNET_TX}${tx.txHash}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--electric-blue)" }} className="hover:underline">
+                    {tx.txHash.slice(0, 10)}...{tx.txHash.slice(-6)}
+                  </a>
+                ) : <span className="text-white/30">—</span>}
+              </td>
+              <td className="px-4 py-3.5">
+                <StatusPill status={tx.status} rgb={tx.rawStatus === "confirmed" ? "0,204,255" : tx.rawStatus === "failed" ? "255,107,186" : "255,196,102"} />
+              </td>
+              <td className="px-4 py-3.5 capitalize text-white/80">{tx.type}</td>
+              <td className="px-4 py-3.5">
+                {tx.riskScore !== null ? (
+                  <button
+                    onClick={() => setExpandedTx(expandedTx === tx.rawId ? null : tx.rawId)}
+                    className="flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span
+                      className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+                      style={{
+                        backgroundColor: tx.riskScore >= 70 ? "rgba(255,107,186,0.15)" : tx.riskScore >= 30 ? "rgba(255,196,102,0.15)" : "rgba(0,255,136,0.15)",
+                        color: tx.riskScore >= 70 ? "rgb(255,107,186)" : tx.riskScore >= 30 ? "rgb(255,196,102)" : "rgb(0,255,136)",
+                      }}
+                    >
+                      {tx.riskScore}
+                    </span>
+                    {tx.flagged && <span title="Flagged suspicious">🚩</span>}
+                  </button>
+                ) : (
+                  <span className="text-white/20 text-xs">—</span>
+                )}
+              </td>
+              <td className="px-4 py-3.5 text-white/50">{new Date(tx.createdAt).toLocaleString()}</td>
+            </tr>
+            {expandedTx === tx.rawId && tx.riskReasoning && (
+              <tr key={`${tx.rawId}-detail`}>
+                <td colSpan={6} className="px-4 py-2 text-xs text-white/60" style={{ backgroundColor: "rgba(255,255,255,0.02)" }}>
+                  <span className="text-white/40">Risk reasoning:</span> {tx.riskReasoning}
+                </td>
+              </tr>
+            )}
+          </>
         ))
       )}
     </TableShell>

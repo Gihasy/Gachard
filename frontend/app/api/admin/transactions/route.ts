@@ -27,6 +27,9 @@ export async function GET() {
       createdAt: tx.createdAt,
       updatedAt: tx.updatedAt,
       error: tx.error ?? null,
+      riskScore: tx.riskScore ?? null,
+      flagged: tx.flagged ?? false,
+      riskReasoning: tx.riskReasoning ?? null,
     }));
 
     return NextResponse.json(

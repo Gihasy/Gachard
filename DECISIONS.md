@@ -137,3 +137,13 @@
 **Status**: Accepted — supersedes ADR-010
 **Decision**: Implement full marketplace with listing, buying, cancelling. Cards listed via `isListed` flag (MongoDB) + `marketplaceTransfer()` on-chain. Marketplace fee 8%. FVM (Fair Value Market) calculates average sold price per template. AI-powered market insight and price suggestion via Gemini API. Print blocked while card is listed.
 **Reason**: Enhances demo value for hackathon. Shows full card lifecycle: mint → collect → trade → print → redeem. Blockchain abstraction maintained — users see Credit prices, not crypto.
+
+## ADR-025: AI Anomaly Detection Oracle untuk Trade
+**Status**: Accepted
+**Decision**: Deteksi pola wash-trading pada transaksi marketplace menggunakan pendekatan Oracle:
+1. **Sinyal deterministik** (`fraud-signals.ts`): `repeatPairCount` (frekuensi pasangan wallet), `priceDeviationPct` (penyimpangan harga dari FVM), `resaleSpeedHours` (kecepatan resale).
+2. **AI risk scoring** (`risk-score.ts`): Gemini mensintesis ketiga sinyal jadi skor 0-100. Threshold `flagged = riskScore >= 70`.
+3. **On-chain Oracle** (`recordVerification()`): Hasil skor dan flag di-post ke smart contract, tercatat permanen di blockchain.
+4. **FVM exclusion**: Transaksi dengan `flagged === true` dikecualikan dari perhitungan FVM untuk mencegah manipulasi harga.
+5. **Non-blocking**: Semua scoring terjadi SETELAH transaksi selesai — tidak pernah memblokir atau membatalkan trade.
+**Reason**: Wash-trading (A jual ke B, B jual balik ke A dengan harga naik) mengancam integritas FVM dan ekonomi marketplace. Oracle pattern memastikan hasil verifikasi transparan dan teraudit di on-chain, bukan hanya di database backend.
