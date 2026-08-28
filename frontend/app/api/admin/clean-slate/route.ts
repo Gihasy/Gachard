@@ -1,16 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 
-export async function GET() {
-  return doCleanSlate();
+export async function GET(req: NextRequest) {
+  return doCleanSlate(req);
 }
 
-export async function POST() {
-  return doCleanSlate();
+export async function POST(req: NextRequest) {
+  return doCleanSlate(req);
 }
 
-async function doCleanSlate() {
+async function doCleanSlate(req: NextRequest) {
   try {
+    const includeUsers = req.nextUrl.searchParams.get("includeUsers") === "true";
+
     const collections = [
       "cards",
       "transactions",
@@ -21,6 +23,10 @@ async function doCleanSlate() {
       "listings",
       "wishlist",
     ];
+
+    if (includeUsers) {
+      collections.push("users");
+    }
 
     const results: Record<string, number> = {};
     let totalDeleted = 0;
@@ -38,15 +44,18 @@ async function doCleanSlate() {
     }
 
     // Preserved counts
-    const usersCol = await getCollection("users");
     const templatesCol = await getCollection("card_templates");
-    const preserved = {
-      users: await usersCol.countDocuments(),
+    const preserved: Record<string, number> = {
       card_templates: await templatesCol.countDocuments(),
     };
 
+    if (!includeUsers) {
+      const usersCol = await getCollection("users");
+      preserved.users = await usersCol.countDocuments();
+    }
+
     return NextResponse.json(
-      { totalDeleted, deleted: results, preserved },
+      { totalDeleted, deleted: results, preserved, includeUsers },
       { headers: { "Cache-Control": "no-store, private" } }
     );
   } catch (error) {
