@@ -148,6 +148,46 @@ export async function POST(req: NextRequest) {
       log.push(`Independent: ${count} ${["Common", "Rare", "Epic", "Legendary"][rarity]} transactions`);
     }
 
+    // === WASH-TRADING DEMO CASE ===
+    const washCard = cardsByRarity.get(1)?.[1] || cardsByRarity.get(1)?.[0] || cards[3];
+    const washUserA = users[0];
+    const washUserB = users[1];
+    const washPrices = [300, 600, 1200];
+    const washRiskScores = [45, 72, 92];
+
+    for (let i = 0; i < 3; i++) {
+      const fromUser = i % 2 === 0 ? washUserA : washUserB;
+      const toUser = i % 2 === 0 ? washUserB : washUserA;
+      const daysBack = 5 - i;
+
+      transactions.push({
+        _id: new ObjectId(),
+        userId: toUser._id.toString(),
+        type: "sold",
+        tokenId: washCard.tokenId,
+        tokenIds: [washCard.tokenId],
+        rarity: washCard.rarity ?? 1,
+        rarities: [washCard.rarity ?? 1],
+        templateIds: [washCard.templateId],
+        amount: washPrices[i],
+        purchasePrice: washPrices[i],
+        txHash: null,
+        status: "confirmed",
+        contractAddress: process.env.CONTRACT_ADDRESS || "",
+        fromAddress: fromUser.walletAddress || "0x0000000000000000000000000000000000000000",
+        toAddress: toUser.walletAddress || "0x0000000000000000000000000000000000000000",
+        error: "",
+        createdAt: pastDate(daysBack),
+        updatedAt: pastDate(daysBack),
+        riskScore: washRiskScores[i],
+        flagged: washRiskScores[i] >= 70,
+        riskReasoning: washRiskScores[i] >= 70
+          ? "Pola wash-trading terdeteksi: pasangan wallet yang sama berulang kali dengan harga meningkat tajam"
+          : "Transaksi awal dalam pola yang baru terbentuk",
+      });
+    }
+    log.push(`Wash-trading demo: 3 trades on ${washCard.cardId} between ${washUserA.username} and ${washUserB.username}`);
+
     // Insert all
     if (transactions.length > 0) {
       await txCol.insertMany(transactions);
