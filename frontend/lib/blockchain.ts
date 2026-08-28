@@ -20,6 +20,10 @@ const GACHARD_ABI = [
   "event CardMinted(uint256 indexed tokenId, address indexed to, uint8 status, uint8 rarity)",
   "event CardStatusChanged(uint256 indexed tokenId, uint8 oldStatus, uint8 newStatus)",
   "event MarketplaceTransfer(uint256 indexed tokenId, address indexed from, address indexed to)",
+  "function recordVerification(uint256 tokenId, uint8 riskScore, bool flagged) external",
+  "function lastRiskScore(uint256 tokenId) external view returns (uint8)",
+  "function flaggedSuspicious(uint256 tokenId) external view returns (bool)",
+  "event VerificationRecorded(uint256 indexed tokenId, uint8 riskScore, bool flagged)",
 ];
 
 /**
@@ -134,6 +138,12 @@ export async function getLastOwner(tokenId: number): Promise<string> {
 export async function marketplaceTransfer(tokenId: number, fromAddress: string, toAddress: string): Promise<string> {
   const contract = getContract();
   const tx = await contract.marketplaceTransfer(tokenId, fromAddress, toAddress);
+  return tx.hash;
+}
+
+export async function recordVerification(tokenId: number, riskScore: number, flagged: boolean): Promise<string> {
+  const contract = getContract();
+  const tx = await contract.recordVerification(tokenId, riskScore, flagged);
   return tx.hash;
 }
 
