@@ -21,10 +21,13 @@ contract GachardCard is ERC1155, Ownable {
     mapping(uint256 => Rarity) public cardRarity;
     mapping(uint256 => bytes32) public storedHash;
     mapping(uint256 => address) public lastOwner;
+    mapping(uint256 => uint8) public lastRiskScore;
+    mapping(uint256 => bool) public flaggedSuspicious;
 
     event CardMinted(uint256 indexed tokenId, address indexed to, CardStatus status, Rarity rarity);
     event CardStatusChanged(uint256 indexed tokenId, CardStatus oldStatus, CardStatus newStatus);
     event MarketplaceTransfer(uint256 indexed tokenId, address indexed from, address indexed to);
+    event VerificationRecorded(uint256 indexed tokenId, uint8 riskScore, bool flagged);
 
     constructor() ERC1155("") Ownable(msg.sender) {}
 
@@ -149,6 +152,13 @@ contract GachardCard is ERC1155, Ownable {
         lastOwner[tokenId] = to;
 
         emit MarketplaceTransfer(tokenId, from, to);
+    }
+
+    function recordVerification(uint256 tokenId, uint8 riskScore, bool flagged) external onlyOwner {
+        require(riskScore <= 100, "Risk score out of range");
+        lastRiskScore[tokenId] = riskScore;
+        flaggedSuspicious[tokenId] = flagged;
+        emit VerificationRecorded(tokenId, riskScore, flagged);
     }
 
     /**

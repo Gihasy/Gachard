@@ -418,4 +418,78 @@ contract GachardCardTest is Test {
         vm.expectRevert("Sender does not own card");
         card.marketplaceTransfer(tokenId, user2, user1);
     }
+
+    // ==================== recordVerification tests ====================
+
+    function test_recordVerification_stores_risk_score() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        card.recordVerification(tokenId, 75, true);
+
+        assertEq(card.lastRiskScore(tokenId), 75);
+    }
+
+    function test_recordVerification_stores_flagged_true() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        card.recordVerification(tokenId, 85, true);
+
+        assertTrue(card.flaggedSuspicious(tokenId));
+    }
+
+    function test_recordVerification_stores_flagged_false() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        card.recordVerification(tokenId, 20, false);
+
+        assertFalse(card.flaggedSuspicious(tokenId));
+    }
+
+    function test_recordVerification_emits_event() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        vm.expectEmit(true, false, false, true);
+        emit GachardCard.VerificationRecorded(tokenId, 75, true);
+        card.recordVerification(tokenId, 75, true);
+    }
+
+    function test_recordVerification_reverts_when_not_owner() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        vm.prank(user1);
+        vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user1));
+        card.recordVerification(tokenId, 50, false);
+    }
+
+    function test_recordVerification_reverts_on_score_above_100() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        vm.expectRevert("Risk score out of range");
+        card.recordVerification(tokenId, 101, false);
+    }
+
+    function test_recordVerification_overwrites_previous_score() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        card.recordVerification(tokenId, 30, false);
+        assertEq(card.lastRiskScore(tokenId), 30);
+        assertFalse(card.flaggedSuspicious(tokenId));
+
+        card.recordVerification(tokenId, 90, true);
+        assertEq(card.lastRiskScore(tokenId), 90);
+        assertTrue(card.flaggedSuspicious(tokenId));
+    }
+
+    function test_recordVerification_score_0_and_100_boundary() public {
+        uint256 id1 = card.mintCard(user1, 0);
+        uint256 id2 = card.mintCard(user1, 0);
+
+        card.recordVerification(id1, 0, false);
+        assertEq(card.lastRiskScore(id1), 0);
+        assertFalse(card.flaggedSuspicious(id1));
+
+        card.recordVerification(id2, 100, true);
+        assertEq(card.lastRiskScore(id2), 100);
+        assertTrue(card.flaggedSuspicious(id2));
+    }
 }
