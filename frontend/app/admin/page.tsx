@@ -380,25 +380,38 @@ function TxFilterBar({
   total: number;
   filtered: number;
 }) {
-  const selectClass = "px-3 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/10 text-white/80 outline-none focus:border-white/30 appearance-none cursor-pointer";
+  const selectStyle: React.CSSProperties = {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    color: "rgba(255,255,255,0.85)",
+    borderRadius: "0.5rem",
+    padding: "0.375rem 0.75rem",
+    fontSize: "0.75rem",
+    outline: "none",
+    cursor: "pointer",
+  };
+  const optionStyle: React.CSSProperties = {
+    backgroundColor: "#1a1a2e",
+    color: "rgba(255,255,255,0.85)",
+  };
   return (
     <div className="flex flex-wrap items-center gap-3 mb-4" data-testid="tx-filters">
       <div className="flex items-center gap-2">
         <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Type</span>
-        <select value={typeFilter} onChange={(e) => onTypeChange(e.target.value)} className={selectClass}>
-          <option value="all">All</option>
-          {txTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+        <select value={typeFilter} onChange={(e) => onTypeChange(e.target.value)} style={selectStyle}>
+          <option value="all" style={optionStyle}>All</option>
+          {txTypes.map((t) => <option key={t} value={t} style={optionStyle}>{t}</option>)}
         </select>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Risk</span>
-        <select value={riskFilter} onChange={(e) => onRiskChange(e.target.value)} className={selectClass}>
-          <option value="all">All</option>
-          <option value="flagged">🚩 Flagged</option>
-          <option value="high">High (≥70)</option>
-          <option value="medium">Medium (30-69)</option>
-          <option value="low">Low (&lt;30)</option>
-          <option value="none">No Score</option>
+        <select value={riskFilter} onChange={(e) => onRiskChange(e.target.value)} style={selectStyle}>
+          <option value="all" style={optionStyle}>All</option>
+          <option value="flagged" style={optionStyle}>Flagged</option>
+          <option value="high" style={optionStyle}>High (&#8805;70)</option>
+          <option value="medium" style={optionStyle}>Medium (30-69)</option>
+          <option value="low" style={optionStyle}>Low (&lt;30)</option>
+          <option value="none" style={optionStyle}>No Score</option>
         </select>
       </div>
       {filtered !== total && (
