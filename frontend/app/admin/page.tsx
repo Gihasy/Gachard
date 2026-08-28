@@ -132,6 +132,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [confirmingAll, setConfirmingAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [txTypeFilter, setTxTypeFilter] = useState<string>("all");
+  const [txRiskFilter, setTxRiskFilter] = useState<string>("all");
 
   const fetchAll = useCallback(() => {
     setLoading(true);
@@ -160,9 +162,21 @@ export default function AdminPage() {
     fetchAll();
   }, [fetchAll]);
 
+  const filteredTxs = txs.filter((tx) => {
+    if (txTypeFilter !== "all" && tx.type !== txTypeFilter) return false;
+    if (txRiskFilter === "flagged" && !tx.flagged) return false;
+    if (txRiskFilter === "high" && (tx.riskScore === null || tx.riskScore < 70)) return false;
+    if (txRiskFilter === "medium" && (tx.riskScore === null || tx.riskScore < 30 || tx.riskScore >= 70)) return false;
+    if (txRiskFilter === "low" && (tx.riskScore === null || tx.riskScore >= 30)) return false;
+    if (txRiskFilter === "none" && tx.riskScore !== null) return false;
+    return true;
+  });
+
+  const txTypes = [...new Set(txs.map((t) => t.type))].sort();
+
   const count =
     tab === "users" ? users.length :
-    tab === "transactions" ? txs.length :
+    tab === "transactions" ? filteredTxs.length :
     tab === "cards" ? cards.length :
     tab === "prints" ? prints.length : pendingCards.length;
 
@@ -259,7 +273,20 @@ export default function AdminPage() {
             {count} record{count === 1 ? "" : "s"}
           </p>
           {tab === "users" && <UsersTable users={users} />}
-          {tab === "transactions" && <TxsTable txs={txs} />}
+          {tab === "transactions" && (
+            <>
+              <TxFilterBar
+                txTypes={txTypes}
+                typeFilter={txTypeFilter}
+                onTypeChange={setTxTypeFilter}
+                riskFilter={txRiskFilter}
+                onRiskChange={setTxRiskFilter}
+                total={txs.length}
+                filtered={filteredTxs.length}
+              />
+              <TxsTable txs={filteredTxs} />
+            </>
+          )}
           {tab === "cards" && <CardsTable cards={cards} />}
           {tab === "prints" && <PrintRequestsTable prints={prints} onAccept={fetchAll} />}
           {tab === "health" && (
@@ -342,6 +369,45 @@ function UsersTable({ users }: { users: AdminUser[] }) {
 }
 
 /* ─── Transactions ─── */
+function TxFilterBar({
+  txTypes, typeFilter, onTypeChange, riskFilter, onRiskChange, total, filtered,
+}: {
+  txTypes: string[];
+  typeFilter: string;
+  onTypeChange: (v: string) => void;
+  riskFilter: string;
+  onRiskChange: (v: string) => void;
+  total: number;
+  filtered: number;
+}) {
+  const selectClass = "px-3 py-1.5 rounded-lg text-xs bg-white/[0.04] border border-white/10 text-white/80 outline-none focus:border-white/30 appearance-none cursor-pointer";
+  return (
+    <div className="flex flex-wrap items-center gap-3 mb-4" data-testid="tx-filters">
+      <div className="flex items-center gap-2">
+        <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Type</span>
+        <select value={typeFilter} onChange={(e) => onTypeChange(e.target.value)} className={selectClass}>
+          <option value="all">All</option>
+          {txTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Risk</span>
+        <select value={riskFilter} onChange={(e) => onRiskChange(e.target.value)} className={selectClass}>
+          <option value="all">All</option>
+          <option value="flagged">🚩 Flagged</option>
+          <option value="high">High (≥70)</option>
+          <option value="medium">Medium (30-69)</option>
+          <option value="low">Low (&lt;30)</option>
+          <option value="none">No Score</option>
+        </select>
+      </div>
+      {filtered !== total && (
+        <span className="text-[0.6rem] text-white/30 ml-2">{filtered} of {total}</span>
+      )}
+    </div>
+  );
+}
+
 function TxsTable({ txs }: { txs: AdminTx[] }) {
   const [expandedTx, setExpandedTx] = useState<string | null>(null);
 
