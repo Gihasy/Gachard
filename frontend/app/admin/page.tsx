@@ -88,7 +88,14 @@ type PendingCard = {
   isStale: boolean;
 };
 
-type TabKey = "users" | "transactions" | "cards" | "prints" | "health";
+type TabKey = "users" | "transactions" | "cards" | "prints" | "health" | "supporters";
+
+type AdminSupporter = {
+  id: string;
+  email: string;
+  message: string;
+  createdAt: string;
+};
 
 const TAB_META: Record<TabKey, { label: string; icon: React.ReactNode }> = {
   users: {
@@ -121,6 +128,12 @@ const TAB_META: Record<TabKey, { label: string; icon: React.ReactNode }> = {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
     ),
   },
+  supporters: {
+    label: "Supporters",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+    ),
+  },
 };
 
 export default function AdminPage() {
@@ -131,6 +144,7 @@ export default function AdminPage() {
   const [prints, setPrints] = useState<PrintRequest[]>([]);
   const [pendingCards, setPendingCards] = useState<PendingCard[]>([]);
   const [pendingMeta, setPendingMeta] = useState({ total: 0, staleCount: 0, avgPendingMinutes: 0 });
+  const [supporters, setSupporters] = useState<AdminSupporter[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmingAll, setConfirmingAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,14 +161,16 @@ export default function AdminPage() {
       fetch("/api/admin/cards").then((r) => r.json()),
       fetch("/api/admin/print-requests").then((r) => r.json()),
       fetch("/api/admin/pending-cards").then((r) => r.json()),
+      fetch("/api/admin/supporters").then((r) => r.json()),
     ])
-      .then(([usersData, txsData, cardsData, printsData, pendingData]) => {
+      .then(([usersData, txsData, cardsData, printsData, pendingData, supportersData]) => {
         setUsers(usersData.users ?? []);
         setTxs(txsData.transactions ?? []);
         setCards(cardsData.cards ?? []);
         setPrints(printsData.printRequests ?? []);
         setPendingCards(pendingData.cards ?? []);
         setPendingMeta({ total: pendingData.total ?? 0, staleCount: pendingData.staleCount ?? 0, avgPendingMinutes: pendingData.avgPendingMinutes ?? 0 });
+        setSupporters(supportersData.supporters ?? []);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -180,7 +196,8 @@ export default function AdminPage() {
     tab === "users" ? users.length :
     tab === "transactions" ? filteredTxs.length :
     tab === "cards" ? cards.length :
-    tab === "prints" ? prints.length : pendingCards.length;
+    tab === "prints" ? prints.length :
+    tab === "supporters" ? supporters.length : pendingCards.length;
 
   const pendingPrints = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) !== "Real").length;
   const newPrintRequests = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) === "Locked").length;
@@ -205,18 +222,19 @@ export default function AdminPage() {
       description="Manage users, monitor on-chain transactions, and fulfil physical card print requests."
     >
       {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
         <SummaryCard label="Users" value={users.length} color="var(--electric-blue)" active={tab === "users"} onClick={() => setTab("users")} />
         <SummaryCard label="Transactions" value={txs.length} color="var(--cosmic-violet)" active={tab === "transactions"} onClick={() => setTab("transactions")} />
         <SummaryCard label="Cards" value={cards.length} color="var(--aurora-pink)" active={tab === "cards"} onClick={() => setTab("cards")} />
         <SummaryCard label="Pending Prints" value={pendingPrints} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} hasNotification={newPrintRequests > 0} />
         <SummaryCard label="Pending Mints" value={pendingMeta.total} color={pendingMeta.staleCount > 0 ? "#ff6bba" : "var(--electric-blue)"} active={tab === "health"} onClick={() => setTab("health")} hasNotification={pendingMeta.staleCount > 0} />
+        <SummaryCard label="Supporters" value={supporters.length} color="var(--aurora-pink)" active={tab === "supporters"} onClick={() => setTab("supporters")} />
       </div>
 
       {/* Tabs */}
       <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
         <div className="flex gap-2 flex-wrap">
-          {(["users", "transactions", "cards", "prints", "health"] as const).map((t) => {
+          {(["users", "transactions", "cards", "prints", "health", "supporters"] as const).map((t) => {
             const isActive = tab === t;
             return (
               <button
@@ -299,6 +317,7 @@ export default function AdminPage() {
               onConfirmAll={handleConfirmAll}
             />
           )}
+          {tab === "supporters" && <SupportersTable supporters={supporters} />}
         </>
       )}
     </PageShell>
@@ -874,5 +893,26 @@ function HealthTable({
         </TableShell>
       )}
     </div>
+  );
+}
+
+/* ─── Supporters ─── */
+function SupportersTable({ supporters }: { supporters: AdminSupporter[] }) {
+  return (
+    <TableShell head={<><TH>Email</TH><TH>Message</TH><TH>Submitted</TH></>}>
+      {supporters.length === 0 ? (
+        <tr><td colSpan={3} className="p-8 text-center text-white/40">No supporters yet</td></tr>
+      ) : (
+        supporters.map((s) => (
+          <tr key={s.id} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
+            <td className="px-4 py-3.5 text-white/90">{s.email}</td>
+            <td className="px-4 py-3.5 text-white/70 max-w-xs truncate" title={s.message}>
+              {s.message || <span className="text-white/30 italic">—</span>}
+            </td>
+            <td className="px-4 py-3.5 text-white/50">{new Date(s.createdAt).toLocaleString()}</td>
+          </tr>
+        ))
+      )}
+    </TableShell>
   );
 }
