@@ -70,6 +70,8 @@ type PrintRequest = {
 
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 const BSC_TESTNET_TX = "https://testnet.bscscan.com/tx/";
+const BSC_TESTNET_TOKEN = "https://testnet.bscscan.com/token/";
+const CONTRACT_ADDR = "0x56390137c171b3167D4055d199DA8Bc8eCeE219c";
 
 type PendingCard = {
   cardId: string | null;
@@ -506,21 +508,41 @@ function StatusPill({ status, rgb }: { status: string; rgb: string }) {
   );
 }
 
-function CopyableId({ value, label }: { value: string | number; label?: string }) {
+function TokenIdCell({ tokenId }: { tokenId: number }) {
   const [copied, setCopied] = useState(false);
+  const tokenUrl = `${CONTRACT_ADDR}?a=${tokenId}`;
+  const fullUrl = `${BSC_TESTNET_TOKEN}${tokenUrl}`;
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(String(value));
+    navigator.clipboard.writeText(tokenUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
+
   return (
-    <button
-      onClick={handleCopy}
-      className="font-mono text-white/90 hover:text-white transition-colors cursor-pointer select-all"
-      title={copied ? "Copied!" : `Click to copy ${label ?? value}`}
-    >
-      {value}{copied && <span className="ml-1.5 text-[0.55rem] text-[var(--electric-blue)]">copied</span>}
-    </button>
+    <div className="flex items-center gap-2">
+      <span className="font-mono text-white/90">{tokenId}</span>
+      <button
+        onClick={handleCopy}
+        className="text-white/40 hover:text-white/80 transition-colors cursor-pointer"
+        title={copied ? "Copied!" : "Copy contract address + tokenId"}
+      >
+        {copied ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--electric-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+        )}
+      </button>
+      <a
+        href={fullUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-white/40 hover:text-white/80 transition-colors"
+        title="View on BSCScan"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+      </a>
+    </div>
   );
 }
 
@@ -533,7 +555,7 @@ function CardsTable({ cards }: { cards: AdminCard[] }) {
         cards.map((c, i) => (
           <tr key={c.tokenId ?? `card-${i}`} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
             <td className="px-4 py-3.5">
-              {c.tokenId !== null ? <CopyableId value={c.tokenId} label="tokenId" /> : <span className="text-white/30 text-xs">pending</span>}
+              {c.tokenId !== null ? <TokenIdCell tokenId={c.tokenId} /> : <span className="text-white/30 text-xs">pending</span>}
             </td>
             <td className="px-4 py-3.5 font-mono text-xs text-white/50">{c.cardId ?? "—"}</td>
             <td className="px-4 py-3.5 text-white/80">{c.templateId}</td>
