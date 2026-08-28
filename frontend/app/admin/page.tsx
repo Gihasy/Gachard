@@ -506,15 +506,36 @@ function StatusPill({ status, rgb }: { status: string; rgb: string }) {
   );
 }
 
+function CopyableId({ value, label }: { value: string | number; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(String(value));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <button
+      onClick={handleCopy}
+      className="font-mono text-white/90 hover:text-white transition-colors cursor-pointer select-all"
+      title={copied ? "Copied!" : `Click to copy ${label ?? value}`}
+    >
+      {value}{copied && <span className="ml-1.5 text-[0.55rem] text-[var(--electric-blue)]">copied</span>}
+    </button>
+  );
+}
+
 function CardsTable({ cards }: { cards: AdminCard[] }) {
   return (
-    <TableShell head={<><TH>Card ID</TH><TH>Template</TH><TH>Rarity</TH><TH>Status</TH><TH>Fulfillment</TH><TH>Owner</TH></>}>
+    <TableShell head={<><TH>Token ID</TH><TH>Card ID</TH><TH>Template</TH><TH>Rarity</TH><TH>Status</TH><TH>Fulfillment</TH><TH>Owner</TH></>}>
       {cards.length === 0 ? (
-        <tr><td colSpan={6} className="p-8 text-center text-white/40">No cards found</td></tr>
+        <tr><td colSpan={7} className="p-8 text-center text-white/40">No cards found</td></tr>
       ) : (
         cards.map((c, i) => (
           <tr key={c.tokenId ?? `card-${i}`} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
-            <td className="px-4 py-3.5 font-mono text-white/90">{c.cardId ? `#${c.cardId}` : c.tokenId !== null ? `#${c.tokenId}` : "pending"}</td>
+            <td className="px-4 py-3.5">
+              {c.tokenId !== null ? <CopyableId value={c.tokenId} label="tokenId" /> : <span className="text-white/30 text-xs">pending</span>}
+            </td>
+            <td className="px-4 py-3.5 font-mono text-xs text-white/50">{c.cardId ?? "—"}</td>
             <td className="px-4 py-3.5 text-white/80">{c.templateId}</td>
             <td className="px-4 py-3.5">
               <span className={`tag tag-${(RARITY_LABELS[c.rarity] ?? "common").toLowerCase()}`}>{RARITY_LABELS[c.rarity] ?? `?${c.rarity}`}</span>
