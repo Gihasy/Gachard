@@ -11,8 +11,9 @@ export async function GET() {
     const ownerAddresses = [...new Set(cards.map((c) => c.ownerAddress?.toLowerCase()).filter(Boolean))];
     const addressToUsername = new Map<string, string>();
     if (ownerAddresses.length > 0) {
+      // Use case-insensitive regex match since wallet addresses may be checksummed
       const owners = await usersCollection
-        .find({ walletAddress: { $in: ownerAddresses } })
+        .find({ walletAddress: { $in: ownerAddresses.map((a) => new RegExp(`^${a}$`, "i")) } })
         .toArray();
       for (const u of owners) {
         if (u.walletAddress) {
