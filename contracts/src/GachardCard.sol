@@ -28,6 +28,7 @@ contract GachardCard is ERC1155, Ownable {
     event CardStatusChanged(uint256 indexed tokenId, CardStatus oldStatus, CardStatus newStatus);
     event MarketplaceTransfer(uint256 indexed tokenId, address indexed from, address indexed to);
     event VerificationRecorded(uint256 indexed tokenId, uint8 riskScore, bool flagged);
+    event CardBurned(uint256 indexed tokenId, address indexed owner, uint8 rarity);
 
     constructor() ERC1155("") Ownable(msg.sender) {}
 
@@ -159,6 +160,25 @@ contract GachardCard is ERC1155, Ownable {
         lastRiskScore[tokenId] = riskScore;
         flaggedSuspicious[tokenId] = flagged;
         emit VerificationRecorded(tokenId, riskScore, flagged);
+    }
+
+    /**
+     * @notice Burn kartu secara permanen — token dihancurkan, tidak bisa dipulihkan
+     * @dev onlyOwner — backend yang memanggil (ADR-003, custodial model)
+     * @dev Hanya kartu Digital yang bisa di-burn. _update() override sudah memblokir
+     *      burn untuk kartu Vaulted karena _burn() memanggil _update(owner, address(0))
+     *      dan from != address(0) akan trigger revert "Card is vaulted".
+     * @param tokenId ID kartu yang akan di-burn
+     * @param owner Alamat pemilik kartu saat ini
+     */
+    function burnCard(uint256 tokenId, address owner) external onlyOwner {
+        require(cardStatus[tokenId] == CardStatus.Digital, "Card is not digital");
+        require(balanceOf(owner, tokenId) == 1, "Owner does not hold card");
+
+        Rarity rarity = cardRarity[tokenId];
+        _burn(owner, tokenId, 1);
+
+        emit CardBurned(tokenId, owner, uint8(rarity));
     }
 
     /**
