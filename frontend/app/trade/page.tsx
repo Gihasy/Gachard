@@ -310,14 +310,14 @@ export default function MarketplacePage() {
 
               {listing.fvm !== null && (
                 <p className="text-[11px] mb-2" style={{ color: "var(--silver-mist-dim)" }}>
-                  FVM: <span style={{ color: "var(--aurora-gold)" }}>{listing.fvm} Crystal</span>
+                  FVM: <span style={{ color: "var(--crystal)" }}>{listing.fvm} Crystal</span>
                 </p>
               )}
 
               <div className="mt-auto">
                 {/* Price + icons row */}
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-base font-bold" style={{ color: "var(--aurora-gold)" }}>
+                  <span className="text-base font-bold" style={{ color: "var(--crystal)" }}>
                     {listing.price} Crystal
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -424,7 +424,7 @@ export default function MarketplacePage() {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
                 <span style={{ color: "var(--silver-mist-dim)" }}>Price</span>
-                <span className="font-semibold" style={{ color: "var(--aurora-gold)" }}>{confirmBuy.price} Crystal</span>
+                <span className="font-semibold" style={{ color: "var(--crystal)" }}>{confirmBuy.price} Crystal</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span style={{ color: "var(--silver-mist-dim)" }}>Your Balance</span>

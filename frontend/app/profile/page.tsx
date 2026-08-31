@@ -267,8 +267,8 @@ export default function Profil() {
               className="p-3 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3"
               style={{
                 background:
-                  "linear-gradient(135deg, rgba(0,204,255,0.12), rgba(184,172,255,0.06))",
-                border: "1px solid rgba(0,204,255,0.3)",
+                  "linear-gradient(135deg, rgba(125,249,255,0.12), rgba(184,172,255,0.06))",
+                border: "1px solid rgba(125,249,255,0.3)",
               }}
               data-testid="profile-crystal-balance"
             >
@@ -278,7 +278,7 @@ export default function Profil() {
                 </p>
                 <p
                   className="font-display text-lg sm:text-xl lg:text-2xl"
-                  style={{ color: "var(--electric-blue)" }}
+                  style={{ color: "var(--crystal)" }}
                 >
                   {(crystalBalance ?? 0).toLocaleString()}
                 </p>
@@ -286,9 +286,9 @@ export default function Profil() {
               <span
                 className="!py-2 !px-3 sm:!py-2.5 sm:!px-4 !text-[0.6rem] sm:!text-[0.7rem] whitespace-nowrap rounded-full font-medium"
                 style={{
-                  background: "rgba(0,204,255,0.1)",
-                  border: "1px solid rgba(0,204,255,0.3)",
-                  color: "var(--electric-blue)",
+                  background: "rgba(125,249,255,0.1)",
+                  border: "1px solid rgba(125,249,255,0.3)",
+                  color: "var(--crystal)",
                 }}
               >
                 Crystal

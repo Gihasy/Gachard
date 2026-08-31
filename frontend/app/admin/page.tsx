@@ -239,7 +239,7 @@ export default function AdminPage() {
         <SummaryCard label="Pending Prints" value={pendingPrints} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} hasNotification={newPrintRequests > 0} />
         <SummaryCard label="Pending Mints" value={pendingMeta.total} color={pendingMeta.staleCount > 0 ? "#ff6bba" : "var(--electric-blue)"} active={tab === "health"} onClick={() => setTab("health")} hasNotification={pendingMeta.staleCount > 0} />
         <SummaryCard label="Supporters" value={supporters.length} color="var(--aurora-pink)" active={tab === "supporters"} onClick={() => setTab("supporters")} />
-        <SummaryCard label="Dismantle" value={txs.filter((t) => t.type === "dismantled").length} color="var(--electric-blue)" active={tab === "dismantle"} onClick={() => setTab("dismantle")} />
+        <SummaryCard label="Dismantle" value={txs.filter((t) => t.type === "dismantled").length} color="var(--crystal)" active={tab === "dismantle"} onClick={() => setTab("dismantle")} />
       </div>
 
       {/* Tabs */}
@@ -973,7 +973,7 @@ function DismantleTable({ txs, cards, users }: { txs: AdminTx[]; cards: AdminCar
                   {rarityLabel}
                 </span>
               </td>
-              <td className="px-4 py-3.5 font-medium" style={{ color: "var(--electric-blue)" }}>
+              <td className="px-4 py-3.5 font-medium" style={{ color: "var(--crystal)" }}>
                 +{tx.amount ?? "?"}
               </td>
               <td className="px-4 py-3.5">

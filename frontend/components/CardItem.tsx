@@ -535,7 +535,7 @@ export default function CardItem({
             <p className="text-sm mb-2" style={{ color: "var(--silver-mist-dim)" }}>
               This will permanently destroy this card on the blockchain and cannot be undone.
             </p>
-            <p className="text-sm mb-5 font-medium" style={{ color: "var(--electric-blue)" }}>
+            <p className="text-sm mb-5 font-medium" style={{ color: "var(--crystal)" }}>
               You will receive {dismantleRate} Crystal.
             </p>
             <div className="flex gap-3">
