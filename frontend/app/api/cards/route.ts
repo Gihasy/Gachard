@@ -6,7 +6,8 @@ import { confirmTransaction } from "@/lib/transactions";
  * Derive user-facing display status from fulfillmentStatus.
  * fulfillmentStatus drives the label — not the on-chain card.status.
  */
-function getDisplayStatus(fulfillmentStatus: string | null | undefined): string {
+function getDisplayStatus(fulfillmentStatus: string | null | undefined, cardStatus?: string): string {
+  if (cardStatus === "Burned") return "Burned";
   if (!fulfillmentStatus) return "Digital";
   if (["Locked", "Processing", "Printed"].includes(fulfillmentStatus)) return "In Progress";
   if (fulfillmentStatus === "Shipping") return "Shipping";
@@ -67,7 +68,7 @@ export async function GET(request: Request) {
         tokenId: card.tokenId,
         templateId: card.templateId,
         rarity: card.rarity,
-        displayStatus: getDisplayStatus(card.fulfillmentStatus),
+        displayStatus: getDisplayStatus(card.fulfillmentStatus, card.status),
         artworkUrl: template?.artworkUrl || "",
         templateName: template?.name || card.templateId,
         requestedAt: card.fulfillmentStatus ? card.updatedAt || null : null,
