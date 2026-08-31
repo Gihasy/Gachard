@@ -40,8 +40,13 @@ export async function POST(
     }
 
     const cardsCol = await getCollection("cards");
+    // Clean up card by cardId from listing, and also by listingId as fallback
     await cardsCol.updateOne(
       { cardId: listing.cardId },
+      { $set: { isListed: false }, $unset: { listingId: "" } }
+    );
+    await cardsCol.updateMany(
+      { listingId: id },
       { $set: { isListed: false }, $unset: { listingId: "" } }
     );
 

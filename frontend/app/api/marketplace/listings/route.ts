@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
-import { createListing } from "@/lib/listings";
+import { createListing, getListingById } from "@/lib/listings";
 import { getFVM, getFVMFloor, type FVMResult } from "@/lib/fvm";
 
 export async function POST(req: NextRequest) {
@@ -33,7 +33,18 @@ export async function POST(req: NextRequest) {
     }
 
     if (card.isListed) {
-      return NextResponse.json({ error: "Card is already listed" }, { status: 400 });
+      // Verify the listing actually exists and is active
+      if (card.listingId) {
+        const existingListing = await getListingById(card.listingId);
+        if (existingListing && existingListing.status === "active") {
+          return NextResponse.json({ error: "Card is already listed" }, { status: 400 });
+        }
+      }
+      // Stale reference — clean up and allow listing
+      await cardsCol.updateOne(
+        { cardId },
+        { $set: { isListed: false }, $unset: { listingId: "" } }
+      );
     }
 
     if (card.fulfillmentStatus) {
