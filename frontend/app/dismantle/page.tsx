@@ -384,7 +384,7 @@ export default function DismantlePage() {
               Dismantle {selected.size} Card{selected.size !== 1 ? "s" : ""}?
             </h3>
             <p className="text-sm mb-2" style={{ color: "var(--silver-mist-dim)" }}>
-              This will permanently destroy {selected.size === 1 ? "this card" : "these cards"} on the blockchain. This cannot be undone.
+              This will permanently destroy {selected.size === 1 ? "this card" : "these cards"}. This cannot be undone.
             </p>
 
             {/* Breakdown */}
