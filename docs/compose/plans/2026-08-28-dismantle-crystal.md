@@ -1,5 +1,10 @@
 # Dismantle & Crystal Implementation Plan
 
+> [!NOTE]
+> This document may not reflect the current implementation.
+> See the final report for up-to-date state:
+> [Final Report](../reports/dismantle-crystal.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use compose:subagent (recommended) or compose:execute to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Allow users to permanently burn ("dismantle") Digital cards on-chain in exchange for Crystal — a new non-purchasable currency stored in its own MongoDB collection.
