@@ -42,13 +42,10 @@ export async function GET(request: Request) {
       const txCollection = await getCollection("transactions");
       const pendingTxIds = [...new Set(pendingCards.map((c) => c.txId).filter(Boolean))];
 
-      for (const txId of pendingTxIds) {
-        try {
-          await confirmTransaction(txId);
-        } catch {
-          // Silent fail — will retry next time user opens collection
-        }
-      }
+      // Confirm all pending transactions in parallel
+      await Promise.allSettled(
+        pendingTxIds.map((txId) => confirmTransaction(txId))
+      );
     }
 
     // Fetch cards (possibly updated by reconciliation above)
@@ -57,8 +54,11 @@ export async function GET(request: Request) {
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Lookup artworkUrl dari card_templates
-    const templates = await templatesCollection.find({}).toArray();
+    // Only fetch templates that match user's cards (not all templates)
+    const uniqueTemplateIds = [...new Set(cards.map((c) => c.templateId))];
+    const templates = uniqueTemplateIds.length > 0
+      ? await templatesCollection.find({ templateId: { $in: uniqueTemplateIds } }).toArray()
+      : [];
     const templateMap = new Map(templates.map((t) => [t.templateId, t]));
 
     const enrichedCards = cards.map((card) => {

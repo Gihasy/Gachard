@@ -40,13 +40,9 @@ export async function POST(
     }
 
     const cardsCol = await getCollection("cards");
-    // Clean up card by cardId from listing, and also by listingId as fallback
-    await cardsCol.updateOne(
-      { cardId: listing.cardId },
-      { $set: { isListed: false }, $unset: { listingId: "" } }
-    );
+    // Single update covering both cardId match and listingId match
     await cardsCol.updateMany(
-      { listingId: id },
+      { $or: [{ cardId: listing.cardId }, { listingId: id }] },
       { $set: { isListed: false }, $unset: { listingId: "" } }
     );
 

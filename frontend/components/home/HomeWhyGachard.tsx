@@ -1,5 +1,3 @@
-"use client";
-
 interface Feature {
   key: string;
   title: string;

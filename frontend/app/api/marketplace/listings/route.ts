@@ -97,12 +97,14 @@ export async function GET(req: NextRequest) {
       .toArray();
 
     const templatesCol = await getCollection("card_templates");
-    const templates = await templatesCol.find({}).toArray();
+    const uniqueTemplateIds = [...new Set(listings.map((l) => l.templateId))];
+    const templates = uniqueTemplateIds.length > 0
+      ? await templatesCol.find({ templateId: { $in: uniqueTemplateIds } }).toArray()
+      : [];
     const templateMap = new Map(templates.map((t) => [t.templateId, t]));
 
     // Batch FVM: fetch all sold transactions once, compute in-memory
     const txCol = await getCollection("transactions");
-    const uniqueTemplateIds = [...new Set(listings.map((l) => l.templateId))];
     const soldTxs = await txCol
       .find({ type: "sold", status: "confirmed", templateId: { $in: uniqueTemplateIds } })
       .toArray();

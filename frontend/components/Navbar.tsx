@@ -31,7 +31,16 @@ export default function Navbar() {
     };
     readUser();
 
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 12);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    let ticking = false;
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("auth-change", readUser);

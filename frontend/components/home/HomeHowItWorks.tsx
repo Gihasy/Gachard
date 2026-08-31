@@ -1,5 +1,3 @@
-"use client";
-
 const STEPS = [
   { n: "01", title: "Register", desc: "Create your account and enter the universe." },
   { n: "02", title: "Collect",  desc: "Open packs and collect rare cards." },

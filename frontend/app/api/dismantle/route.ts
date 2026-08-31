@@ -84,22 +84,22 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    // Mark card as Burned using resolvedCardId (not request body cardId)
-    await cardsCollection.updateOne(
-      { cardId: resolvedCardId },
-      {
-        $set: {
-          status: "Burned",
-          burnedAt: new Date().toISOString(),
-          dismantleTxId: txResult.insertedId.toString(),
-          crystalReward,
-          updatedAt: new Date().toISOString(),
-        },
-      }
-    );
-
-    // Credit Crystal to user
-    const newBalance = await addCrystal(user._id.toString(), crystalReward);
+    // Mark card as Burned and credit Crystal in parallel
+    const [, newBalance] = await Promise.all([
+      cardsCollection.updateOne(
+        { cardId: resolvedCardId },
+        {
+          $set: {
+            status: "Burned",
+            burnedAt: new Date().toISOString(),
+            dismantleTxId: txResult.insertedId.toString(),
+            crystalReward,
+            updatedAt: new Date().toISOString(),
+          },
+        }
+      ),
+      addCrystal(user._id.toString(), crystalReward),
+    ]);
 
     // Background: wait for on-chain receipt and confirm transaction
     // Uses after() from next/server — same pattern as marketplace buy route

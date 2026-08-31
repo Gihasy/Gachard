@@ -64,27 +64,27 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    // Simpan redeem code TERENKRIPSI untuk cetak fisik nanti
+    // Save redeem code and update card status in parallel
     const codesCollection = await getCollection("redeem_codes");
-    await codesCollection.insertOne({
-      tokenId,
-      txId: result.insertedId.toString(),
-      codeEncrypted: encrypt(code),
-      status: "active",
-      createdAt: new Date().toISOString(),
-    });
-
-    // Set card status ke Vaulted dan fulfillmentStatus ke "Locked"
-    await cardsCollection.updateOne(
-      { tokenId },
-      {
-        $set: {
-          status: "Vaulted",
-          fulfillmentStatus: "Locked",
-          updatedAt: new Date().toISOString(),
-        },
-      }
-    );
+    await Promise.all([
+      codesCollection.insertOne({
+        tokenId,
+        txId: result.insertedId.toString(),
+        codeEncrypted: encrypt(code),
+        status: "active",
+        createdAt: new Date().toISOString(),
+      }),
+      cardsCollection.updateOne(
+        { tokenId },
+        {
+          $set: {
+            status: "Vaulted",
+            fulfillmentStatus: "Locked",
+            updatedAt: new Date().toISOString(),
+          },
+        }
+      ),
+    ]);
 
     // Auto-confirm: wait for on-chain receipt (up to 8s)
     try {

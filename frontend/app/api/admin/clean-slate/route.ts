@@ -34,16 +34,22 @@ async function doCleanSlate(req: NextRequest) {
     const results: Record<string, number> = {};
     let totalDeleted = 0;
 
-    for (const name of collections) {
-      const col = await getCollection(name);
-      const count = await col.countDocuments();
-      if (count > 0) {
-        const res = await col.deleteMany({});
-        results[name] = res.deletedCount;
-        totalDeleted += res.deletedCount;
-      } else {
-        results[name] = 0;
-      }
+    // Delete all collections in parallel
+    const deleteResults = await Promise.all(
+      collections.map(async (name) => {
+        const col = await getCollection(name);
+        const count = await col.countDocuments();
+        if (count > 0) {
+          const res = await col.deleteMany({});
+          return [name, res.deletedCount] as const;
+        }
+        return [name, 0] as const;
+      })
+    );
+
+    for (const [name, count] of deleteResults) {
+      results[name] = count;
+      totalDeleted += count;
     }
 
     // Preserved counts
