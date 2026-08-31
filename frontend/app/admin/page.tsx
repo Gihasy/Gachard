@@ -578,6 +578,14 @@ function TokenIdCell({ tokenId }: { tokenId: number }) {
 }
 
 function CardsTable({ cards }: { cards: AdminCard[] }) {
+  const [copiedAddr, setCopiedAddr] = useState<string | null>(null);
+
+  const handleCopyAddress = (addr: string) => {
+    navigator.clipboard.writeText(addr);
+    setCopiedAddr(addr);
+    setTimeout(() => setCopiedAddr(null), 1500);
+  };
+
   return (
     <TableShell head={<><TH>Token ID</TH><TH>Card ID</TH><TH>Template</TH><TH>Rarity</TH><TH>Status</TH><TH>Fulfillment</TH><TH>Owner</TH></>}>
       {cards.length === 0 ? (
@@ -600,9 +608,22 @@ function CardsTable({ cards }: { cards: AdminCard[] }) {
               ) : <span className="text-white/30">—</span>}
             </td>
             <td className="px-4 py-3.5 text-xs">
-              {c.ownerUsername && <div className="text-white/80 mb-0.5">{c.ownerUsername}</div>}
+              {c.ownerUsername && <div className="text-white/90 font-medium mb-0.5">{c.ownerUsername}</div>}
               {c.ownerAddress ? (
-                <div className="font-mono text-[0.6rem] text-white/40">{c.ownerAddress.slice(0, 10)}...{c.ownerAddress.slice(-6)}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[0.6rem] text-white/40">{c.ownerAddress.slice(0, 10)}...{c.ownerAddress.slice(-6)}</span>
+                  <button
+                    onClick={() => handleCopyAddress(c.ownerAddress)}
+                    className="text-white/30 hover:text-white/70 transition-colors cursor-pointer"
+                    title={copiedAddr === c.ownerAddress ? "Copied!" : "Copy wallet address"}
+                  >
+                    {copiedAddr === c.ownerAddress ? (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--crystal)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+                    ) : (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+                    )}
+                  </button>
+                </div>
               ) : (
                 <span className="text-white/30">—</span>
               )}
