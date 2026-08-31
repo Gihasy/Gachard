@@ -158,6 +158,9 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [txTypeFilter, setTxTypeFilter] = useState<string>("all");
   const [txRiskFilter, setTxRiskFilter] = useState<string>("all");
+  const [cardSearch, setCardSearch] = useState<string>("");
+  const [cardStatusFilter, setCardStatusFilter] = useState<string>("all");
+  const [cardRarityFilter, setCardRarityFilter] = useState<string>("all");
 
   const fetchAll = useCallback(() => {
     setLoading(true);
@@ -200,10 +203,28 @@ export default function AdminPage() {
 
   const txTypes = [...new Set(txs.map((t) => t.type))].sort();
 
+  const filteredCards = cards.filter((c) => {
+    if (cardStatusFilter !== "all" && c.status !== cardStatusFilter) return false;
+    if (cardRarityFilter !== "all" && c.rarity !== Number(cardRarityFilter)) return false;
+    if (cardSearch) {
+      const q = cardSearch.toLowerCase();
+      const match =
+        (c.cardId && c.cardId.toLowerCase().includes(q)) ||
+        (c.tokenId !== null && String(c.tokenId).includes(q)) ||
+        (c.templateId && c.templateId.toLowerCase().includes(q)) ||
+        (c.ownerUsername && c.ownerUsername.toLowerCase().includes(q)) ||
+        (c.ownerAddress && c.ownerAddress.toLowerCase().includes(q));
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  const cardStatuses = [...new Set(cards.map((c) => c.status))].sort();
+
   const count =
     tab === "users" ? users.length :
     tab === "transactions" ? filteredTxs.length :
-    tab === "cards" ? cards.length :
+    tab === "cards" ? filteredCards.length :
     tab === "prints" ? prints.length :
     tab === "supporters" ? supporters.length :
     tab === "dismantle" ? txs.filter((t) => t.type === "dismantled").length :
@@ -318,7 +339,22 @@ export default function AdminPage() {
               <TxsTable txs={filteredTxs} />
             </>
           )}
-          {tab === "cards" && <CardsTable cards={cards} />}
+          {tab === "cards" && (
+            <>
+              <CardsFilterBar
+                cardStatuses={cardStatuses}
+                statusFilter={cardStatusFilter}
+                onStatusChange={setCardStatusFilter}
+                rarityFilter={cardRarityFilter}
+                onRarityChange={setCardRarityFilter}
+                search={cardSearch}
+                onSearchChange={setCardSearch}
+                total={cards.length}
+                filtered={filteredCards.length}
+              />
+              <CardsTable cards={filteredCards} />
+            </>
+          )}
           {tab === "prints" && <PrintRequestsTable prints={prints} onAccept={fetchAll} />}
           {tab === "health" && (
             <HealthTable
@@ -573,6 +609,77 @@ function TokenIdCell({ tokenId }: { tokenId: number }) {
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
       </a>
+    </div>
+  );
+}
+
+/* ─── Cards Filter Bar ─── */
+function CardsFilterBar({
+  cardStatuses, statusFilter, onStatusChange, rarityFilter, onRarityChange, search, onSearchChange, total, filtered,
+}: {
+  cardStatuses: string[];
+  statusFilter: string;
+  onStatusChange: (v: string) => void;
+  rarityFilter: string;
+  onRarityChange: (v: string) => void;
+  search: string;
+  onSearchChange: (v: string) => void;
+  total: number;
+  filtered: number;
+}) {
+  const selectStyle: React.CSSProperties = {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    color: "rgba(255,255,255,0.85)",
+    borderRadius: "0.5rem",
+    padding: "0.375rem 0.75rem",
+    fontSize: "0.75rem",
+    outline: "none",
+    cursor: "pointer",
+  };
+  const optionStyle: React.CSSProperties = {
+    backgroundColor: "#1a1a2e",
+    color: "rgba(255,255,255,0.85)",
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-3 mb-4" data-testid="cards-filters">
+      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search cardId, tokenId, template, owner…"
+          className="flex-1 bg-transparent text-sm text-white/85 placeholder:text-white/25 outline-none"
+          style={{
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "0.5rem",
+            padding: "0.375rem 0.75rem",
+            fontSize: "0.75rem",
+          }}
+          data-testid="cards-search"
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Status</span>
+        <select value={statusFilter} onChange={(e) => onStatusChange(e.target.value)} style={selectStyle}>
+          <option value="all" style={optionStyle}>All</option>
+          {cardStatuses.map((s) => <option key={s} value={s} style={optionStyle}>{s}</option>)}
+        </select>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Rarity</span>
+        <select value={rarityFilter} onChange={(e) => onRarityChange(e.target.value)} style={selectStyle}>
+          <option value="all" style={optionStyle}>All</option>
+          <option value="0" style={optionStyle}>Common</option>
+          <option value="1" style={optionStyle}>Rare</option>
+          <option value="2" style={optionStyle}>Epic</option>
+          <option value="3" style={optionStyle}>Legendary</option>
+        </select>
+      </div>
+      {filtered !== total && (
+        <span className="text-[0.6rem] text-white/30 ml-2">{filtered} of {total}</span>
+      )}
     </div>
   );
 }
