@@ -463,7 +463,7 @@ export default function Profil() {
           ) : (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
-                {cards.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE).map((card, i) => (
+                {cards.filter((c) => c.displayStatus !== "Burned").slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE).map((card, i) => (
                   <CardItem
                     key={card.tokenId ?? `card-${i}`}
                     cardId={card.cardId}

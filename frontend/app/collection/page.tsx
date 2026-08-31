@@ -102,9 +102,10 @@ export default function Koleksi() {
   }, [cards]);
 
   const filtered = useMemo(() => {
-    if (tab === "all") return cards;
+    const visible = cards.filter((c) => c.displayStatus !== "Burned");
+    if (tab === "all") return visible;
     const code = RARITY_TABS.find((t) => t.key === tab)?.code ?? -1;
-    return cards.filter((c) => c.rarity === code);
+    return visible.filter((c) => c.rarity === code);
   }, [cards, tab]);
 
   if (!ready || !user) return null;
