@@ -189,8 +189,8 @@ export default function Profil() {
       description="Your Gachard identity, credit balance, and collection at a glance."
       actions={
         <>
-          <Link href="/topup" className="btn-primary" data-testid="profile-topup-btn">
-            Top Up
+          <Link href="/creators" className="btn-primary" data-testid="profile-creators-btn">
+            Become a Creator
           </Link>
           <button
             onClick={handleLogout}
