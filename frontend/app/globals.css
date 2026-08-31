@@ -216,6 +216,60 @@ body {
 .btn-secondary:hover { background: rgba(255,255,255,0.08); }
 }
 
+/* ─── FORM FIELDS ──────────────────────────────────── */
+.form-field label {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--silver-mist-dim);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.form-field label .required-dot {
+  color: var(--aurora-pink);
+  margin-left: 0.15rem;
+}
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 200ms, box-shadow 200ms, background 200ms;
+}
+.form-field input:hover,
+.form-field select:hover,
+.form-field textarea:hover {
+  border-color: rgba(184, 172, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+}
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--cosmic-violet);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(184, 172, 255, 0.15), 0 0 20px -6px rgba(184, 172, 255, 0.2);
+}
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+.form-field select option {
+  background: #1a1a2e;
+  color: rgba(255, 255, 255, 0.85);
+}
+.form-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
 /* ─── GLASS SURFACES ────────────────────────────────── */
 .glass {
   background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));

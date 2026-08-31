@@ -228,7 +228,7 @@ export default function CreatorsPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Honeypot — hidden from real users */}
               <div style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0, overflow: "hidden" }} aria-hidden="true">
                 <label>
@@ -237,6 +237,7 @@ export default function CreatorsPage() {
                 </label>
               </div>
 
+              {/* Identity */}
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field label="Your Name" required>
                   <input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="Jane Doe" />
@@ -246,6 +247,7 @@ export default function CreatorsPage() {
                 </Field>
               </div>
 
+              {/* Category */}
               <Field label="What Is It?" required>
                 <select value={form.ipType} onChange={(e) => set("ipType", e.target.value)} required>
                   <option value="" disabled>Select a category…</option>
@@ -253,6 +255,7 @@ export default function CreatorsPage() {
                 </select>
               </Field>
 
+              {/* Contact */}
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field label="Social Media / Website" required>
                   <input type="text" value={form.socialMedia} onChange={(e) => set("socialMedia", e.target.value)} required placeholder="https://twitter.com/..." />
@@ -262,6 +265,7 @@ export default function CreatorsPage() {
                 </Field>
               </div>
 
+              {/* About */}
               <Field label="What excites you about Gachard?" required>
                 <textarea
                   value={form.interest}
@@ -297,38 +301,11 @@ export default function CreatorsPage() {
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <div>
-      <label className="block text-[0.7rem] uppercase tracking-widest text-white/50 mb-1.5">
-        {label} {required && <span style={{ color: "var(--aurora-pink)" }}>*</span>}
+    <div className="form-field">
+      <label>
+        {label} {required && <span className="required-dot">*</span>}
       </label>
       {children}
-      <style jsx>{`
-        input, select, textarea {
-          width: 100%;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 0.75rem;
-          padding: 0.625rem 0.875rem;
-          color: rgba(255,255,255,0.9);
-          font-size: 0.875rem;
-          outline: none;
-          transition: border-color 200ms;
-        }
-        input:focus, select:focus, textarea:focus {
-          border-color: rgba(184,172,255,0.5);
-        }
-        input::placeholder, textarea::placeholder {
-          color: rgba(255,255,255,0.2);
-        }
-        select option {
-          background: #1a1a2e;
-          color: rgba(255,255,255,0.85);
-        }
-        textarea {
-          resize: vertical;
-          min-height: 80px;
-        }
-      `}</style>
     </div>
   );
 }
