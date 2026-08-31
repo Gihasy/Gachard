@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { timingSafeEqual } from "crypto";
 
 /**
  * Auth guard for protected routes.
@@ -16,9 +15,14 @@ import { timingSafeEqual } from "crypto";
  */
 const PROTECTED = ["/collection", "/profile", "/topup"];
 
+// Constant-time string comparison (safe for Edge Runtime)
 function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
-  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
 }
 
 export function middleware(req: NextRequest) {
