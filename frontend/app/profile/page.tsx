@@ -463,8 +463,13 @@ export default function Profil() {
             </div>
           ) : (
             <>
+              {(() => {
+                const visibleCards = cards.filter((c) => c.displayStatus !== "Burned");
+                const totalPages = Math.ceil(visibleCards.length / CARDS_PER_PAGE);
+                return (
+              <>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
-                {cards.filter((c) => c.displayStatus !== "Burned").slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE).map((card, i) => (
+                {visibleCards.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE).map((card, i) => (
                   <CardItem
                     key={card.tokenId ?? `card-${i}`}
                     cardId={card.cardId}
@@ -492,7 +497,7 @@ export default function Profil() {
               </div>
 
               {/* Pagination */}
-              {cards.length > CARDS_PER_PAGE && (
+              {visibleCards.length > CARDS_PER_PAGE && (
                 <div className="flex items-center justify-center gap-2 mt-6">
                   <button
                     onClick={() => setPage((p) => Math.max(0, p - 1))}
@@ -503,7 +508,7 @@ export default function Profil() {
                   >
                     ‹
                   </button>
-                  {Array.from({ length: Math.ceil(cards.length / CARDS_PER_PAGE) }, (_, i) => (
+                  {Array.from({ length: totalPages }, (_, i) => (
                     <button
                       key={i}
                       onClick={() => setPage(i)}
@@ -519,8 +524,8 @@ export default function Profil() {
                     </button>
                   ))}
                   <button
-                    onClick={() => setPage((p) => Math.min(Math.ceil(cards.length / CARDS_PER_PAGE) - 1, p + 1))}
-                    disabled={page >= Math.ceil(cards.length / CARDS_PER_PAGE) - 1}
+                    onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                    disabled={page >= totalPages - 1}
                     className="w-9 h-9 rounded-lg flex items-center justify-center text-sm transition-colors disabled:opacity-30"
                     style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
                     data-testid="profile-next-page"
@@ -529,6 +534,9 @@ export default function Profil() {
                   </button>
                 </div>
               )}
+              </>
+              );
+              })()}
             </>
           )}
         </div>
