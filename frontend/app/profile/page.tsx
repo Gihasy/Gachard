@@ -591,6 +591,10 @@ export default function Profil() {
                           ? `${tx.cardIds.length} cards`
                           : tx.type === "mint" && tx.tokenIds
                           ? `${tx.tokenIds.length} cards`
+                          : tx.type === "mint"
+                          ? "—"
+                          : (tx.type === "sold" || tx.type === "dismantled") && tx.amount
+                          ? `${tx.amount.toLocaleString()} Crystal`
                           : tx.cardId
                           ? `#${tx.cardId}`
                           : tx.tokenId
