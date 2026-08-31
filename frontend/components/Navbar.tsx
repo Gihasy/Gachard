@@ -200,58 +200,72 @@ export default function Navbar() {
                   </span>
                 </div>
 
+                {/* Invisible bridge to prevent hover gap */}
+                {showUserMenu && <div className="absolute right-0 w-full h-2" style={{ top: "100%" }} />}
+
                 {/* User dropdown */}
                 {showUserMenu && (
                   <div
-                    className="absolute right-0 top-full mt-2 w-56 rounded-2xl overflow-hidden z-50"
+                    className="absolute right-0 top-full w-60 rounded-2xl overflow-hidden z-50"
                     style={{
-                      background: "rgba(15, 19, 36, 0.95)",
-                      border: "1px solid rgba(184,172,255,0.2)",
+                      background: "rgba(15, 19, 36, 0.97)",
+                      border: "1px solid rgba(230,232,240,0.1)",
                       backdropFilter: "blur(20px)",
-                      boxShadow: "0 12px 40px rgba(0,0,0,0.5), 0 0 20px rgba(184,172,255,0.08)",
+                      boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
                     }}
                   >
-                    {/* Balances */}
-                    <div className="p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[0.7rem] uppercase tracking-widest text-white/50">Credits</span>
-                        <span className="text-sm font-bold" style={{ color: "var(--aurora-gold)" }}>
+                    {/* Credits — matches profile page style */}
+                    <div
+                      className="p-4 flex items-center justify-between gap-3"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(255,196,102,0.12), rgba(255,107,186,0.06))",
+                        borderBottom: "1px solid rgba(255,196,102,0.15)",
+                      }}
+                    >
+                      <div>
+                        <p className="text-[0.6rem] uppercase tracking-[0.2em] text-white/50 mb-0.5">
+                          Credits
+                        </p>
+                        <p
+                          className="font-display text-lg"
+                          style={{ color: "var(--aurora-gold)" }}
+                        >
                           {(credits ?? 0).toLocaleString()}
-                        </span>
+                        </p>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[0.7rem] uppercase tracking-widest text-white/50">Crystal</span>
-                        <span className="text-sm font-bold" style={{ color: "var(--crystal)" }}>
-                          {(crystal ?? 0).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
-
-                    {/* Actions */}
-                    <div className="p-3 space-y-1.5">
                       <Link
                         href="/topup"
-                        className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-medium transition-all hover:brightness-125"
-                        style={{ background: "rgba(255,196,102,0.1)", color: "var(--aurora-gold)" }}
+                        className="btn-gold !py-1.5 !px-3 !text-[0.6rem] whitespace-nowrap"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
-                        </svg>
-                        Top Up Credits
+                        Top Up
                       </Link>
+                    </div>
+
+                    {/* Crystal — matches profile page style */}
+                    <div
+                      className="p-4 flex items-center justify-between gap-3"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(125,249,255,0.12), rgba(184,172,255,0.06))",
+                      }}
+                    >
+                      <div>
+                        <p className="text-[0.6rem] uppercase tracking-[0.2em] text-white/50 mb-0.5">
+                          Crystal
+                        </p>
+                        <p
+                          className="font-display text-lg"
+                          style={{ color: "var(--crystal)" }}
+                        >
+                          {(crystal ?? 0).toLocaleString()}
+                        </p>
+                      </div>
                       <Link
                         href="/dismantle"
-                        className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-medium transition-all hover:brightness-125"
-                        style={{ background: "rgba(125,249,255,0.08)", color: "var(--crystal)" }}
+                        className="btn-crystal !py-1.5 !px-3 !text-[0.6rem] whitespace-nowrap"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                        </svg>
-                        Dismantle for Crystal
+                        Dismantle
                       </Link>
                     </div>
                   </div>
