@@ -145,7 +145,7 @@ const TAB_META: Record<TabKey, { label: string; icon: React.ReactNode }> = {
 };
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<TabKey>("users");
+  const [tab, setTab] = useState<TabKey>("cards");
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [txs, setTxs] = useState<AdminTx[]>([]);
   const [cards, setCards] = useState<AdminCard[]>([]);
@@ -254,19 +254,19 @@ export default function AdminPage() {
     >
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-7 gap-4 mb-8">
-        <SummaryCard label="Users" value={users.length} color="var(--electric-blue)" active={tab === "users"} onClick={() => setTab("users")} />
-        <SummaryCard label="Transactions" value={txs.length} color="var(--cosmic-violet)" active={tab === "transactions"} onClick={() => setTab("transactions")} />
         <SummaryCard label="Cards" value={cards.length} color="var(--aurora-pink)" active={tab === "cards"} onClick={() => setTab("cards")} />
-        <SummaryCard label="Pending Prints" value={pendingPrints} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} hasNotification={newPrintRequests > 0} />
-        <SummaryCard label="Pending Mints" value={pendingMeta.total} color={pendingMeta.staleCount > 0 ? "#ff6bba" : "var(--electric-blue)"} active={tab === "health"} onClick={() => setTab("health")} hasNotification={pendingMeta.staleCount > 0} />
-        <SummaryCard label="Supporters" value={supporters.length} color="var(--aurora-pink)" active={tab === "supporters"} onClick={() => setTab("supporters")} />
+        <SummaryCard label="Transactions" value={txs.length} color="var(--cosmic-violet)" active={tab === "transactions"} onClick={() => setTab("transactions")} />
         <SummaryCard label="Dismantle" value={txs.filter((t) => t.type === "dismantled").length} color="var(--crystal)" active={tab === "dismantle"} onClick={() => setTab("dismantle")} />
+        <SummaryCard label="Print Requests" value={pendingPrints} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} hasNotification={newPrintRequests > 0} />
+        <SummaryCard label="Pending Mints" value={pendingMeta.total} color={pendingMeta.staleCount > 0 ? "#ff6bba" : "var(--electric-blue)"} active={tab === "health"} onClick={() => setTab("health")} hasNotification={pendingMeta.staleCount > 0} />
+        <SummaryCard label="Users" value={users.length} color="var(--electric-blue)" active={tab === "users"} onClick={() => setTab("users")} />
+        <SummaryCard label="Supporters" value={supporters.length} color="var(--aurora-pink)" active={tab === "supporters"} onClick={() => setTab("supporters")} />
       </div>
 
       {/* Tabs */}
       <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
         <div className="flex gap-2 flex-wrap">
-          {(["users", "transactions", "cards", "prints", "health", "supporters", "dismantle"] as const).map((t) => {
+          {(["cards", "transactions", "dismantle", "prints", "health", "users", "supporters"] as const).map((t) => {
             const isActive = tab === t;
             return (
               <button
