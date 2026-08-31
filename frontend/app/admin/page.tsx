@@ -29,6 +29,8 @@ type AdminTx = {
   riskScore: number | null;
   flagged: boolean;
   riskReasoning: string | null;
+  amount: number | null;
+  rarity: number | null;
 };
 
 type AdminCard = {
@@ -88,7 +90,7 @@ type PendingCard = {
   isStale: boolean;
 };
 
-type TabKey = "users" | "transactions" | "cards" | "prints" | "health" | "supporters";
+type TabKey = "users" | "transactions" | "cards" | "prints" | "health" | "supporters" | "dismantle";
 
 type AdminSupporter = {
   id: string;
@@ -132,6 +134,12 @@ const TAB_META: Record<TabKey, { label: string; icon: React.ReactNode }> = {
     label: "Supporters",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+    ),
+  },
+  dismantle: {
+    label: "Dismantle",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
     ),
   },
 };
@@ -197,7 +205,9 @@ export default function AdminPage() {
     tab === "transactions" ? filteredTxs.length :
     tab === "cards" ? cards.length :
     tab === "prints" ? prints.length :
-    tab === "supporters" ? supporters.length : pendingCards.length;
+    tab === "supporters" ? supporters.length :
+    tab === "dismantle" ? txs.filter((t) => t.type === "dismantled").length :
+    pendingCards.length;
 
   const pendingPrints = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) !== "Real").length;
   const newPrintRequests = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) === "Locked").length;
@@ -222,19 +232,20 @@ export default function AdminPage() {
       description="Manage users, monitor on-chain transactions, and fulfil physical card print requests."
     >
       {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-7 gap-4 mb-8">
         <SummaryCard label="Users" value={users.length} color="var(--electric-blue)" active={tab === "users"} onClick={() => setTab("users")} />
         <SummaryCard label="Transactions" value={txs.length} color="var(--cosmic-violet)" active={tab === "transactions"} onClick={() => setTab("transactions")} />
         <SummaryCard label="Cards" value={cards.length} color="var(--aurora-pink)" active={tab === "cards"} onClick={() => setTab("cards")} />
         <SummaryCard label="Pending Prints" value={pendingPrints} color="var(--aurora-gold)" active={tab === "prints"} onClick={() => setTab("prints")} hasNotification={newPrintRequests > 0} />
         <SummaryCard label="Pending Mints" value={pendingMeta.total} color={pendingMeta.staleCount > 0 ? "#ff6bba" : "var(--electric-blue)"} active={tab === "health"} onClick={() => setTab("health")} hasNotification={pendingMeta.staleCount > 0} />
         <SummaryCard label="Supporters" value={supporters.length} color="var(--aurora-pink)" active={tab === "supporters"} onClick={() => setTab("supporters")} />
+        <SummaryCard label="Dismantle" value={txs.filter((t) => t.type === "dismantled").length} color="var(--electric-blue)" active={tab === "dismantle"} onClick={() => setTab("dismantle")} />
       </div>
 
       {/* Tabs */}
       <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
         <div className="flex gap-2 flex-wrap">
-          {(["users", "transactions", "cards", "prints", "health", "supporters"] as const).map((t) => {
+          {(["users", "transactions", "cards", "prints", "health", "supporters", "dismantle"] as const).map((t) => {
             const isActive = tab === t;
             return (
               <button
@@ -318,6 +329,7 @@ export default function AdminPage() {
             />
           )}
           {tab === "supporters" && <SupportersTable supporters={supporters} />}
+          {tab === "dismantle" && <DismantleTable txs={txs.filter((t) => t.type === "dismantled")} cards={cards} users={users} />}
         </>
       )}
     </PageShell>
@@ -912,6 +924,86 @@ function SupportersTable({ supporters }: { supporters: AdminSupporter[] }) {
             <td className="px-4 py-3.5 text-white/50">{new Date(s.createdAt).toLocaleString()}</td>
           </tr>
         ))
+      )}
+    </TableShell>
+  );
+}
+
+/* ─── Dismantle ─── */
+function DismantleTable({ txs, cards, users }: { txs: AdminTx[]; cards: AdminCard[]; users: AdminUser[] }) {
+  const cardMap = new Map(cards.map((c) => [c.tokenId, c]));
+  const userMap = new Map(users.map((u) => [u.id, u]));
+
+  return (
+    <TableShell
+      head={
+        <>
+          <TH>Time</TH>
+          <TH>Owner</TH>
+          <TH>Card</TH>
+          <TH>Rarity</TH>
+          <TH>Crystal</TH>
+          <TH>Tx Hash</TH>
+          <TH>Status</TH>
+        </>
+      }
+    >
+      {txs.length === 0 ? (
+        <tr><td colSpan={7} className="p-8 text-center text-white/40">No dismantle records yet</td></tr>
+      ) : (
+        txs.map((tx) => {
+          const card = tx.tokenId != null ? cardMap.get(tx.tokenId) : undefined;
+          const user = userMap.get(tx.userId);
+          const rarityLabel = tx.rarity != null ? RARITY_LABELS[tx.rarity] ?? "?" : card ? RARITY_LABELS[card.rarity] ?? "?" : "?";
+          const cardName = card?.templateId ?? `Token #${tx.tokenId ?? "?"}`;
+
+          return (
+            <tr key={tx.id} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
+              <td className="px-4 py-3.5 text-white/50 whitespace-nowrap">{new Date(tx.createdAt).toLocaleString()}</td>
+              <td className="px-4 py-3.5 text-white/90">{user?.username ?? tx.userId}</td>
+              <td className="px-4 py-3.5 text-white/90">{cardName}</td>
+              <td className="px-4 py-3.5">
+                <span
+                  className="inline-block px-2 py-0.5 rounded-full text-[0.65rem] font-medium"
+                  style={{
+                    background: rarityLabel === "Legendary" ? "rgba(255,196,102,0.15)" : rarityLabel === "Epic" ? "rgba(184,172,255,0.15)" : rarityLabel === "Rare" ? "rgba(0,204,255,0.15)" : "rgba(255,255,255,0.08)",
+                    color: rarityLabel === "Legendary" ? "var(--aurora-gold)" : rarityLabel === "Epic" ? "var(--cosmic-violet)" : rarityLabel === "Rare" ? "var(--electric-blue)" : "rgba(255,255,255,0.5)",
+                  }}
+                >
+                  {rarityLabel}
+                </span>
+              </td>
+              <td className="px-4 py-3.5 font-medium" style={{ color: "var(--electric-blue)" }}>
+                +{tx.amount ?? "?"}
+              </td>
+              <td className="px-4 py-3.5">
+                {tx.txHash ? (
+                  <a
+                    href={`${BSC_TESTNET_TX}${tx.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/60 hover:text-white transition-colors font-mono text-xs"
+                  >
+                    {tx.txHash.slice(0, 10)}…{tx.txHash.slice(-6)}
+                  </a>
+                ) : (
+                  <span className="text-white/30">—</span>
+                )}
+              </td>
+              <td className="px-4 py-3.5">
+                <span
+                  className="inline-block px-2 py-0.5 rounded-full text-[0.65rem] font-medium"
+                  style={{
+                    background: tx.rawStatus === "confirmed" ? "rgba(0,255,136,0.12)" : tx.rawStatus === "failed" ? "rgba(255,107,186,0.12)" : "rgba(255,196,102,0.12)",
+                    color: tx.rawStatus === "confirmed" ? "#00ff88" : tx.rawStatus === "failed" ? "#ff6bba" : "var(--aurora-gold)",
+                  }}
+                >
+                  {tx.status}
+                </span>
+              </td>
+            </tr>
+          );
+        })
       )}
     </TableShell>
   );

@@ -30,6 +30,8 @@ export async function GET() {
       riskScore: tx.riskScore ?? null,
       flagged: tx.flagged ?? false,
       riskReasoning: tx.riskReasoning ?? null,
+      amount: tx.amount ?? null,
+      rarity: tx.rarity ?? null,
     }));
 
     return NextResponse.json(
