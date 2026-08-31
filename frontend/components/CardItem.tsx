@@ -15,6 +15,7 @@ const RARITY_COLORS = [
 ];
 const RARITY_GLOW = ["", "glow-rare", "glow-epic", "glow-legendary"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
+const DISMANTLE_RATES = [20, 50, 120, 300]; // Common, Rare, Epic, Legendary
 
 interface CardItemProps {
   cardId?: string | null;
@@ -84,12 +85,16 @@ export default function CardItem({
   const [showListingModal, setShowListingModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [showDismantleConfirm, setShowDismantleConfirm] = useState(false);
+  const [dismantling, setDismantling] = useState(false);
 
   const canPrint = currentStatus === "Digital" && tokenId !== null && !isListed;
   const canList = currentStatus === "Digital" && !isListed && tokenId !== null;
+  const canDismantle = currentStatus === "Digital" && !isListed && tokenId !== null;
   const isInProgress = currentStatus === "In Progress";
   const isShipping = currentStatus === "Shipping";
   const isReal = currentStatus === "Real";
+  const dismantleRate = DISMANTLE_RATES[rarity] ?? 0;
 
   const isFormValid =
     form.recipientName.trim() &&
@@ -212,6 +217,30 @@ export default function CardItem({
       alert("Network error");
     }
     setCancelling(false);
+  };
+
+  const confirmDismantle = async () => {
+    if (!tokenId) return;
+    setDismantling(true);
+    try {
+      const res = await fetch("/api/dismantle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, cardId, tokenId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Dismantle failed");
+        return;
+      }
+      setCurrentStatus("Burned");
+      setShowDismantleConfirm(false);
+      onStatusChange?.(tokenId, "Burned");
+    } catch {
+      alert("Dismantle failed. Please try again.");
+    } finally {
+      setDismantling(false);
+    }
   };
 
   const rarityLevel = Math.max(0, Math.min(3, rarity)) as 0 | 1 | 2 | 3;
@@ -340,6 +369,20 @@ export default function CardItem({
                 </div>
               )
             )}
+            {!isListed && canDismantle && (
+              <button
+                onClick={() => setShowDismantleConfirm(true)}
+                className="w-full !py-2 !px-3 !text-[0.65rem] font-medium rounded-full transition-all hover:-translate-y-px cursor-pointer"
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255,107,186,0.4)",
+                  color: "var(--aurora-pink)",
+                }}
+                data-testid={`dismantle-${tokenId}`}
+              >
+                Dismantle
+              </button>
+            )}
             {isInProgress && requestedAt && (
               <div
                 className="text-center text-[0.6rem] py-1.5 rounded-lg"
@@ -464,6 +507,56 @@ export default function CardItem({
                 }}
               >
                 Cancel Listing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dismantle Confirm Modal */}
+      {showDismantleConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+          onClick={() => setShowDismantleConfirm(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-6"
+            style={{
+              background: "rgba(15,19,36,0.95)",
+              border: "1px solid rgba(255,107,186,0.3)",
+              boxShadow: "0 0 40px rgba(255,107,186,0.15)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold mb-2" style={{ color: "var(--silver-mist)" }}>
+              Dismantle Card?
+            </h3>
+            <p className="text-sm mb-2" style={{ color: "var(--silver-mist-dim)" }}>
+              This will permanently destroy this card on the blockchain and cannot be undone.
+            </p>
+            <p className="text-sm mb-5 font-medium" style={{ color: "var(--electric-blue)" }}>
+              You will receive {dismantleRate} Crystal.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDismantleConfirm(false)}
+                className="btn-ghost flex-1 !py-2.5"
+              >
+                Keep Card
+              </button>
+              <button
+                onClick={confirmDismantle}
+                disabled={dismantling}
+                className="flex-1 !py-2.5 font-semibold rounded-full transition-transform hover:-translate-y-px cursor-pointer disabled:opacity-50"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255,107,186,0.9), rgba(184,172,255,0.9))",
+                  color: "#fff",
+                  border: "none",
+                  boxShadow: "0 8px 26px -8px rgba(255,107,186,0.55)",
+                }}
+              >
+                {dismantling ? "Dismantling…" : "Dismantle"}
               </button>
             </div>
           </div>
