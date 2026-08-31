@@ -147,3 +147,13 @@
 4. **FVM exclusion**: Transaksi dengan `flagged === true` dikecualikan dari perhitungan FVM untuk mencegah manipulasi harga.
 5. **Non-blocking**: Semua scoring terjadi SETELAH transaksi selesai — tidak pernah memblokir atau membatalkan trade.
 **Reason**: Wash-trading (A jual ke B, B jual balik ke A dengan harga naik) mengancam integritas FVM dan ekonomi marketplace. Oracle pattern memastikan hasil verifikasi transparan dan teraudit di on-chain, bukan hanya di database backend.
+
+## ADR-026: Dismantle & Crystal — Burn-to-Earn Currency
+**Status**: Accepted
+**Decision**: Kartu Digital dapat di-"dismantle" (burn permanen on-chain) untuk mendapatkan Crystal — currency baru yang TIDAK bisa dibeli, di-top-up, atau ditransfer. Crystal hanya bisa didapat dari dismantle. Collection `crystal_balances` terpisah total dari `credits` supaya kedua currency tidak pernah tercampur. Kartu yang sudah di-burn berubah status jadi `"Burned"` di MongoDB (bukan dihapus) untuk menjaga provenance dan transparansi via Scan. Burned card tidak muncul di grid Collection aktif tetapi tetap bisa dicari by Card ID.
+**Dismantle rates**: Common=20, Rare=50, Epic=120, Legendary=300 Crystal (proporsional ke rentang harga FVM).
+**On-chain**: `burnCard(tokenId, owner)` memanggil OpenZeppelin `_burn()` yang menghancurkan token ERC1155 secara permanen. Hanya kartu Digital yang bisa di-burn — kartu Vaulted diblokir oleh `_update()` override yang sudah ada.
+**Menggantikan konsep Buyback**: Dismantle & Crystal menggantikan rencana buyback — burn permanen on-chain, currency baru non-purchasable/non-cashable, tanpa liabilitas finansial.
+**Roadmap (TIDAK dibangun di sesi ini)**: Sistem trading Crystal antar-user akan menginfrastruktur ulang Marketplace yang sudah ada. Crystal akan jadi currency alternatif untuk listing dan membeli kartu dari user lain.
+**Reason**: Burn on-chain membuktikan kartu benar-benar dihancurkan (transparan, teraudit di BSCScan). Crystal sebagai non-purchasable currency menghindari liabilitas finansial dan regulasi. Pemisahan collection mencegah bug cross-currency.
+**Known limitation**: Setelah burn, `cardStatus(tokenId)` on-chain tetap menunjukkan nilai terakhir sebelum burn (tidak di-reset ke state "Burned") karena token ERC1155 sudah tidak ada setelah `_burn()`. Sumber kebenaran status "Burned" ada di MongoDB (`cards.status === "Burned"`). Perlu diingat kalau nanti ada fitur yang membaca `cardStatus` langsung dari chain tanpa cross-check MongoDB — perlu cek `balanceOf(owner, tokenId) == 0` sebagai indikator burn.
