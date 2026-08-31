@@ -265,22 +265,23 @@ export default function DismantlePage() {
                         e.stopPropagation();
                         toggleLock(card.cardId!);
                       }}
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all"
+                      className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
                       style={{
-                        background: isLocked ? "rgba(255,107,186,0.25)" : "rgba(0,0,0,0.5)",
-                        border: isLocked ? "1px solid rgba(255,107,186,0.5)" : "1px solid rgba(255,255,255,0.2)",
+                        background: isLocked ? "rgba(255,107,186,0.35)" : "rgba(11,14,26,0.8)",
+                        border: isLocked ? "1.5px solid rgba(255,107,186,0.7)" : "1.5px solid rgba(255,255,255,0.35)",
+                        backdropFilter: "blur(4px)",
                       }}
                       title={isLocked ? "Unlock card" : "Lock card (prevent dismantle)"}
                     >
                       {isLocked ? (
                         /* Locked padlock */
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FF6BBA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="rgba(255,107,186,0.3)" stroke="#FF6BBA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                         </svg>
                       ) : (
                         /* Unlocked padlock */
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                           <path d="M7 11V7a5 5 0 0 1 9.9-1" />
                         </svg>
