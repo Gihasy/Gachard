@@ -67,7 +67,7 @@ export default function CreatorsPage() {
       testId="creators-page"
       eyebrow="FOR CREATORS & BRANDS"
       title={<span className="text-gradient-aurora">Become a Creator</span>}
-      description="Bring your IP to life as a living, tradeable card game — without spending a cent to build it."
+      description="Turn your world into a card game your fans can actually collect, trade, and own — we handle everything else."
     >
       {/* Coming Soon Banner */}
       <div
@@ -84,11 +84,11 @@ export default function CreatorsPage() {
             <span>Coming Soon</span>
           </div>
           <h2 className="font-display uppercase text-3xl sm:text-4xl text-white mb-4">
-            The Studio Is{" "}
-            <span className="text-gradient-gold">Opening Soon</span>
+            Turn Your Fans Into{" "}
+            <span className="text-gradient-gold">Collectors</span>
           </h2>
           <p className="text-white/70 max-w-2xl mx-auto leading-relaxed">
-            We&apos;re building the infrastructure for your world. If you&apos;re an artist, game designer, brand, or storyteller with a universe worth collecting, Gachard turns it into digital-native cards your community can collect, play, and trade — with ownership they can always verify is real. Join the waitlist to be first in line when partner onboarding opens.
+            Got a world people love? Gachard lets you turn it into real, tradeable cards — digital and physical. No upfront cost, no blockchain headaches. Just your art, your community, and a whole new way for them to connect with what you&apos;ve built.
           </p>
         </div>
       </div>
@@ -120,7 +120,7 @@ export default function CreatorsPage() {
                 Zero Upfront Cost
               </h4>
               <p className="text-white/70 leading-relaxed">
-                We handle the platform, minting, printing, and fulfillment. You bring the IP.
+                We build the platform, handle minting, printing, and shipping. You just bring your art.
               </p>
             </div>
           </div>
@@ -146,10 +146,10 @@ export default function CreatorsPage() {
                 Revenue
               </span>
               <h4 className="font-display uppercase text-xl text-white mb-3">
-                70/30 Revenue Share
+                Revenue Share
               </h4>
               <p className="text-white/70 leading-relaxed">
-                You keep the majority of every pack sold featuring your IP.
+                You earn from every pack sold. Your IP, your cut — simple as that.
               </p>
             </div>
           </div>
@@ -178,7 +178,7 @@ export default function CreatorsPage() {
                 Real Ownership
               </h4>
               <p className="text-white/70 leading-relaxed">
-                Your community collects verifiable, tradeable cards — not just static images.
+                Your fans don&apos;t just save a JPEG — they collect cards they can trade, prove ownership of, and actually keep.
               </p>
             </div>
           </div>
@@ -201,10 +201,10 @@ export default function CreatorsPage() {
               </svg>
             </div>
             <h3 className="font-display uppercase text-xl text-white mb-3">
-              You&apos;re on the list!
+              You&apos;re In!
             </h3>
             <p className="text-white/70 leading-relaxed">
-              Thanks for joining! We&apos;ll reach out when the creator program opens.
+              Awesome — you&apos;re on the list. We&apos;ll reach out the moment creator onboarding goes live.
             </p>
           </div>
         ) : (
@@ -216,7 +216,7 @@ export default function CreatorsPage() {
               Join the Waitlist
             </h3>
             <p className="text-white/50 text-sm mb-8">
-              Tell us about your IP and we&apos;ll reach out when partner onboarding opens.
+              Drop your info below and we&apos;ll let you know as soon as creator onboarding is live.
             </p>
 
             {error && (
@@ -273,7 +273,7 @@ export default function CreatorsPage() {
                   required
                   minLength={10}
                   rows={3}
-                  placeholder="Tell us why your community would love collectible cards…"
+                  placeholder="What's your world about? Why would your fans love collecting it?"
                 />
               </Field>
 
