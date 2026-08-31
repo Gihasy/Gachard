@@ -28,6 +28,7 @@ export default function Profil() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [ready, setReady] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
+  const [crystalBalance, setCrystalBalance] = useState<number | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
   const [redeemCardId, setRedeemCardId] = useState("");
   const [redeemCode, setRedeemCode] = useState("");
@@ -75,6 +76,13 @@ export default function Profil() {
       .catch(() => {
         if (!cancelled) setBalance(0);
       });
+
+    fetch(`/api/crystal?userId=${user.user_id}`)
+      .then((r) => r.json())
+      .then((d: { balance?: number }) => {
+        if (!cancelled) setCrystalBalance(d.balance ?? 0);
+      })
+      .catch(() => {});
 
     fetch(`/api/cards?userId=${user.user_id}`)
       .then((r) => r.json())
@@ -253,6 +261,38 @@ export default function Profil() {
               >
                 Top Up
               </Link>
+            </div>
+
+            <div
+              className="p-3 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(0,204,255,0.12), rgba(184,172,255,0.06))",
+                border: "1px solid rgba(0,204,255,0.3)",
+              }}
+              data-testid="profile-crystal-balance"
+            >
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.22em] text-white/60 mb-1">
+                  Crystal Balance
+                </p>
+                <p
+                  className="font-display text-lg sm:text-xl lg:text-2xl"
+                  style={{ color: "var(--electric-blue)" }}
+                >
+                  {(crystalBalance ?? 0).toLocaleString()}
+                </p>
+              </div>
+              <span
+                className="!py-2 !px-3 sm:!py-2.5 sm:!px-4 !text-[0.6rem] sm:!text-[0.7rem] whitespace-nowrap rounded-full font-medium"
+                style={{
+                  background: "rgba(0,204,255,0.1)",
+                  border: "1px solid rgba(0,204,255,0.3)",
+                  color: "var(--electric-blue)",
+                }}
+              >
+                Crystal
+              </span>
             </div>
           </div>
 
