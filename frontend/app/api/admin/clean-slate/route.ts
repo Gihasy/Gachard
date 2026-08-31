@@ -24,6 +24,7 @@ async function doCleanSlate(req: NextRequest) {
       "wishlist",
       "supporters",
       "crystal_balances",
+      "creator_applications",
     ];
 
     if (includeUsers) {

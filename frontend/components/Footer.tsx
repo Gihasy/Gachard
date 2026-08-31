@@ -10,6 +10,7 @@ const productLinks = [
   { label: "Wishlist", href: "/wishlist" },
   { label: "Scan", href: "/scan" },
   { label: "Redeem", href: "/profile" },
+  { label: "Become a Creator", href: "/creators" },
 ];
 
 export default function Footer() {

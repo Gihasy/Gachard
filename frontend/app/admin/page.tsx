@@ -90,12 +90,25 @@ type PendingCard = {
   isStale: boolean;
 };
 
-type TabKey = "users" | "transactions" | "cards" | "prints" | "health" | "supporters" | "dismantle";
+type TabKey = "cards" | "transactions" | "dismantle" | "prints" | "health" | "users" | "supporters" | "creators";
 
 type AdminSupporter = {
   id: string;
   email: string;
   message: string;
+  createdAt: string;
+};
+
+type CreatorApp = {
+  id: string;
+  name: string;
+  brandName: string;
+  ipType: string;
+  socialMedia: string;
+  email: string;
+  interest: string;
+  communitySize: string | null;
+  status: string;
   createdAt: string;
 };
 
@@ -142,6 +155,12 @@ const TAB_META: Record<TabKey, { label: string; icon: React.ReactNode }> = {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
     ),
   },
+  creators: {
+    label: "Creators",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+    ),
+  },
 };
 
 export default function AdminPage() {
@@ -153,6 +172,7 @@ export default function AdminPage() {
   const [pendingCards, setPendingCards] = useState<PendingCard[]>([]);
   const [pendingMeta, setPendingMeta] = useState({ total: 0, staleCount: 0, avgPendingMinutes: 0 });
   const [supporters, setSupporters] = useState<AdminSupporter[]>([]);
+  const [creatorApps, setCreatorApps] = useState<CreatorApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmingAll, setConfirmingAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -173,8 +193,9 @@ export default function AdminPage() {
       fetch("/api/admin/print-requests").then((r) => r.json()),
       fetch("/api/admin/pending-cards").then((r) => r.json()),
       fetch("/api/admin/supporters").then((r) => r.json()),
+      fetch("/api/admin/creator-applications").then((r) => r.json()),
     ])
-      .then(([usersData, txsData, cardsData, printsData, pendingData, supportersData]) => {
+      .then(([usersData, txsData, cardsData, printsData, pendingData, supportersData, creatorsData]) => {
         setUsers(usersData.users ?? []);
         setTxs(txsData.transactions ?? []);
         setCards(cardsData.cards ?? []);
@@ -182,6 +203,7 @@ export default function AdminPage() {
         setPendingCards(pendingData.cards ?? []);
         setPendingMeta({ total: pendingData.total ?? 0, staleCount: pendingData.staleCount ?? 0, avgPendingMinutes: pendingData.avgPendingMinutes ?? 0 });
         setSupporters(supportersData.supporters ?? []);
+        setCreatorApps(creatorsData.applications ?? []);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -228,6 +250,7 @@ export default function AdminPage() {
     tab === "prints" ? prints.length :
     tab === "supporters" ? supporters.length :
     tab === "dismantle" ? txs.filter((t) => t.type === "dismantled").length :
+    tab === "creators" ? creatorApps.length :
     pendingCards.length;
 
   const pendingPrints = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) !== "Real").length;
@@ -253,7 +276,7 @@ export default function AdminPage() {
       description="Manage users, monitor on-chain transactions, and fulfil physical card print requests."
     >
       {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-7 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-8 gap-4 mb-8">
         <SummaryCard label="Cards" value={cards.length} color="var(--aurora-pink)" active={tab === "cards"} onClick={() => setTab("cards")} />
         <SummaryCard label="Transactions" value={txs.length} color="var(--cosmic-violet)" active={tab === "transactions"} onClick={() => setTab("transactions")} />
         <SummaryCard label="Dismantle" value={txs.filter((t) => t.type === "dismantled").length} color="var(--crystal)" active={tab === "dismantle"} onClick={() => setTab("dismantle")} />
@@ -261,12 +284,13 @@ export default function AdminPage() {
         <SummaryCard label="Pending Mints" value={pendingMeta.total} color={pendingMeta.staleCount > 0 ? "#ff6bba" : "var(--electric-blue)"} active={tab === "health"} onClick={() => setTab("health")} hasNotification={pendingMeta.staleCount > 0} />
         <SummaryCard label="Users" value={users.length} color="var(--electric-blue)" active={tab === "users"} onClick={() => setTab("users")} />
         <SummaryCard label="Supporters" value={supporters.length} color="var(--aurora-pink)" active={tab === "supporters"} onClick={() => setTab("supporters")} />
+        <SummaryCard label="Creators" value={creatorApps.length} color="var(--cosmic-violet)" active={tab === "creators"} onClick={() => setTab("creators")} />
       </div>
 
       {/* Tabs */}
       <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
         <div className="flex gap-2 flex-wrap">
-          {(["cards", "transactions", "dismantle", "prints", "health", "users", "supporters"] as const).map((t) => {
+          {(["cards", "transactions", "dismantle", "prints", "health", "users", "supporters", "creators"] as const).map((t) => {
             const isActive = tab === t;
             return (
               <button
@@ -366,6 +390,7 @@ export default function AdminPage() {
           )}
           {tab === "supporters" && <SupportersTable supporters={supporters} />}
           {tab === "dismantle" && <DismantleTable txs={txs.filter((t) => t.type === "dismantled")} cards={cards} users={users} />}
+          {tab === "creators" && <CreatorAppsTable apps={creatorApps} />}
         </>
       )}
     </PageShell>
@@ -1128,6 +1153,71 @@ function DismantleTable({ txs, cards, users }: { txs: AdminTx[]; cards: AdminCar
                 >
                   {tx.status}
                 </span>
+              </td>
+            </tr>
+          );
+        })
+      )}
+    </TableShell>
+  );
+}
+
+/* ─── Creator Applications ─── */
+function CreatorAppsTable({ apps }: { apps: CreatorApp[] }) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  return (
+    <TableShell
+      head={
+        <>
+          <TH>Date</TH>
+          <TH>Name</TH>
+          <TH>Brand / IP</TH>
+          <TH>Type</TH>
+          <TH>Email</TH>
+          <TH>Social</TH>
+          <TH>Community</TH>
+          <TH>Interest</TH>
+        </>
+      }
+    >
+      {apps.length === 0 ? (
+        <tr><td colSpan={8} className="p-8 text-center text-white/40">No applications yet</td></tr>
+      ) : (
+        apps.map((a) => {
+          const isExpanded = expanded === a.id;
+          const interestShort = a.interest.length > 60 ? a.interest.slice(0, 60) + "…" : a.interest;
+
+          return (
+            <tr key={a.id} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
+              <td className="px-4 py-3.5 text-white/50 text-xs whitespace-nowrap">{new Date(a.createdAt).toLocaleString()}</td>
+              <td className="px-4 py-3.5 text-white/90 text-xs font-medium">{a.name}</td>
+              <td className="px-4 py-3.5 text-white/80 text-xs">{a.brandName}</td>
+              <td className="px-4 py-3.5">
+                <span
+                  className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded"
+                  style={{ background: "rgba(184,172,255,0.12)", color: "var(--cosmic-violet)" }}
+                >
+                  {a.ipType}
+                </span>
+              </td>
+              <td className="px-4 py-3.5 text-xs">
+                <a href={`mailto:${a.email}`} className="text-white/60 hover:text-white transition-colors">{a.email}</a>
+              </td>
+              <td className="px-4 py-3.5 text-xs">
+                <a href={a.socialMedia} target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors max-w-[120px] truncate inline-block">
+                  {a.socialMedia}
+                </a>
+              </td>
+              <td className="px-4 py-3.5 text-white/50 text-xs">{a.communitySize || "—"}</td>
+              <td className="px-4 py-3.5 text-xs max-w-[200px]">
+                <button
+                  onClick={() => setExpanded(isExpanded ? null : a.id)}
+                  className="text-left text-white/60 hover:text-white/90 transition-colors cursor-pointer"
+                  title={a.interest}
+                >
+                  {isExpanded ? a.interest : interestShort}
+                </button>
               </td>
             </tr>
           );
