@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { addCredits } from "@/lib/credits";
-import { createTransaction } from "@/lib/transactions";
+import { getCollection } from "@/lib/mongodb";
 
 export async function POST(request: Request) {
   try {
@@ -20,16 +20,22 @@ export async function POST(request: Request) {
 
     const newBalance = await addCredits(userId, amountCents);
 
-    // Record top-up as a transaction for history tracking
-    const tx = await createTransaction({
+    // Record top-up as a confirmed transaction (no on-chain — database-only operation)
+    const txCol = await getCollection("transactions");
+    const now = new Date().toISOString();
+    const txResult = await txCol.insertOne({
       userId,
       type: "topup",
       amount: amountCents,
+      txHash: null,
+      status: "confirmed",
       fromAddress: "",
       toAddress: "",
+      createdAt: now,
+      updatedAt: now,
     });
 
-    return NextResponse.json({ success: true, newBalance, txId: tx._id?.toString() });
+    return NextResponse.json({ success: true, newBalance, txId: txResult.insertedId.toString() });
   } catch (error) {
     console.error("Top-up error:", error);
     return NextResponse.json({ error: (error as Error).message }, { status: 400 });
