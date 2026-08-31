@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { timingSafeEqual } from "crypto";
 
 /**
  * Auth guard for protected routes.
@@ -14,6 +15,11 @@ import { NextResponse, type NextRequest } from "next/server";
  * Also enforces HTTP Basic Auth on /admin routes.
  */
 const PROTECTED = ["/collection", "/profile", "/topup"];
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -36,7 +42,7 @@ export function middleware(req: NextRequest) {
     const expectedUser = process.env.ADMIN_USERNAME;
     const expectedPass = process.env.ADMIN_PASSWORD;
 
-    if (username !== expectedUser || password !== expectedPass) {
+    if (!expectedUser || !expectedPass || !safeEqual(username, expectedUser) || !safeEqual(password, expectedPass)) {
       return new NextResponse("Invalid credentials", {
         status: 401,
         headers: { "WWW-Authenticate": 'Basic realm="Gachard Admin"' },

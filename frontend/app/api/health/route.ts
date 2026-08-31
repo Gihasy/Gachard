@@ -17,7 +17,6 @@ export async function GET() {
       {
         status: "error",
         database: "disconnected",
-        error: error instanceof Error ? error.message : "Unknown error"
       },
       { status: 500 }
     );

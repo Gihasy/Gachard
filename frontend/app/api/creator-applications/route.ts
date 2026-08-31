@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 5;
 
 const VALID_IP_TYPES = [
   "Game",
@@ -13,8 +15,37 @@ const VALID_IP_TYPES = [
   "Other",
 ];
 
+function getClientIp(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  return forwarded?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
+}
+
+async function checkIpRateLimit(ip: string): Promise<boolean> {
+  const col = await getCollection("rate_limits");
+  const windowStart = new Date(
+    Math.floor(Date.now() / RATE_LIMIT_WINDOW_MS) * RATE_LIMIT_WINDOW_MS
+  ).toISOString();
+  const key = `ip:${ip}`;
+  const action = "creator-application";
+
+  const entry = await col.findOne({ userId: key, action, windowStart });
+  if (!entry) {
+    await col.insertOne({ userId: key, action, windowStart, count: 1 });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  await col.updateOne({ _id: entry._id }, { $inc: { count: 1 } });
+  return true;
+}
+
 export async function POST(request: Request) {
   try {
+    // Rate limit by IP
+    const ip = getClientIp(request);
+    if (!(await checkIpRateLimit(ip))) {
+      return NextResponse.json({ error: "Too many submissions. Try again later." }, { status: 429 });
+    }
+
     const body = await request.json();
 
     // Honeypot — if filled, return fake success without inserting

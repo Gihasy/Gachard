@@ -22,6 +22,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Verify card ownership
+    const cardsCollection = await getCollection("cards");
+    const card = await cardsCollection.findOne({ tokenId });
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
+    if (card.ownerAddress !== user.walletAddress) {
+      return NextResponse.json({ error: "Card does not belong to this user" }, { status: 403 });
+    }
+
     // Save shipping address
     const shippingCollection = await getCollection("shipping_addresses");
     await shippingCollection.insertOne({
