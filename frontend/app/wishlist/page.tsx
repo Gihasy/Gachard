@@ -93,12 +93,12 @@ export default function WishlistPage() {
               </p>
               {item.fvm !== null && (
                 <p className="text-[11px] mb-2" style={{ color: "var(--silver-mist-dim)" }}>
-                  FVM: <span style={{ color: "var(--aurora-gold)" }}>{item.fvm} Credit</span>
+                  FVM: <span style={{ color: "var(--aurora-gold)" }}>{item.fvm} Crystal</span>
                 </p>
               )}
               <div className="mt-auto flex items-center justify-between">
                 <span className="text-base font-bold" style={{ color: "var(--aurora-gold)" }}>
-                  {item.price} Credit
+                  {item.price} Crystal
                 </span>
                 <button
                   onClick={() => toggleWishlist(item.cardId)}

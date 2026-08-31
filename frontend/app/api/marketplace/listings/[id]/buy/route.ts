@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { ObjectId } from "mongodb";
 import { getListingById, markListingSold } from "@/lib/listings";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
-import { deductCredits, addCredits } from "@/lib/credits";
+import { deductCrystal, addCrystal } from "@/lib/crystal";
 import { marketplaceTransfer, waitForReceipt, recordVerification } from "@/lib/blockchain";
 import { calculateTradeSignals } from "@/lib/fraud-signals";
 import { calculateRiskScore } from "@/lib/risk-score";
@@ -51,15 +51,15 @@ export async function POST(
 
     // Deduct credits from buyer
     try {
-      await deductCredits(userId, listing.price);
+      await deductCrystal(userId, listing.price);
     } catch {
-      return NextResponse.json({ error: "Insufficient credit balance" }, { status: 400 });
+      return NextResponse.json({ error: "Insufficient crystal balance" }, { status: 400 });
     }
 
     // Mark listing as sold (atomic — only if still active)
     const soldListing = await markListingSold(id, userId);
     if (!soldListing) {
-      await addCredits(userId, listing.price);
+      await addCrystal(userId, listing.price);
       return NextResponse.json({ error: "Listing was just sold to someone else" }, { status: 409 });
     }
 
@@ -73,11 +73,11 @@ export async function POST(
       );
     } catch (err) {
       console.error("[marketplace/buy] on-chain transfer failed:", err);
-      await addCredits(userId, listing.price);
+      await addCrystal(userId, listing.price);
       await getCollection("listings").then((c) =>
         c.updateOne({ listingId: id }, { $set: { status: "active" }, $unset: { buyerId: "", soldAt: "" } })
       );
-      return NextResponse.json({ error: "Blockchain transfer failed. Credits refunded." }, { status: 500 });
+      return NextResponse.json({ error: "Blockchain transfer failed. Crystal refunded." }, { status: 500 });
     }
 
     // Wait for receipt (async pattern — ADR-018)
@@ -180,7 +180,7 @@ export async function POST(
       );
 
       const sellerProceeds = Math.round(listing.price * (1 - MARKETPLACE_FEE_PERCENT / 100));
-      await addCredits(listing.sellerId, sellerProceeds);
+      await addCrystal(listing.sellerId, sellerProceeds);
 
       return NextResponse.json({
         success: true,

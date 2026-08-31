@@ -37,7 +37,7 @@ export async function generateMarketInsight(): Promise<string> {
   }
 
   // Build summary for LLM
-  let dataSummary = "Data tren harga 2 minggu terakhir (dalam Credit):\n";
+  let dataSummary = "Data tren harga 2 minggu terakhir (dalam Crystal):\n";
   for (const [rarity, data] of Object.entries(statsByRarity)) {
     const recentAvg = data.recent.length > 0
       ? Math.round(data.recent.reduce((a, b) => a + b, 0) / data.recent.length)
@@ -46,7 +46,7 @@ export async function generateMarketInsight(): Promise<string> {
       ? Math.round(data.previous.reduce((a, b) => a + b, 0) / data.previous.length)
       : null;
     const change = recentAvg && prevAvg ? ((recentAvg - prevAvg) / prevAvg * 100).toFixed(1) : "N/A";
-    dataSummary += `- ${rarity}: ${data.recent.length} transaksi, rata-rata ${recentAvg ?? "–"} Credit, perubahan ${change}%\n`;
+    dataSummary += `- ${rarity}: ${data.recent.length} transaksi, rata-rata ${recentAvg ?? "–"} Crystal, perubahan ${change}%\n`;
   }
 
   // Call Gemini
@@ -99,7 +99,7 @@ export async function suggestListingPrice(templateId: string): Promise<string | 
   const rarityName = ["Common", "Rare", "Epic", "Legendary"][template.rarity];
   const floor = Math.round(fvmResult.fvm * 0.7);
 
-  const prompt = `Kartu ini rarity ${rarityName}, nilai pasar rata-rata ${fvmResult.fvm} Credit, tren harga rarity ini sedang ${trendDirection} (${trendPct}%). Harga minimum yang diizinkan sistem: ${floor} Credit.
+  const prompt = `Kartu ini rarity ${rarityName}, nilai pasar rata-rata ${fvmResult.fvm} Crystal, tren harga rarity ini sedang ${trendDirection} (${trendPct}%). Harga minimum yang diizinkan sistem: ${floor} Crystal.
 
 Berikan rekomendasi range harga listing yang wajar dalam 1-2 kalimat bahasa Indonesia, actionable untuk penjual. Sebutkan angka spesifik. Jangan gunakan format markdown.`;
 

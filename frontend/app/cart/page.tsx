@@ -147,7 +147,7 @@ export default function CartPage() {
                     <p className="text-[10px] mt-1" style={{ color: "var(--silver-mist-dim)" }}>#{item.cardId}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-base font-bold" style={{ color: "var(--aurora-gold)" }}>{item.price} Credit</p>
+                    <p className="text-base font-bold" style={{ color: "var(--aurora-gold)" }}>{item.price} Crystal</p>
                     {result?.success && <p className="text-[10px] text-green-400 mt-1">Purchased</p>}
                     {result?.error && <p className="text-[10px] text-red-400 mt-1">{result.error}</p>}
                   </div>
@@ -171,7 +171,7 @@ export default function CartPage() {
           <div className="glass p-5">
             <div className="flex justify-between mb-4">
               <span className="text-sm" style={{ color: "var(--silver-mist-dim)" }}>Total ({items.length} items)</span>
-              <span className="text-xl font-bold" style={{ color: "var(--aurora-gold)" }}>{totalPrice} Credit</span>
+              <span className="text-xl font-bold" style={{ color: "var(--aurora-gold)" }}>{totalPrice} Crystal</span>
             </div>
             {results.length > 0 ? (
               <div className="space-y-2">

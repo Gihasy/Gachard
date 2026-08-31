@@ -48,3 +48,30 @@ export async function addCrystal(userId: string, amount: number): Promise<number
 
   return result?.balance ?? amount;
 }
+
+/**
+ * Deduct Crystal from user's balance (marketplace purchase).
+ * Returns new balance. Throws if insufficient.
+ */
+export async function deductCrystal(userId: string, amount: number): Promise<number> {
+  if (amount <= 0) throw new Error("Amount must be positive");
+
+  const collection = await getCollection("crystal_balances");
+  const record = await collection.findOne({ userId });
+
+  if (!record || record.balance < amount) {
+    throw new Error("Insufficient crystal balance");
+  }
+
+  const result = await collection.findOneAndUpdate(
+    { userId, balance: { $gte: amount } },
+    {
+      $inc: { balance: -amount },
+      $set: { updatedAt: new Date().toISOString() },
+    },
+    { returnDocument: "after" }
+  );
+
+  if (!result) throw new Error("Insufficient crystal balance");
+  return result.balance;
+}

@@ -65,7 +65,7 @@ export default function MarketplacePage() {
     if (stored) {
       const u = JSON.parse(stored);
       setUser(u);
-      fetch(`/api/credits?userId=${u.user_id}`)
+      fetch(`/api/crystal?userId=${u.user_id}`)
         .then((r) => r.json())
         .then((d: { balance?: number }) => setBalance(d.balance ?? 0))
         .catch(() => setBalance(0));
@@ -310,7 +310,7 @@ export default function MarketplacePage() {
 
               {listing.fvm !== null && (
                 <p className="text-[11px] mb-2" style={{ color: "var(--silver-mist-dim)" }}>
-                  FVM: <span style={{ color: "var(--aurora-gold)" }}>{listing.fvm} Credit</span>
+                  FVM: <span style={{ color: "var(--aurora-gold)" }}>{listing.fvm} Crystal</span>
                 </p>
               )}
 
@@ -318,7 +318,7 @@ export default function MarketplacePage() {
                 {/* Price + icons row */}
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-base font-bold" style={{ color: "var(--aurora-gold)" }}>
-                    {listing.price} Credit
+                    {listing.price} Crystal
                   </span>
                   <div className="flex items-center gap-1.5">
                     {/* Wishlist heart */}
@@ -424,17 +424,17 @@ export default function MarketplacePage() {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
                 <span style={{ color: "var(--silver-mist-dim)" }}>Price</span>
-                <span className="font-semibold" style={{ color: "var(--aurora-gold)" }}>{confirmBuy.price} Credit</span>
+                <span className="font-semibold" style={{ color: "var(--aurora-gold)" }}>{confirmBuy.price} Crystal</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span style={{ color: "var(--silver-mist-dim)" }}>Your Balance</span>
                 <span className="font-semibold" style={{ color: balance !== null && balance >= confirmBuy.price ? "#00ff88" : "var(--aurora-pink)" }}>
-                  {balance !== null ? `${balance.toLocaleString()} Credit` : "Loading…"}
+                  {balance !== null ? `${balance.toLocaleString()} Crystal` : "Loading…"}
                 </span>
               </div>
               {balance !== null && balance < confirmBuy.price && (
                 <p className="text-xs text-center py-1.5 rounded-lg" style={{ background: "rgba(255,107,186,0.1)", border: "1px solid rgba(255,107,186,0.2)", color: "var(--aurora-pink)" }}>
-                  Insufficient balance. You need {(confirmBuy.price - balance).toLocaleString()} more Credit.
+                  Insufficient balance. You need {(confirmBuy.price - balance).toLocaleString()} more Crystal.
                 </p>
               )}
             </div>

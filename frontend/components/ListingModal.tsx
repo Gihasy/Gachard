@@ -50,7 +50,7 @@ export default function ListingModal({ cardId, templateId, userId, onClose, onLi
       return;
     }
     if (floor && priceNum < floor) {
-      setError(`Minimum price is ${floor} Credit (FVM floor)`);
+      setError(`Minimum price is ${floor} Crystal (FVM floor)`);
       return;
     }
 
@@ -97,7 +97,7 @@ export default function ListingModal({ cardId, templateId, userId, onClose, onLi
               Fair Value Market
             </p>
             <p className="text-sm" style={{ color: "var(--silver-mist)" }}>
-              {fvm} Credit (min: {floor} Credit)
+              {fvm} Crystal (min: {floor} Crystal)
             </p>
           </div>
         )}
@@ -115,7 +115,7 @@ export default function ListingModal({ cardId, templateId, userId, onClose, onLi
 
         <form onSubmit={handleSubmit}>
           <label className="text-xs font-semibold block mb-1" style={{ color: "var(--silver-mist-dim)" }}>
-            Price (Credit)
+            Price (Crystal)
           </label>
           <input
             type="number"

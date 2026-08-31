@@ -104,7 +104,7 @@ export default function CartDropdown({ cartIds, onRemove, onClose }: CartDropdow
         <div className="px-4 py-3 border-t border-white/10">
           <div className="flex justify-between mb-3">
             <span className="text-xs" style={{ color: "var(--silver-mist-dim)" }}>Total</span>
-            <span className="text-sm font-bold" style={{ color: "var(--aurora-gold)" }}>{totalPrice} Credit</span>
+            <span className="text-sm font-bold" style={{ color: "var(--aurora-gold)" }}>{totalPrice} Crystal</span>
           </div>
           <Link
             href="/cart"

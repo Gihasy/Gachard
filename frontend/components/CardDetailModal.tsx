@@ -257,7 +257,7 @@ export default function CardDetailModal({
                     label="Purchase Price"
                     value={
                       data.purchasePrice !== null
-                        ? <span className="font-semibold text-[0.65rem]" style={{ color: "var(--aurora-gold)" }}>{data.purchasePrice} Credit</span>
+                        ? <span className="font-semibold text-[0.65rem]" style={{ color: "var(--aurora-gold)" }}>{data.purchasePrice} Crystal</span>
                         : <span className="text-[0.65rem] text-white/40">—</span>
                     }
                   />
@@ -265,7 +265,7 @@ export default function CardDetailModal({
                     label="Fair Value Market"
                     value={
                       data.fvm !== null
-                        ? <span className="font-semibold text-[0.65rem]" style={{ color: "var(--aurora-gold)" }}>{data.fvm} Credit</span>
+                        ? <span className="font-semibold text-[0.65rem]" style={{ color: "var(--aurora-gold)" }}>{data.fvm} Crystal</span>
                         : <span className="text-[0.65rem] text-white/40">—</span>
                     }
                     last
@@ -326,7 +326,7 @@ export default function CardDetailModal({
                           <div className="flex items-center gap-2 shrink-0 ml-2">
                             {tx.price && tx.price > 0 && (
                               <span className="text-[0.55rem] font-semibold" style={{ color: "var(--aurora-gold)" }}>
-                                {tx.price} Credit
+                                {tx.price} Crystal
                               </span>
                             )}
                             <span className="text-[0.55rem] text-white/50">

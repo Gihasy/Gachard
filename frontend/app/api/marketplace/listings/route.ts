@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     const floor = getFVMFloor(fvmResult.fvm);
     if (floor !== null && price < floor) {
       return NextResponse.json({
-        error: `Price below FVM floor. Minimum: ${floor} Credit (70% of FVM ${fvmResult.fvm})`,
+        error: `Price below FVM floor. Minimum: ${floor} Crystal (70% of FVM ${fvmResult.fvm})`,
         floor,
         fvm: fvmResult.fvm,
       }, { status: 400 });

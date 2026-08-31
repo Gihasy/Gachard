@@ -174,7 +174,7 @@ export default function CartModal({ cartIds, userId, onClose, onRemove, onClear,
           <div className="p-5 border-t border-white/10 shrink-0">
             <div className="flex justify-between mb-4">
               <span className="text-sm" style={{ color: "var(--silver-mist-dim)" }}>Total</span>
-              <span className="text-lg font-bold" style={{ color: "var(--aurora-gold)" }}>{totalPrice} Credit</span>
+              <span className="text-lg font-bold" style={{ color: "var(--aurora-gold)" }}>{totalPrice} Crystal</span>
             </div>
             {results.length > 0 ? (
               <button onClick={onClose} className="btn-primary w-full">Done</button>
