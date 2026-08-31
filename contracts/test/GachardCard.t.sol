@@ -492,4 +492,85 @@ contract GachardCardTest is Test {
         assertEq(card.lastRiskScore(id2), 100);
         assertTrue(card.flaggedSuspicious(id2));
     }
+
+    // ============================================
+    // Section 8: burnCard tests
+    // ============================================
+
+    function test_burnCard_removes_token() public {
+        uint256 tokenId = card.mintCard(user1, 0); // Common
+        card.burnCard(tokenId, user1);
+        assertEq(card.balanceOf(user1, tokenId), 0);
+    }
+
+    function test_burnCard_cannot_transfer_after_burn() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        card.burnCard(tokenId, user1);
+
+        // Attempting to transfer burned token should revert (balance is 0)
+        vm.expectRevert();
+        card.marketplaceTransfer(tokenId, user1, user2);
+    }
+
+    function test_burnCard_emits_event_with_rarity() public {
+        uint256 tokenId = card.mintCard(user1, 2); // Epic
+
+        vm.expectEmit(true, false, false, true);
+        emit GachardCard.CardBurned(tokenId, user1, 2);
+        card.burnCard(tokenId, user1);
+    }
+
+    function test_burnCard_emits_event_all_rarities() public {
+        // Common=0
+        uint256 t1 = card.mintCard(user1, 0);
+        vm.expectEmit(true, false, false, true);
+        emit GachardCard.CardBurned(t1, user1, 0);
+        card.burnCard(t1, user1);
+
+        // Rare=1
+        uint256 t2 = card.mintCard(user1, 1);
+        vm.expectEmit(true, false, false, true);
+        emit GachardCard.CardBurned(t2, user1, 1);
+        card.burnCard(t2, user1);
+
+        // Legendary=3
+        uint256 t3 = card.mintCard(user1, 3);
+        vm.expectEmit(true, false, false, true);
+        emit GachardCard.CardBurned(t3, user1, 3);
+        card.burnCard(t3, user1);
+    }
+
+    function test_burnCard_reverts_when_vaulted() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        bytes32 hash = keccak256("test");
+        card.requestPrint(tokenId, hash, user1); // status -> Vaulted
+
+        vm.expectRevert("Card is not digital");
+        card.burnCard(tokenId, user1);
+    }
+
+    function test_burnCard_reverts_when_not_owner() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        vm.prank(user2);
+        vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user2));
+        card.burnCard(tokenId, user1);
+    }
+
+    function test_burnCard_reverts_when_not_holder() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+
+        // user2 doesn't hold the card
+        vm.expectRevert("Owner does not hold card");
+        card.burnCard(tokenId, user2);
+    }
+
+    function test_burnCard_reverts_when_already_burned() public {
+        uint256 tokenId = card.mintCard(user1, 0);
+        card.burnCard(tokenId, user1);
+
+        // Second burn attempt — balance is 0
+        vm.expectRevert("Owner does not hold card");
+        card.burnCard(tokenId, user1);
+    }
 }
