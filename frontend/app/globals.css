@@ -158,6 +158,19 @@ body {
 }
 .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 14px 34px -10px rgba(255,196,102,0.75); }
 
+.btn-crystal {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  background: linear-gradient(135deg, #B0F0FF, var(--crystal));
+  color: var(--deep-navy); font-weight: 700; font-size: 0.875rem;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  border-radius: 999px; border: 0;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 8px 26px -8px rgba(125,249,255,0.55);
+  cursor: pointer;
+}
+.btn-crystal:hover { transform: translateY(-1px); box-shadow: 0 14px 34px -10px rgba(125,249,255,0.75); }
+
 .btn-list-sale {
   display: block !important;
   width: 100% !important;

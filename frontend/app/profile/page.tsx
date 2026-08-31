@@ -285,12 +285,8 @@ export default function Profil() {
               </div>
               <Link
                 href="/dismantle"
-                className="!py-2 !px-3 sm:!py-2.5 sm:!px-4 !text-[0.6rem] sm:!text-[0.7rem] whitespace-nowrap rounded-full font-medium transition-all hover:brightness-110"
-                style={{
-                  background: "rgba(125,249,255,0.1)",
-                  border: "1px solid rgba(125,249,255,0.3)",
-                  color: "var(--crystal)",
-                }}
+                className="btn-crystal !py-2 !px-3 sm:!py-2.5 sm:!px-4 !text-[0.6rem] sm:!text-[0.7rem] whitespace-nowrap"
+                data-testid="profile-crystal-dismantle"
               >
                 Dismantle
               </Link>
