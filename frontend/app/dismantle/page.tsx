@@ -310,8 +310,12 @@ export default function DismantlePage() {
 
           {/* Summary bar */}
           <div
-            className="glass p-4 sm:p-5 flex items-center justify-between flex-wrap gap-4 sticky bottom-4 z-10"
-            style={{ borderColor: selected.size > 0 ? "rgba(125,249,255,0.3)" : undefined }}
+            className="p-4 sm:p-5 flex items-center justify-between flex-wrap gap-4 sticky bottom-4 z-10 rounded-2xl"
+            style={{
+              background: "rgba(15,19,36,0.97)",
+              border: `1px solid ${selected.size > 0 ? "rgba(125,249,255,0.3)" : "rgba(230,232,240,0.08)"}`,
+              boxShadow: "0 -4px 30px rgba(0,0,0,0.5)",
+            }}
           >
             <div className="flex items-center gap-6">
               <div>
