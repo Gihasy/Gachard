@@ -88,7 +88,7 @@ export default function CreatorsPage() {
             <span className="text-gradient-gold">Collectors</span>
           </h2>
           <p className="text-white/70 max-w-2xl mx-auto leading-relaxed">
-            Got a world people love? Gachard lets you turn it into real, tradeable cards — digital and physical. No upfront cost, no blockchain headaches. Just your art, your community, and a whole new way for them to connect with what you&apos;ve built.
+            Got a world people love? Gachard lets you turn it into real, tradeable cards — digital and physical. No upfront cost, no complicated tech. Just your art, your community, and a whole new way for them to connect with what you&apos;ve built.
           </p>
         </div>
       </div>
@@ -120,7 +120,7 @@ export default function CreatorsPage() {
                 Zero Upfront Cost
               </h4>
               <p className="text-white/70 leading-relaxed">
-                We build the platform, handle minting, printing, and shipping. You just bring your art.
+                We build the platform, handle card creation, printing, and shipping. You just bring your art.
               </p>
             </div>
           </div>
