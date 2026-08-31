@@ -443,7 +443,7 @@ export default function MarketplacePage() {
               {balance !== null && balance < confirmBuy.price ? (
                 <>
                   <button onClick={() => setConfirmBuy(null)} className="btn-ghost flex-1 !py-2.5 !text-xs">Cancel</button>
-                  <Link href="/topup" className="btn-primary flex-1 !py-2.5 !text-xs text-center" onClick={() => setConfirmBuy(null)}>Top Up</Link>
+                  <Link href="/dismantle" className="btn-crystal flex-1 !py-2.5 !text-xs text-center" onClick={() => setConfirmBuy(null)}>Dismantle</Link>
                 </>
               ) : (
                 <>
