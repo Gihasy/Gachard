@@ -23,6 +23,7 @@ const TX_TYPE_MAP: Record<string, string> = {
   topup: "Top Up",
   listed: "Listed for Sale",
   sold: "Sold",
+  dismantled: "Dismantled",
 };
 
 /**

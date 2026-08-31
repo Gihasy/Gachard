@@ -24,6 +24,8 @@ const GACHARD_ABI = [
   "function lastRiskScore(uint256 tokenId) external view returns (uint8)",
   "function flaggedSuspicious(uint256 tokenId) external view returns (bool)",
   "event VerificationRecorded(uint256 indexed tokenId, uint8 riskScore, bool flagged)",
+  "function burnCard(uint256 tokenId, address owner) external",
+  "event CardBurned(uint256 indexed tokenId, address indexed owner, uint8 rarity)",
 ];
 
 /**
@@ -152,4 +154,10 @@ export async function getBalance(address: string, tokenId: number): Promise<bigi
     const contract = getContract();
     return contract.balanceOf(address, tokenId);
   }, `balanceOf(${address}, ${tokenId})`);
+}
+
+export async function burnCard(tokenId: number, ownerAddress: string): Promise<string> {
+  const contract = getContract();
+  const tx = await contract.burnCard(tokenId, ownerAddress);
+  return tx.hash;
 }

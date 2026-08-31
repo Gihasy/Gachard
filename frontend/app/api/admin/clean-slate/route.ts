@@ -23,6 +23,7 @@ async function doCleanSlate(req: NextRequest) {
       "listings",
       "wishlist",
       "supporters",
+      "crystal_balances",
     ];
 
     if (includeUsers) {
