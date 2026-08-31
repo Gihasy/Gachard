@@ -18,16 +18,30 @@ const navItems = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [user, setUser] = useState<{ username?: string } | null>(null);
+  const [user, setUser] = useState<{ username?: string; user_id?: string } | null>(null);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showCartDropdown, setShowCartDropdown] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [crystal, setCrystal] = useState<number | null>(null);
   const { count: cartCount, cart, removeFromCart } = useCart();
 
   useEffect(() => {
     const readUser = () => {
       const stored = localStorage.getItem("user");
-      setUser(stored ? JSON.parse(stored) : null);
+      const parsed = stored ? JSON.parse(stored) : null;
+      setUser(parsed);
+      if (parsed?.user_id) {
+        fetch(`/api/credits?userId=${parsed.user_id}`)
+          .then((r) => r.json())
+          .then((d) => setCredits(d.balance ?? 0))
+          .catch(() => {});
+        fetch(`/api/crystal?userId=${parsed.user_id}`)
+          .then((r) => r.json())
+          .then((d) => setCrystal(d.balance ?? 0))
+          .catch(() => {});
+      }
     };
     readUser();
 
@@ -50,10 +64,11 @@ export default function Navbar() {
     };
   }, []);
 
-  // Close the mobile drawer and cart dropdown whenever the route changes.
+  // Close the mobile drawer, cart dropdown, and user menu whenever the route changes.
   useEffect(() => {
     setOpen(false);
     setShowCartDropdown(false);
+    setShowUserMenu(false);
   }, [pathname]);
 
   return (
@@ -161,23 +176,86 @@ export default function Navbar() {
 
             {user ? (
               <div
-                className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full"
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                }}
-                data-testid="nav-user-chip"
+                className="relative hidden sm:block"
+                onMouseEnter={() => setShowUserMenu(true)}
+                onMouseLeave={() => setShowUserMenu(false)}
               >
-                <span
-                  className="w-2 h-2 rounded-full"
+                <div
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-full cursor-pointer transition-all hover:brightness-125"
                   style={{
-                    background: "var(--aurora-gold)",
-                    boxShadow: "0 0 8px var(--aurora-gold)",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.10)",
                   }}
-                />
-                <span className="text-xs font-medium text-white/85">
-                  @{user.username}
-                </span>
+                  data-testid="nav-user-chip"
+                >
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      background: "var(--aurora-gold)",
+                      boxShadow: "0 0 8px var(--aurora-gold)",
+                    }}
+                  />
+                  <span className="text-xs font-medium text-white/85">
+                    @{user.username}
+                  </span>
+                </div>
+
+                {/* User dropdown */}
+                {showUserMenu && (
+                  <div
+                    className="absolute right-0 top-full mt-2 w-56 rounded-2xl overflow-hidden z-50"
+                    style={{
+                      background: "rgba(15, 19, 36, 0.95)",
+                      border: "1px solid rgba(184,172,255,0.2)",
+                      backdropFilter: "blur(20px)",
+                      boxShadow: "0 12px 40px rgba(0,0,0,0.5), 0 0 20px rgba(184,172,255,0.08)",
+                    }}
+                  >
+                    {/* Balances */}
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[0.7rem] uppercase tracking-widest text-white/50">Credits</span>
+                        <span className="text-sm font-bold" style={{ color: "var(--aurora-gold)" }}>
+                          {(credits ?? 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[0.7rem] uppercase tracking-widest text-white/50">Crystal</span>
+                        <span className="text-sm font-bold" style={{ color: "var(--crystal)" }}>
+                          {(crystal ?? 0).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+
+                    {/* Actions */}
+                    <div className="p-3 space-y-1.5">
+                      <Link
+                        href="/topup"
+                        className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-medium transition-all hover:brightness-125"
+                        style={{ background: "rgba(255,196,102,0.1)", color: "var(--aurora-gold)" }}
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                        </svg>
+                        Top Up Credits
+                      </Link>
+                      <Link
+                        href="/dismantle"
+                        className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-medium transition-all hover:brightness-125"
+                        style={{ background: "rgba(125,249,255,0.08)", color: "var(--crystal)" }}
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                        Dismantle for Crystal
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <Link
