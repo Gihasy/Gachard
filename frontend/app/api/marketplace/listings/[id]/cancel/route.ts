@@ -17,7 +17,13 @@ export async function POST(
 
     const listing = await getListingById(id);
     if (!listing) {
-      return NextResponse.json({ error: "Listing not found" }, { status: 404 });
+      // Listing document missing — clean up stale card reference so user isn't stuck
+      const cardsCol = await getCollection("cards");
+      await cardsCol.updateMany(
+        { listingId: id },
+        { $set: { isListed: false }, $unset: { listingId: "" } }
+      );
+      return NextResponse.json({ success: true, cleaned: true });
     }
 
     if (listing.sellerId !== userId) {
