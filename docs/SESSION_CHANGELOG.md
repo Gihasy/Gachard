@@ -302,13 +302,13 @@ Di-set via `vercel env add` untuk project `gachard` (production):
 | `BSC_TESTNET_RPC` | `https://bsc-testnet-rpc.publicnode.com` | BNB Testnet RPC |
 | `CONTRACT_ADDRESS` | `0x0bb3dd543ff752bd15a50cbb3cba059bea6a278a` | Smart contract |
 | `ADMIN_WALLET_ADDRESS` | `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa` | Admin wallet |
-| `ADMIN_PRIVATE_KEY` | `0xf77d...` | Admin private key (testnet) |
-| `ADMIN_USERNAME` | `gachard-admin-aaafac` | Basic Auth username |
-| `ADMIN_PASSWORD` | `qPBfAqpqYgYheb5T6_w-h1sB` | Basic Auth password |
-| `GOOGLE_CLIENT_ID` | `779312331118-...` | Google OAuth |
-| `GOOGLE_CLIENT_SECRET` | `GOCSPX-...` | Google OAuth |
-| `GEMINI_API_KEY` | `AQ.Ab8RN...` | Gemini AI |
-| `ENCRYPTION_SECRET_KEY` | `gachard-hackathon-2026-...` | AES-256-GCM encryption |
+| `ADMIN_PRIVATE_KEY` | `[REDACTED]` | Admin private key (testnet) |
+| `ADMIN_USERNAME` | `[REDACTED]` | Basic Auth username |
+| `ADMIN_PASSWORD` | `[REDACTED]` | Basic Auth password |
+| `GOOGLE_CLIENT_ID` | `[REDACTED]` | Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | `[REDACTED]` | Google OAuth |
+| `GEMINI_API_KEY` | `[REDACTED]` | Gemini AI |
+| `ENCRYPTION_SECRET_KEY` | `[REDACTED]` | AES-256-GCM encryption |
 | `CHAIN_ID` | `97` | BNB Testnet chain ID |
 
 ---

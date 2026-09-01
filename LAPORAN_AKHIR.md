@@ -144,8 +144,8 @@ Di `frontend/.env` (file **gitignored** — tidak ikut ke GitHub):
 ```
 MONGODB_URL=mongodb://localhost:27017
 DATABASE_NAME=gachard
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=gachard123
+ADMIN_USERNAME=[REDACTED]
+ADMIN_PASSWORD=[REDACTED]
 GOOGLE_CLIENT_ID=
 ENABLE_DEMO_LOGIN=true
 ENCRYPTION_SECRET_KEY=<min 32 karakter>

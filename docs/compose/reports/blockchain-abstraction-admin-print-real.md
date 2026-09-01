@@ -113,8 +113,8 @@ Bug yang diperbaiki: Next.js 16 tidak mendukung `middleware.ts` + `proxy.ts` ber
 ### B4. Admin Credentials
 
 ```
-ADMIN_USERNAME=gachard-admin-aaafac
-ADMIN_PASSWORD=qPBfAqpqYgYheb5T6_w-h1sB
+ADMIN_USERNAME=[REDACTED]
+ADMIN_PASSWORD=[REDACTED]
 ```
 
 Ter-set di `.env.local` dan Vercel Production.

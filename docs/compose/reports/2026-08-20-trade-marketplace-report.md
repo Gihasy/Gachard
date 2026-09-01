@@ -441,7 +441,7 @@ Di `frontend/app/scan/page.tsx`: `{tx.type}` → `{friendlyTxType(tx.type)}`
 
 **Solusi**:
 1. Jalankan seed script dari jaringan yang bisa akses MongoDB Atlas: `cd frontend && npx tsx scripts/seed-marketplace.ts`
-2. Atau buka browser → login → console: `fetch('/api/seed-marketplace?token=gachard-hackathon-2026-secret-key-32ch', {method:'POST'}).then(r=>r.json()).then(console.log)`
+2. Atau buka browser → login → console: `fetch('/api/seed-marketplace?token=[REDACTED]', {method:'POST'}).then(r=>r.json()).then(console.log)`
 3. Atau fix Vercel deployment: cek Root Directory, clear cache, manual deploy dari Vercel dashboard
 
 ### 2. Admin Auth di Vercel

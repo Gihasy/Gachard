@@ -11,8 +11,8 @@
 
 | Item | Old | New |
 |------|-----|-----|
-| `ADMIN_USERNAME` | `gachard-admin-aaafac` | `admin-uylbdz` |
-| `ADMIN_PASSWORD` | `qPBfAqpqYgYheb5T6_w-h1sB` | `GwX+hXgQ3xd3Mn4FN0tXYK+AdVR+7qGh` |
+| `ADMIN_USERNAME` | `[REDACTED]` | `[REDACTED]` |
+| `ADMIN_PASSWORD` | `[REDACTED]` | `[REDACTED]` |
 
 **Updated di:**
 - [x] `frontend/.env.local` (local development)
@@ -35,11 +35,11 @@ $ curl -s -o /dev/null -w "%{http_code}" https://gachard.vercel.app/admin
 401  ✅
 
 # Test 2: Dengan kredensial BARU → harus 200
-$ curl -s -o /dev/null -w "%{http_code}" -u "admin-uylbdz:GwX+hXgQ3xd3Mn4FN0tXYK+AdVR+7qGh" https://gachard.vercel.app/admin
+$ curl -s -o /dev/null -w "%{http_code}" -u "[REDACTED]" https://gachard.vercel.app/admin
 200  ✅
 
 # Test 3: Dengan kredensial LAMA → harus 401 (sudah di-rotate)
-$ curl -s -o /dev/null -w "%{http_code}" -u "gachard-admin-aaafac:qPBfAqpqYgYheb5T6_w-h1sB" https://gachard.vercel.app/admin
+$ curl -s -o /dev/null -w "%{http_code}" -u "[REDACTED]" https://gachard.vercel.app/admin
 401  ✅
 ```
 

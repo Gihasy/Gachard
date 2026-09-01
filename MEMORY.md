@@ -79,7 +79,7 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 - `/admin` page dengan 4 tab: Users, Transactions, Cards, Print Requests
 - HTTP Basic Auth via `proxy.ts` (Next.js 16, bukan middleware.ts)
 - Admin API routes: /api/admin/users, transactions, cards, print-requests, accept-print, confirm-all
-- Credential: `ADMIN_USERNAME=gachard-admin-aaafac`, `ADMIN_PASSWORD=qPBfAqpqYgYheb5T6_w-h1sB`
+- Credential: `ADMIN_USERNAME=[REDACTED]`, `ADMIN_PASSWORD=[REDACTED]`
 - Ter-set di `.env.local` DAN Vercel Production
 
 ### Print-to-Real Flow: SELESAI (27 Juli 2026)

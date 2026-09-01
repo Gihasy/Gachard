@@ -137,8 +137,8 @@ Sesi ini mencakup **bug fixes, performance optimization, UI improvements, dan fi
 ---
 
 ## Admin Credentials (Vercel Production)
-- **Username**: `admin-uylbdz`
-- **Password**: `GwX+hXgQ3xd3Mn4FN0tXYK+AdVR+7qGh`
+- **Username**: `[REDACTED]`
+- **Password**: `[REDACTED]`
 - **Clean-slate URL**: `https://www.gachard.com/api/admin/clean-slate`
 
 ---

@@ -28,3 +28,8 @@ credentials.json
 *.key
 .credentials
 .env*
+
+# Prevent secrets in docs from being tracked
+memory/
+MEMORY.md
+LAPORAN_AKHIR.md

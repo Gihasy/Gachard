@@ -42,9 +42,9 @@ The `googleLogin` implementation in `lib/api.ts` is currently a mock that return
 
 ## Admin console (HTTP Basic Auth)
 - `/admin` and `/api/admin/*` are protected by HTTP Basic Auth in `proxy.ts`.
-- Credentials come from `frontend/.env`: `ADMIN_USERNAME=admin`, `ADMIN_PASSWORD=gachard123`.
+- Credentials come from `frontend/.env`: `ADMIN_USERNAME=[REDACTED]`, `ADMIN_PASSWORD=[REDACTED]`.
 - Works on localhost:3000. NOTE: through the preview/prod Kubernetes ingress the `Authorization: Basic` header is stripped, so `/api/admin/*` returns 502 there. In a real browser the Basic-auth dialog still lets you view the `/admin` page shell. Consider migrating admin auth to a token/session cookie for proxy robustness.
 
 ## Local dev env (`frontend/.env`)
-- `MONGODB_URL=mongodb://localhost:27017`, `DATABASE_NAME=gachard`, `ADMIN_USERNAME=admin`, `ADMIN_PASSWORD=gachard123`.
+- `MONGODB_URL=mongodb://localhost:27017`, `DATABASE_NAME=gachard`, `ADMIN_USERNAME=[REDACTED]`, `ADMIN_PASSWORD=[REDACTED]`.
 - Supervisor `frontend` runs `yarn start` (production build). Run `yarn build` after code changes before restarting `frontend`, or use `yarn dev` manually for hot reload.

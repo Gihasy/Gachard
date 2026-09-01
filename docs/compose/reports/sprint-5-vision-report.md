@@ -109,7 +109,7 @@ Sprint 5 menambahkan AI Vision sungguhan (Google Gemini API) ke fitur scan dan r
 ### 2.4 Environment Variable
 
 ```
-GEMINI_API_KEY=AQ.Ab8RN6J5nz87T5hOoHGM_GGmLp-taELqUYLMqBs1RsSltQ1Gzw
+GEMINI_API_KEY=[REDACTED]
 ```
 
 Set di:

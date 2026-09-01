@@ -1,6 +1,7 @@
 import { MongoClient } from "mongodb";
 
-const MONGODB_URL = process.env.MONGODB_URL || "mongodb+srv://gihasy:%23Gihasy2811@gachard-cluster.4ttukup.mongodb.net/gachard?retryWrites=true&w=majority";
+// Use MONGODB_URL env var — do not hardcode credentials
+const MONGODB_URL = process.env.MONGODB_URL || "mongodb://localhost:27017";
 const DATABASE_NAME = "gachard";
 
 async function cleanState() {
