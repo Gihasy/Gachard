@@ -27,20 +27,24 @@ export default function Navbar() {
   const [crystal, setCrystal] = useState<number | null>(null);
   const { count: cartCount, cart, removeFromCart } = useCart();
 
+  const refreshBalance = () => {
+    fetch("/api/credits", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => setCredits(d.balance ?? 0))
+      .catch(() => {});
+    fetch("/api/crystal", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => setCrystal(d.balance ?? 0))
+      .catch(() => {});
+  };
+
   useEffect(() => {
     const readUser = () => {
       const stored = localStorage.getItem("user");
       const parsed = stored ? JSON.parse(stored) : null;
       setUser(parsed);
       if (parsed?.user_id) {
-        fetch("/api/credits", { credentials: "include" })
-          .then((r) => r.json())
-          .then((d) => setCredits(d.balance ?? 0))
-          .catch(() => {});
-        fetch("/api/crystal", { credentials: "include" })
-          .then((r) => r.json())
-          .then((d) => setCrystal(d.balance ?? 0))
-          .catch(() => {});
+        refreshBalance();
       }
     };
     readUser();
@@ -177,7 +181,7 @@ export default function Navbar() {
             {user ? (
               <div
                 className="relative hidden sm:block"
-                onMouseEnter={() => setShowUserMenu(true)}
+                onMouseEnter={() => { setShowUserMenu(true); refreshBalance(); }}
                 onMouseLeave={() => setShowUserMenu(false)}
               >
                 <div
