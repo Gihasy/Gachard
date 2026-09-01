@@ -1,21 +1,22 @@
 import { NextResponse } from "next/server";
 import { getTransactionStatus, confirmTransaction } from "@/lib/transactions";
-import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getCollection } from "@/lib/mongodb";
 import { generateInvoiceId } from "@/lib/invoice";
+import { getAuthenticatedUser } from "@/lib/session";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const txId = searchParams.get("txId");
-    const userId = searchParams.get("userId");
+
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = user._id.toString();
 
     // User transactions list
     if (userId) {
-      const usersCollection = await getCollection("users");
-      const user = await usersCollection.findOne({ _id: parseObjectId(userId) } as Record<string, unknown>);
-      if (!user) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
 
       const txCollection = await getCollection("transactions");
       const cardsCollection = await getCollection("cards");

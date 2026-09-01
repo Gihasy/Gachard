@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getCollection } from "@/lib/mongodb";
+import { getAuthenticatedUser } from "@/lib/session";
 
 /**
  * POST /api/claim-shipping
@@ -14,18 +15,17 @@ import { getCollection, parseObjectId } from "@/lib/mongodb";
  */
 export async function POST(request: Request) {
   try {
-    const { userId, claimId } = await request.json();
+    const { claimId } = await request.json();
 
-    if (!userId || !claimId) {
-      return NextResponse.json({ error: "userId and claimId required" }, { status: 400 });
+    if (!claimId) {
+      return NextResponse.json({ error: "claimId required" }, { status: 400 });
     }
 
-    // Get user
-    const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: parseObjectId(userId) } as Record<string, unknown>);
+    const user = await getAuthenticatedUser(request);
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = user._id.toString();
 
     // Find card by claimId
     const cardsCollection = await getCollection("cards");

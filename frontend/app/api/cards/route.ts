@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getCollection } from "@/lib/mongodb";
 import { confirmTransaction } from "@/lib/transactions";
+import { getAuthenticatedUser } from "@/lib/session";
 
 /**
  * Derive user-facing display status from fulfillmentStatus.
@@ -17,18 +18,11 @@ function getDisplayStatus(fulfillmentStatus: string | null | undefined, cardStat
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
-    }
-
-    const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: parseObjectId(userId) } as Record<string, unknown>);
+    const user = await getAuthenticatedUser(request);
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = user._id.toString();
 
     const cardsCollection = await getCollection("cards");
     const templatesCollection = await getCollection("card_templates");

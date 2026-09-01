@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getListingById, cancelListing } from "@/lib/listings";
 import { getCollection } from "@/lib/mongodb";
+import { getAuthenticatedUser } from "@/lib/session";
 
 export async function POST(
   req: NextRequest,
@@ -8,12 +9,12 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const body = await req.json();
-    const { userId } = body;
 
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = user._id.toString();
 
     const listing = await getListingById(id);
     if (!listing) {

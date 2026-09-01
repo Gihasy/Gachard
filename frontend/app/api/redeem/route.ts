@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getCollection } from "@/lib/mongodb";
 import { redeemCard, getProvider } from "@/lib/blockchain";
+import { getAuthenticatedUser } from "@/lib/session";
 import { hashRedeemCode } from "@/lib/redeem-code";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { generateInvoiceId } from "@/lib/invoice";
@@ -13,14 +14,13 @@ const CARD_STATUS_CHANGED_TOPIC = ethers.id("CardStatusChanged(uint256,uint8,uin
 
 export async function POST(request: Request) {
   try {
-    const { userId, cardId, tokenId, code } = await request.json();
+    const { cardId, tokenId, code } = await request.json();
 
-    // Get user
-    const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: parseObjectId(userId) } as Record<string, unknown>);
+    const user = await getAuthenticatedUser(request);
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = user._id.toString();
 
     // Find card by cardId or tokenId
     const cardsCollection = await getCollection("cards");

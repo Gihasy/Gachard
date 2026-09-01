@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
-import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getCollection } from "@/lib/mongodb";
+import { getAuthenticatedUser } from "@/lib/session";
 
 const PRINT_PRICE_CENTS = 1499; // $14.99 Print + Shipping (flat rate)
 
 export async function POST(request: Request) {
   try {
-    const { userId, tokenId, shippingAddress } = await request.json();
+    const { tokenId, shippingAddress } = await request.json();
 
-    if (!userId || tokenId === undefined) {
-      return NextResponse.json({ error: "userId and tokenId required" }, { status: 400 });
+    if (tokenId === undefined) {
+      return NextResponse.json({ error: "tokenId required" }, { status: 400 });
     }
 
     // Validate shipping address
@@ -16,11 +17,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Shipping address incomplete" }, { status: 400 });
     }
 
-    const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: parseObjectId(userId) } as Record<string, unknown>);
+    const user = await getAuthenticatedUser(request);
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = user._id.toString();
 
     // Verify card ownership
     const cardsCollection = await getCollection("cards");
