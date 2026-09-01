@@ -1,8 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
-import type { Html5Qrcode } from "html5-qrcode";
+
+// BarcodeDetector type declaration for browsers that support it
+interface BarcodeDetectorResult {
+  rawValue: string;
+}
+interface BarcodeDetectorInstance {
+  detect(source: HTMLVideoElement): Promise<BarcodeDetectorResult[]>;
+}
+interface BarcodeDetectorConstructor {
+  new (opts: { formats: string[] }): BarcodeDetectorInstance;
+  getSupportedFormats(): Promise<string[]>;
+}
 
 interface QRScannerProps {
   onScan: (tokenId: string) => void;
@@ -13,115 +24,138 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [detected, setDetected] = useState(false);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
-
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const detectorRef = useRef<BarcodeDetectorInstance | null>(null);
+  const rafRef = useRef<number>(0);
   const onScanRef = useRef(onScan);
   onScanRef.current = onScan;
+
+  const stopCamera = useCallback(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
 
     const startScanner = async () => {
+      // Check camera API
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setError("Camera is not supported in this browser. Try using manual input instead.");
+        return;
+      }
+
+      // Request camera permission
+      let stream: MediaStream;
       try {
-        // Check camera API exists
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          setError("Camera is not supported in this browser. Try using manual input instead.");
-          return;
-        }
-
-        // Explicitly request camera permission first — triggers browser prompt
-        let stream: MediaStream;
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-          });
-        } catch (permErr) {
-          const msg = permErr instanceof Error ? permErr.name : String(permErr);
-          if (msg === "NotAllowedError" || msg === "PermissionDeniedError") {
-            setError("Camera permission denied. Please allow camera access in your browser settings and reload.");
-          } else if (msg === "NotFoundError") {
-            setError("No camera found on this device.");
-          } else if (msg === "NotReadableError") {
-            setError("Camera is in use by another app.");
-          } else {
-            setError(`Camera error: ${msg}`);
-          }
-          return;
-        }
-
-        // Stop the stream immediately — html5-qrcode will manage its own stream
-        stream.getTracks().forEach((t) => t.stop());
-
-        // Dynamic import to avoid SSR issues
-        const { Html5Qrcode } = await import("html5-qrcode");
-        const scanner = new Html5Qrcode("qr-reader");
-        scannerRef.current = scanner;
-
-        // Calculate responsive qrbox size
-        const minDim = Math.min(window.innerWidth - 80, 320);
-        const boxSize = Math.max(200, minDim);
-
-        await scanner.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: boxSize, height: boxSize },
-            aspectRatio: 1.0,
-            disableFlip: false,
-          },
-          (decodedText) => {
-            if (!mounted) return;
-            setDetected(true);
-            // Extract cardId/claimId from URL or use raw text
-            let scannedId = decodedText;
-            try {
-              const url = new URL(decodedText);
-              const cardId = url.searchParams.get("cardId");
-              const claimId = url.searchParams.get("claimId");
-              const tokenId = url.searchParams.get("tokenId");
-              if (cardId) scannedId = cardId;
-              else if (claimId) scannedId = claimId;
-              else if (tokenId) scannedId = tokenId;
-            } catch {
-              // Not a URL, use as-is
-            }
-            // Small delay for visual feedback before closing
-            setTimeout(() => {
-              scanner.stop().catch(() => {});
-              onScanRef.current(scannedId);
-            }, 300);
-          },
-          () => {
-            // QR code not found in frame — ignore
-          }
-        );
-
-        if (mounted) setScanning(true);
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        });
       } catch (err) {
-        if (mounted) {
-          const msg = err instanceof Error ? err.message : String(err);
-          console.error("[QRScanner] Error:", msg, err);
-          if (msg.includes("NotAllowed") || msg.includes("Permission")) {
-            setError("Camera permission denied. Please allow camera access in browser settings.");
-          } else if (msg.includes("NotFoundError") || msg.includes("No camera")) {
-            setError("No camera found on this device.");
-          } else {
-            setError(`Camera error: ${msg}`);
+        const name = err instanceof Error ? err.name : String(err);
+        if (name === "NotAllowedError") {
+          setError("Camera permission denied. Tap the camera icon in your browser's address bar to allow access, then reload.");
+        } else if (name === "NotFoundError") {
+          setError("No camera found on this device.");
+        } else if (name === "NotReadableError") {
+          setError("Camera is in use by another app.");
+        } else {
+          setError(`Camera error: ${name}`);
+        }
+        return;
+      }
+
+      if (!mounted) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+
+      streamRef.current = stream;
+
+      // Attach stream to video element
+      const video = videoRef.current;
+      if (!video) {
+        setError("Video element not found.");
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+
+      video.srcObject = stream;
+      await video.play();
+      if (mounted) setScanning(true);
+
+      // Try BarcodeDetector API (Chrome, Edge, Safari 15.4+)
+      let useBarcodeDetector = false;
+      const BD = (window as unknown as { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector;
+      if (BD) {
+        try {
+          const formats = await BD.getSupportedFormats();
+          if (formats.includes("qr_code")) {
+            detectorRef.current = new BD({ formats: ["qr_code"] });
+            useBarcodeDetector = true;
           }
+        } catch {
+          // BarcodeDetector not usable
         }
       }
+
+      if (useBarcodeDetector && detectorRef.current) {
+        // Scan loop using BarcodeDetector
+        const scanLoop = async () => {
+          if (!mounted || !videoRef.current || !detectorRef.current) return;
+          try {
+            const results = await detectorRef.current.detect(videoRef.current);
+            if (results.length > 0 && mounted) {
+              const raw = results[0].rawValue;
+              handleDetected(raw);
+              return;
+            }
+          } catch {
+            // Detection frame error — continue
+          }
+          rafRef.current = requestAnimationFrame(scanLoop);
+        };
+        rafRef.current = requestAnimationFrame(scanLoop);
+      } else {
+        // No BarcodeDetector — camera still works for visual, user uses manual input
+        if (mounted) {
+          setError("QR auto-detect not supported in this browser. Use manual input below, or switch to Chrome/Edge for auto-scan.");
+        }
+      }
+    };
+
+    const handleDetected = (decodedText: string) => {
+      if (!mounted) return;
+      setDetected(true);
+      let scannedId = decodedText;
+      try {
+        const url = new URL(decodedText);
+        const cardId = url.searchParams.get("cardId");
+        const claimId = url.searchParams.get("claimId");
+        const tokenId = url.searchParams.get("tokenId");
+        if (cardId) scannedId = cardId;
+        else if (claimId) scannedId = claimId;
+        else if (tokenId) scannedId = tokenId;
+      } catch {
+        // Not a URL, use as-is
+      }
+      setTimeout(() => {
+        stopCamera();
+        onScanRef.current(scannedId);
+      }, 300);
     };
 
     startScanner();
 
     return () => {
       mounted = false;
-      if (scannerRef.current) {
-        scannerRef.current.getState() === 2 &&
-          scannerRef.current.stop().catch(() => {});
-      }
+      stopCamera();
     };
-  }, []);
+  }, [stopCamera]);
 
   return createPortal(
     <div
@@ -150,7 +184,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => { stopCamera(); onClose(); }}
             className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
             style={{
               background: "rgba(255,255,255,0.08)",
@@ -164,34 +198,37 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
           </button>
         </div>
 
-        {/* Scanner */}
+        {/* Camera view */}
         <div className="relative p-5">
           <div
-            id="qr-reader"
             className="rounded-2xl overflow-hidden"
             style={{
               border: `2px solid ${detected ? "rgba(0,255,136,0.6)" : "rgba(184,172,255,0.3)"}`,
               minHeight: "280px",
               transition: "border-color 300ms ease",
+              background: "#000",
             }}
-          />
+          >
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              style={{ display: scanning ? "block" : "none", minHeight: "280px" }}
+              playsInline
+              muted
+              autoPlay
+            />
+          </div>
 
-          {/* Scan frame overlay with corner markers */}
-          {scanning && !detected && (
+          {/* Scan frame overlay */}
+          {scanning && !detected && !error?.includes("manual input") && (
             <div className="absolute inset-5 pointer-events-none flex items-center justify-center">
               <div className="relative" style={{ width: "75%", aspectRatio: "1/1" }}>
-                {/* Corner markers */}
                 <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" fill="none">
-                  {/* Top-left */}
                   <path d="M2 20 L2 2 L20 2" stroke="var(--cosmic-violet)" strokeWidth="2.5" strokeLinecap="round" />
-                  {/* Top-right */}
                   <path d="M80 2 L98 2 L98 20" stroke="var(--cosmic-violet)" strokeWidth="2.5" strokeLinecap="round" />
-                  {/* Bottom-left */}
                   <path d="M2 80 L2 98 L20 98" stroke="var(--cosmic-violet)" strokeWidth="2.5" strokeLinecap="round" />
-                  {/* Bottom-right */}
                   <path d="M80 98 L98 98 L98 80" stroke="var(--cosmic-violet)" strokeWidth="2.5" strokeLinecap="round" />
                 </svg>
-                {/* Scanning line animation */}
                 <div
                   className="absolute left-[10%] right-[10%] h-0.5 rounded-full"
                   style={{
@@ -221,6 +258,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
             </div>
           )}
 
+          {/* Loading */}
           {!scanning && !error && !detected && (
             <div className="absolute inset-5 flex items-center justify-center rounded-2xl bg-black/50">
               <div className="text-center">
@@ -233,6 +271,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
             </div>
           )}
 
+          {/* Error */}
           {error && (
             <div className="mt-4 p-4 rounded-xl text-center" style={{
               background: "rgba(255,107,186,0.1)",
@@ -244,7 +283,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
           )}
         </div>
 
-        {/* Footer hint */}
+        {/* Footer */}
         <div className="px-5 pb-5">
           <p className="text-xs text-white/40 text-center">
             {scanning ? "Align the QR code within the frame" : "Hold steady — the scan happens automatically."}
