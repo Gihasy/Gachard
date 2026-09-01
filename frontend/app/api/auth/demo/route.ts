@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { getCollection } from "@/lib/mongodb";
 import { getOrCreateUser } from "@/lib/auth";
+import { createSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/session";
 
 /**
  * Demo / sandbox account.
@@ -52,11 +53,24 @@ export async function POST() {
 
     // Demo accounts start with 0 credits — user tops up manually.
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       user_id: userId,
       username,
       email: user.email,
     });
+
+    const sessionToken = createSessionToken(userId);
+    const isProduction = process.env.NODE_ENV === "production";
+
+    response.cookies.set(SESSION_COOKIE_NAME, sessionToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: "lax",
+      path: "/",
+      maxAge: SESSION_MAX_AGE,
+    });
+
+    return response;
   } catch (error) {
     console.error("Demo account error:", error);
     return NextResponse.json({ error: "Could not generate demo account" }, { status: 500 });
