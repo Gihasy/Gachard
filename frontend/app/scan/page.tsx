@@ -566,7 +566,7 @@ function ScanContent() {
                           )}
                         </div>
                         <span className="text-xs text-white/50 shrink-0 sm:ml-3">
-                          {new Date(tx.timestamp).toLocaleDateString()}
+                          {new Date(tx.timestamp).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} WIB
                         </span>
                       </div>
                     ))}

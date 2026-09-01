@@ -185,11 +185,28 @@ export default function CardDetailModal({
                     <p className="text-[0.55rem] text-white/60">Signature validated against verified record.</p>
                   </div>
                   {data.tokenId !== null && (
-                    <img
-                      src={`/api/cards/${data.tokenId}/qr`}
-                      alt={`QR for #${data.cardId ?? data.tokenId}`}
-                      className="w-14 h-14 rounded-lg shrink-0"
-                    />
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <img
+                        src={`/api/cards/${data.tokenId}/qr`}
+                        alt={`QR for #${data.cardId ?? data.tokenId}`}
+                        className="w-14 h-14 rounded-lg"
+                      />
+                      <a
+                        href={`/scan?cardId=${data.cardId ?? data.tokenId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:bg-white/10"
+                        style={{ border: "1px solid rgba(255,255,255,0.15)" }}
+                        title="View full details"
+                        data-testid="modal-scan-link"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </a>
+                    </div>
                   )}
                 </div>
 
