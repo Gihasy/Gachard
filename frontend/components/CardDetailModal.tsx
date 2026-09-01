@@ -175,21 +175,7 @@ export default function CardDetailModal({
                   }}
                   data-testid="modal-verification"
                 >
-                  <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-                    style={{
-                      background: data.verification.flag === "verified" ? "rgba(0,204,255,0.18)" : "rgba(255,196,102,0.18)",
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      {data.verification.flag === "verified" ? (
-                        <path d="M5 12l4 4 10-10" stroke="var(--electric-blue)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                      ) : (
-                        <path d="M12 3l10 18H2L12 3zm0 6v5m0 3v.5" stroke="var(--aurora-gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      )}
-                    </svg>
-                  </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p
                       className="text-[0.7rem] font-semibold uppercase tracking-wide"
                       style={{ color: data.verification.flag === "verified" ? "var(--electric-blue)" : "var(--aurora-gold)" }}
@@ -198,32 +184,14 @@ export default function CardDetailModal({
                     </p>
                     <p className="text-[0.55rem] text-white/60">Signature validated against verified record.</p>
                   </div>
-                </div>
-
-                {/* QR Code */}
-                {data.tokenId !== null && (
-                  <div
-                    className="flex items-center gap-3 p-2.5 rounded-xl"
-                    style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                    }}
-                  >
+                  {data.tokenId !== null && (
                     <img
                       src={`/api/cards/${data.tokenId}/qr`}
                       alt={`QR for #${data.cardId ?? data.tokenId}`}
                       className="w-14 h-14 rounded-lg shrink-0"
                     />
-                    <div className="min-w-0">
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-wide" style={{ color: "var(--electric-blue)" }}>
-                        Scan for Details
-                      </p>
-                      <p className="text-[0.5rem] text-white/50 mt-0.5">
-                        Scan this QR to verify ownership, rarity, and full card history.
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Metadata */}
                 <div className="glass p-3">
