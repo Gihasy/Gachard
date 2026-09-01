@@ -33,6 +33,9 @@ export async function POST(request: Request) {
     if (!card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
+    if (card.status === "Burned") {
+      return NextResponse.json({ error: "Card has been dismantled and cannot be redeemed." }, { status: 400 });
+    }
     if (card.fulfillmentStatus !== "Real") {
       return NextResponse.json(
         { error: "Card must be claimed (status: Real) before redeeming. Please claim shipping first." },

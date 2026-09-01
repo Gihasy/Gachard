@@ -37,6 +37,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Card is listed for sale. Cancel listing before requesting print." }, { status: 400 });
     }
 
+    // Block print if card is burned (dismantled)
+    if (card.status === "Burned") {
+      return NextResponse.json({ error: "Card has been dismantled and cannot be printed." }, { status: 400 });
+    }
+
     // Generate redeem code (plaintext TIDAK pernah ke frontend atau on-chain)
     const code = generateRedeemCode();
     const hash = hashRedeemCode(code);
