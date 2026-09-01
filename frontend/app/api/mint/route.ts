@@ -168,7 +168,8 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     // REFUND
-    console.error("Mint failed after deduct, refunding:", error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error("Mint failed after deduct, refunding:", errMsg, error);
     let refunded = false;
     try {
       await addCredits(userId, pack.price);
@@ -178,8 +179,8 @@ export async function POST(request: Request) {
     }
 
     const message = refunded
-      ? "Mint failed, credit refunded"
-      : "Mint failed, credit refund FAILED — contact support";
+      ? `Mint failed: ${errMsg}`
+      : `Mint failed: ${errMsg}. Credit refund FAILED — contact support`;
 
     return NextResponse.json({ error: message, refunded }, { status: 500 });
   }
