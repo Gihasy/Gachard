@@ -15,6 +15,9 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
   const [detected, setDetected] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
+  const onScanRef = useRef(onScan);
+  onScanRef.current = onScan;
+
   useEffect(() => {
     let mounted = true;
 
@@ -62,7 +65,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
             // Small delay for visual feedback before closing
             setTimeout(() => {
               scanner.stop().catch(() => {});
-              onScan(scannedId);
+              onScanRef.current(scannedId);
             }, 300);
           },
           () => {
@@ -91,7 +94,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
           scannerRef.current.stop().catch(() => {});
       }
     };
-  }, [onScan]);
+  }, []);
 
   return createPortal(
     <div
