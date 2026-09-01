@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 
 /**
- * One-time fix: drop tokenId_1 unique index and recreate as sparse unique.
- * Sparse unique index allows multiple null values but enforces uniqueness for non-null.
+ * One-time fix: drop tokenId_1 unique index and recreate as non-unique.
+ * tokenId uniqueness is guaranteed by on-chain minting — no need for DB constraint.
+ * The unique index was blocking pending mints (tokenId: null).
  */
 export async function POST() {
   try {
@@ -18,13 +19,14 @@ export async function POST() {
       results.push("Dropped tokenId_1 index");
     }
 
-    await cardsCollection.createIndex({ tokenId: 1 }, { unique: true, sparse: true });
-    results.push("Created sparse unique tokenId index");
+    // Non-unique index for query performance only
+    await cardsCollection.createIndex({ tokenId: 1 }, { sparse: true });
+    results.push("Created sparse (non-unique) tokenId index");
 
     // Verify
     const newIndexes = await cardsCollection.indexes();
     const newTokenIdx = newIndexes.find((i) => i.name === "tokenId_1");
-    results.push(`Verified: ${JSON.stringify(newTokenIdx?.unique)} sparse: ${JSON.stringify(newTokenIdx?.sparse)}`);
+    results.push(`Verified: unique=${newTokenIdx?.unique ?? false}, sparse=${newTokenIdx?.sparse ?? false}`);
 
     return NextResponse.json({ success: true, results });
   } catch (error) {
