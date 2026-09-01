@@ -25,7 +25,7 @@ export default function ListingModal({ cardId, templateId, userId, onClose, onLi
 
   async function fetchFvm() {
     try {
-      const res = await fetch(`/api/marketplace/fvm?templateId=${templateId}`);
+      const res = await fetch(`/api/marketplace/fvm?templateId=${templateId}`, { credentials: "include" });
       const data = await res.json();
       if (data.fvm !== null) {
         setFvm(data.fvm);
@@ -36,7 +36,7 @@ export default function ListingModal({ cardId, templateId, userId, onClose, onLi
 
   async function fetchSuggestion() {
     try {
-      const res = await fetch(`/api/marketplace/suggest?templateId=${templateId}`);
+      const res = await fetch(`/api/marketplace/suggest?templateId=${templateId}`, { credentials: "include" });
       const data = await res.json();
       if (data.suggestion) setSuggestion(data.suggestion);
     } catch {}
@@ -60,7 +60,8 @@ export default function ListingModal({ cardId, templateId, userId, onClose, onLi
       const res = await fetch("/api/marketplace/listings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, cardId, price: priceNum }),
+        credentials: "include",
+        body: JSON.stringify({ cardId, price: priceNum }),
       });
       const data = await res.json();
       if (res.ok) {

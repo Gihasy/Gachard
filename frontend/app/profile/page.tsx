@@ -68,7 +68,7 @@ export default function Profil() {
   useEffect(() => {
     if (!ready || !user) return;
     let cancelled = false;
-    fetch(`/api/credits?userId=${user.user_id}`)
+    fetch("/api/credits", { credentials: "include" })
       .then((r) => r.json())
       .then((d: { balance?: number }) => {
         if (!cancelled) setBalance(d.balance ?? 0);
@@ -77,14 +77,14 @@ export default function Profil() {
         if (!cancelled) setBalance(0);
       });
 
-    fetch(`/api/crystal?userId=${user.user_id}`)
+    fetch("/api/crystal", { credentials: "include" })
       .then((r) => r.json())
       .then((d: { balance?: number }) => {
         if (!cancelled) setCrystalBalance(d.balance ?? 0);
       })
       .catch(() => {});
 
-    fetch(`/api/cards?userId=${user.user_id}`)
+    fetch("/api/cards", { credentials: "include" })
       .then((r) => r.json())
       .then((d: { cards?: Card[] }) => {
         if (!cancelled) {
@@ -96,7 +96,8 @@ export default function Profil() {
               fetch("/api/cards/view", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: user.user_id, cardIds: newCardIds }),
+                credentials: "include",
+                body: JSON.stringify({ cardIds: newCardIds }),
               }).then(() => {
                 setCards((prev) => prev.map((c) => ({ ...c, isNew: false })));
               }).catch(() => {});
@@ -106,7 +107,7 @@ export default function Profil() {
       })
       .catch(() => {});
 
-    fetch(`/api/transactions?userId=${user.user_id}`)
+    fetch("/api/transactions", { credentials: "include" })
       .then((r) => r.json())
       .then((d: { transactions?: Tx[] }) => {
         if (!cancelled) setTransactions(d.transactions ?? []);
@@ -147,8 +148,8 @@ export default function Profil() {
       const res = await fetch("/api/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          userId: user.user_id,
           cardId: redeemCardId.trim().toLowerCase(),
           code: redeemCode.trim(),
         }),
@@ -161,7 +162,7 @@ export default function Profil() {
         });
         setRedeemCardId("");
         setRedeemCode("");
-        fetch(`/api/cards?userId=${user.user_id}`)
+        fetch("/api/cards", { credentials: "include" })
           .then((r) => r.json())
           .then((d: { cards?: Card[] }) => setCards(d.cards ?? []))
           .catch(() => {});

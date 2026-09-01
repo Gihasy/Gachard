@@ -115,7 +115,8 @@ export default function CardItem({
       const res = await fetch("/api/claim-shipping", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, claimId: scannedClaimId }),
+        credentials: "include",
+        body: JSON.stringify({ claimId: scannedClaimId }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -146,8 +147,8 @@ export default function CardItem({
       const checkoutRes = await fetch("/api/print/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          userId,
           tokenId,
           shippingAddress: {
             recipientName: form.recipientName.trim(),
@@ -169,7 +170,8 @@ export default function CardItem({
       const printRes = await fetch("/api/print", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, tokenId, paymentId: checkoutData.paymentId }),
+        credentials: "include",
+        body: JSON.stringify({ tokenId, paymentId: checkoutData.paymentId }),
       });
       const printData = await printRes.json();
       if (printRes.ok) {
@@ -199,7 +201,8 @@ export default function CardItem({
       const res = await fetch(`/api/marketplace/listings/${listingId}/cancel`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        credentials: "include",
+        body: JSON.stringify({}),
       });
       if (res.ok) {
         setIsListed(false);

@@ -36,7 +36,7 @@ export default function PacksPage() {
 
   useEffect(() => {
     if (!ready || !user) return;
-    fetch(`/api/credits?userId=${user.user_id}`)
+    fetch("/api/credits", { credentials: "include" })
       .then((r) => r.json())
       .then((d) => setBalance(d.balance ?? 0))
       .catch(() => setBalance(0));
@@ -55,13 +55,14 @@ export default function PacksPage() {
         const res = await fetch("/api/mint", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user.user_id, packType }),
+          credentials: "include",
+          body: JSON.stringify({ packType }),
         });
         const data = await res.json();
         if (res.ok) {
           setReveal(data as RevealResult);
           // Refresh balance
-          fetch(`/api/credits?userId=${user.user_id}`)
+          fetch("/api/credits", { credentials: "include" })
             .then((r) => r.json())
             .then((d) => setBalance(d.balance ?? 0))
             .catch(() => {});

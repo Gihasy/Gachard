@@ -42,7 +42,7 @@ export default function CartModal({ cartIds, userId, onClose, onRemove, onClear,
       return;
     }
     setLoading(true);
-    fetch("/api/marketplace/listings")
+    fetch("/api/marketplace/listings", { credentials: "include" })
       .then((r) => r.json())
       .then((data) => {
         const allListings = data.listings || [];
@@ -67,7 +67,8 @@ export default function CartModal({ cartIds, userId, onClose, onRemove, onClear,
         const res = await fetch(`/api/marketplace/listings/${item.listingId}/buy`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
+          credentials: "include",
+          body: JSON.stringify({}),
         });
         const data = await res.json();
         if (res.ok) {

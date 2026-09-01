@@ -19,6 +19,7 @@ export function useWishlist() {
     fetch("/api/marketplace/wishlist-stats", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ cardId, action }),
     }).catch(() => {});
   }, []);

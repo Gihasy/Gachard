@@ -62,7 +62,7 @@ export default function CardDetailModal({
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch(`/api/scan?cardId=${id}`)
+    fetch(`/api/scan?cardId=${id}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;

@@ -45,7 +45,7 @@ export default function CartPage() {
       return;
     }
     setLoading(true);
-    fetch("/api/marketplace/listings")
+    fetch("/api/marketplace/listings", { credentials: "include" })
       .then((r) => r.json())
       .then((data) => {
         const allListings = data.listings || [];
@@ -73,7 +73,8 @@ export default function CartPage() {
         const res = await fetch(`/api/marketplace/listings/${item.listingId}/buy`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user.user_id }),
+          credentials: "include",
+          body: JSON.stringify({}),
         });
         const data = await res.json();
         if (res.ok) {

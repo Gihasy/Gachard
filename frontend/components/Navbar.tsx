@@ -33,11 +33,11 @@ export default function Navbar() {
       const parsed = stored ? JSON.parse(stored) : null;
       setUser(parsed);
       if (parsed?.user_id) {
-        fetch(`/api/credits?userId=${parsed.user_id}`)
+        fetch("/api/credits", { credentials: "include" })
           .then((r) => r.json())
           .then((d) => setCredits(d.balance ?? 0))
           .catch(() => {});
-        fetch(`/api/crystal?userId=${parsed.user_id}`)
+        fetch("/api/crystal", { credentials: "include" })
           .then((r) => r.json())
           .then((d) => setCrystal(d.balance ?? 0))
           .catch(() => {});

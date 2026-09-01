@@ -1,6 +1,6 @@
 export async function getSupporterCount(): Promise<number> {
   try {
-    const res = await fetch("/api/supporters/count");
+    const res = await fetch("/api/supporters/count", { credentials: "include" });
     const data = await res.json();
     return data.count ?? 0;
   } catch {
@@ -22,6 +22,7 @@ export async function submitSupporter(
     const res = await fetch("/api/supporters", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ email, message, website: honeypot }),
     });
     const data = await res.json();

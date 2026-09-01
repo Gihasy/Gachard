@@ -34,7 +34,7 @@ export default function WishlistPage() {
       return;
     }
     setLoading(true);
-    fetch("/api/marketplace/listings")
+    fetch("/api/marketplace/listings", { credentials: "include" })
       .then((r) => r.json())
       .then((data) => {
         const all = data.listings || [];

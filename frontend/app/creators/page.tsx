@@ -47,6 +47,7 @@ export default function CreatorsPage() {
       const res = await fetch("/api/creator-applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(form),
       });
       const data = await res.json();

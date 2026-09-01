@@ -36,7 +36,7 @@ export default function CartDropdown({ cartIds, onRemove, onClose }: CartDropdow
       return;
     }
     setLoading(true);
-    fetch("/api/marketplace/listings")
+    fetch("/api/marketplace/listings", { credentials: "include" })
       .then((r) => r.json())
       .then((data) => {
         const allListings = data.listings || [];

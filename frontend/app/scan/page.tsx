@@ -77,19 +77,13 @@ function ScanContent() {
       setClaimResult({ success: false, message: "Please login first to claim your card." });
       return;
     }
-    let userId: string;
-    try {
-      userId = JSON.parse(user).user_id;
-    } catch {
-      setClaimResult({ success: false, message: "Session expired. Please login again." });
-      return;
-    }
 
     setLoading(true);
     fetch("/api/claim-shipping", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, claimId }),
+      credentials: "include",
+      body: JSON.stringify({ claimId }),
     })
       .then((r) => r.json())
       .then((d) => {
@@ -110,7 +104,7 @@ function ScanContent() {
     setError(null);
     setData(null);
     setRetryLoading(false);
-    fetch(`/api/scan?cardId=${cardId}`)
+    fetch(`/api/scan?cardId=${cardId}`, { credentials: "include" })
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;

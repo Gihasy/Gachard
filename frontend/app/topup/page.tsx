@@ -41,7 +41,7 @@ export default function TopUp() {
   useEffect(() => {
     if (!ready || !user) return;
     let cancelled = false;
-    fetch(`/api/credits?userId=${user.user_id}`)
+    fetch("/api/credits", { credentials: "include" })
       .then((r) => r.json())
       .then((d: { balance?: number }) => {
         if (!cancelled) setBalance(d.balance ?? null);
@@ -62,7 +62,8 @@ export default function TopUp() {
       const res = await fetch("/api/credits/topup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.user_id, amountCents: amount }),
+        credentials: "include",
+        body: JSON.stringify({ amountCents: amount }),
       });
       const data = await res.json();
       if (res.ok) {

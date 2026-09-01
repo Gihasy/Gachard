@@ -44,7 +44,7 @@ function LoginInner() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/demo", { method: "POST" });
+      const res = await fetch("/api/auth/demo", { method: "POST", credentials: "include" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Could not generate demo account");
@@ -88,6 +88,7 @@ function LoginInner() {
               const res = await fetch("/api/auth/google", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ token: response.credential }),
               });
 

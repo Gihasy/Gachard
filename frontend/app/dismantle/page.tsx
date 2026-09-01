@@ -60,8 +60,8 @@ export default function DismantlePage() {
     if (!user) return;
     setLoading(true);
     Promise.all([
-      fetch(`/api/cards?userId=${user.user_id}`).then((r) => r.json()),
-      fetch(`/api/crystal?userId=${user.user_id}`).then((r) => r.json()),
+      fetch("/api/cards", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/crystal", { credentials: "include" }).then((r) => r.json()),
     ])
       .then(([cardsData, crystalData]) => {
         const allCards: Card[] = cardsData.cards ?? [];
@@ -142,7 +142,8 @@ export default function DismantlePage() {
         const res = await fetch("/api/dismantle", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: user.user_id, cardId: card.cardId, tokenId: card.tokenId }),
+          credentials: "include",
+          body: JSON.stringify({ cardId: card.cardId, tokenId: card.tokenId }),
         });
         const data = await res.json();
         if (res.ok) {

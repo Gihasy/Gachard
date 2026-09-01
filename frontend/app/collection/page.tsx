@@ -62,7 +62,7 @@ export default function Koleksi() {
       timedOut = true;
       setLoading(false);
     }, 6000);
-    fetch(`/api/cards?userId=${user.user_id}`)
+    fetch("/api/cards", { credentials: "include" })
       .then((r) => r.json())
       .then((d: { cards?: Card[] }) => {
         if (timedOut) return;
@@ -76,7 +76,8 @@ export default function Koleksi() {
             fetch("/api/cards/view", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ userId: user.user_id, cardIds: newCardIds }),
+              credentials: "include",
+              body: JSON.stringify({ cardIds: newCardIds }),
             }).then(() => {
               setCards((prev) => prev.map((c) => ({ ...c, isNew: false })));
             }).catch(() => {});

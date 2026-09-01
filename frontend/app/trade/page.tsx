@@ -65,7 +65,7 @@ export default function MarketplacePage() {
     if (stored) {
       const u = JSON.parse(stored);
       setUser(u);
-      fetch(`/api/crystal?userId=${u.user_id}`)
+      fetch("/api/crystal", { credentials: "include" })
         .then((r) => r.json())
         .then((d: { balance?: number }) => setBalance(d.balance ?? 0))
         .catch(() => setBalance(0));
@@ -89,7 +89,7 @@ export default function MarketplacePage() {
   async function fetchListings() {
     setLoading(true);
     try {
-      const res = await fetch("/api/marketplace/listings");
+      const res = await fetch("/api/marketplace/listings", { credentials: "include" });
       const data = await res.json();
       const listingsData = data.listings || [];
       setListings(listingsData);
@@ -98,7 +98,7 @@ export default function MarketplacePage() {
       if (listingsData.length > 0) {
         const cardIds = listingsData.map((l: Listing) => l.cardId).join(",");
         try {
-          const statsRes = await fetch(`/api/marketplace/wishlist-stats?cardIds=${cardIds}`);
+          const statsRes = await fetch(`/api/marketplace/wishlist-stats?cardIds=${cardIds}`, { credentials: "include" });
           const statsData = await statsRes.json();
           setWishlistCounts(statsData.stats || {});
         } catch {
@@ -113,7 +113,7 @@ export default function MarketplacePage() {
 
   async function fetchInsight() {
     try {
-      const res = await fetch("/api/marketplace/insight");
+      const res = await fetch("/api/marketplace/insight", { credentials: "include" });
       const data = await res.json();
       setInsight(data.insight || null);
     } catch {
@@ -131,7 +131,8 @@ export default function MarketplacePage() {
       const res = await fetch(`/api/marketplace/listings/${listingId}/buy`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.user_id }),
+        credentials: "include",
+        body: JSON.stringify({}),
       });
       const data = await res.json();
       if (res.ok) {

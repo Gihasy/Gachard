@@ -187,13 +187,13 @@ export default function AdminPage() {
     setError(null);
 
     Promise.all([
-      fetch("/api/admin/users").then((r) => r.json()),
-      fetch("/api/admin/transactions").then((r) => r.json()),
-      fetch("/api/admin/cards").then((r) => r.json()),
-      fetch("/api/admin/print-requests").then((r) => r.json()),
-      fetch("/api/admin/pending-cards").then((r) => r.json()),
-      fetch("/api/admin/supporters").then((r) => r.json()),
-      fetch("/api/admin/creator-applications").then((r) => r.json()),
+      fetch("/api/admin/users", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/admin/transactions", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/admin/cards", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/admin/print-requests", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/admin/pending-cards", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/admin/supporters", { credentials: "include" }).then((r) => r.json()),
+      fetch("/api/admin/creator-applications", { credentials: "include" }).then((r) => r.json()),
     ])
       .then(([usersData, txsData, cardsData, printsData, pendingData, supportersData, creatorsData]) => {
         setUsers(usersData.users ?? []);
@@ -259,7 +259,7 @@ export default function AdminPage() {
   const handleConfirmAll = async () => {
     setConfirmingAll(true);
     try {
-      await fetch("/api/admin/confirm-all", { method: "POST" });
+      await fetch("/api/admin/confirm-all", { method: "POST", credentials: "include" });
       fetchAll();
     } catch {
       alert("Failed to confirm transactions");
@@ -787,6 +787,7 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
       const res = await fetch("/api/admin/fulfillment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(body),
       });
       if (res.ok) onAccept();
