@@ -88,7 +88,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
       await video.play();
       if (mounted) setScanning(true);
 
-      // Try BarcodeDetector API (Chrome, Edge, Safari 15.4+)
+      // Try BarcodeDetector API first (Chrome, Edge, Safari 15.4+)
       let useBarcodeDetector = false;
       const BD = (window as unknown as { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector;
       if (BD) {
@@ -121,9 +121,34 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
         };
         rafRef.current = requestAnimationFrame(scanLoop);
       } else {
-        // No BarcodeDetector — camera still works for visual, user uses manual input
-        if (mounted) {
-          setError("QR auto-detect not supported in this browser. Use manual input below, or switch to Chrome/Edge for auto-scan.");
+        // Fallback: use jsQR library for QR detection (works in Brave, Firefox, etc.)
+        try {
+          const jsQR = (await import("jsqr")).default;
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Canvas not supported");
+
+          const scanLoop = () => {
+            if (!mounted || !videoRef.current) return;
+            const v = videoRef.current;
+            if (v.readyState === v.HAVE_ENOUGH_DATA) {
+              canvas.width = v.videoWidth;
+              canvas.height = v.videoHeight;
+              ctx.drawImage(v, 0, 0);
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+              if (code && mounted) {
+                handleDetected(code.data);
+                return;
+              }
+            }
+            rafRef.current = requestAnimationFrame(scanLoop);
+          };
+          rafRef.current = requestAnimationFrame(scanLoop);
+        } catch {
+          if (mounted) {
+            setError("QR scanning not available. Please use manual input.");
+          }
         }
       }
     };
