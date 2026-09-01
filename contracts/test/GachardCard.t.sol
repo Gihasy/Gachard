@@ -281,16 +281,16 @@ contract GachardCardTest is Test {
         card.redeemCard(tokenId, wrongHash, user2);
     }
 
-    function test_redeemCard_works_when_called_by_anyone() public {
+    function test_redeemCard_reverts_when_called_by_non_owner() public {
         uint256 tokenId = card.mintCard(user1, 0);
         bytes32 hash = keccak256("code123");
 
         card.requestPrint(tokenId, hash, user1);
 
-        // user2 yang memanggil, tapi recipientAddress = user1
+        // user2 mencoba memanggil — harus revert karena onlyOwner
         vm.prank(user2);
+        vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", user2));
         card.redeemCard(tokenId, hash, user1);
-        assertEq(card.balanceOf(user1, tokenId), 1);
     }
 
     // ==================== Full loop tests ====================

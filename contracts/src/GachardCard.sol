@@ -89,6 +89,8 @@ contract GachardCard is ERC1155, Ownable {
      */
     function requestPrint(uint256 tokenId, bytes32 redeemHash, address ownerAddress) external onlyOwner {
         require(cardStatus[tokenId] == CardStatus.Digital, "Card is not digital");
+        require(ownerAddress != address(0), "Invalid owner address");
+        require(balanceOf(ownerAddress, tokenId) == 1, "Owner does not hold card");
 
         // Simpan owner
         lastOwner[tokenId] = ownerAddress;
@@ -110,12 +112,13 @@ contract GachardCard is ERC1155, Ownable {
      * @param redeemHash Hash dari code yang dimasukkan user
      * @param recipientAddress Alamat yang akan menerima kartu (ADR-007)
      */
-    function redeemCard(uint256 tokenId, bytes32 redeemHash, address recipientAddress) external {
+    function redeemCard(uint256 tokenId, bytes32 redeemHash, address recipientAddress) external onlyOwner {
         require(cardStatus[tokenId] == CardStatus.Vaulted, "Card is not vaulted");
         require(storedHash[tokenId] == redeemHash, "Invalid redeem code");
 
         // Simpan owner lama untuk transfer
         address previousOwner = lastOwner[tokenId];
+        require(previousOwner != address(0), "Invalid previous owner");
 
         // Ubah status dulu, SEBELUM transfer — supaya _update() tidak memblokir
         cardStatus[tokenId] = CardStatus.Digital;
@@ -196,5 +199,12 @@ contract GachardCard is ERC1155, Ownable {
             }
         }
         super._update(from, to, ids, values);
+
+        // H-2 fix: update lastOwner on standard ERC1155 transfers
+        for (uint256 i = 0; i < ids.length; i++) {
+            if (from != address(0) && to != address(0)) {
+                lastOwner[ids[i]] = to;
+            }
+        }
     }
 }
