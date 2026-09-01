@@ -97,6 +97,9 @@ export default function CartPage() {
     if (purchasedIds.length === items.length) {
       clearCart();
     }
+    if (purchasedIds.length > 0) {
+      window.dispatchEvent(new Event("balance-change"));
+    }
   }
 
   return (

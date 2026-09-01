@@ -161,6 +161,7 @@ export default function DismantlePage() {
     setSelected(new Set());
     // Refresh data
     fetchData();
+    window.dispatchEvent(new Event("balance-change"));
   };
 
   if (!ready || !user) return null;

@@ -66,6 +66,7 @@ export default function PacksPage() {
             .then((r) => r.json())
             .then((d) => setBalance(d.balance ?? 0))
             .catch(() => {});
+          window.dispatchEvent(new Event("balance-change"));
         } else {
           setReveal({ error: data.error || "Failed to open pack" });
         }

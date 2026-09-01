@@ -62,9 +62,11 @@ export default function Navbar() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("auth-change", readUser);
+    window.addEventListener("balance-change", readUser);
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("auth-change", readUser);
+      window.removeEventListener("balance-change", readUser);
     };
   }, []);
 

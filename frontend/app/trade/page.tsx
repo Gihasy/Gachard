@@ -138,6 +138,7 @@ export default function MarketplacePage() {
       if (res.ok) {
         await fetchListings();
         setNotification({ text: "Purchase successful!", ok: true });
+        window.dispatchEvent(new Event("balance-change"));
       } else {
         setNotification({ text: data.error || "Purchase failed", ok: false });
       }

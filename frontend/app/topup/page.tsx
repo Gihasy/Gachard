@@ -69,6 +69,7 @@ export default function TopUp() {
       if (res.ok) {
         setBalance(data.newBalance);
         setMessage({ text: `Top-up successful! Balance: ${data.newBalance} Credit`, ok: true });
+        window.dispatchEvent(new Event("balance-change"));
       } else {
         setMessage({ text: data.error || "Top-up failed", ok: false });
       }
