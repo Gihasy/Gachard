@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getAuthenticatedUser } from "@/lib/session";
 import { createListing, getListingById } from "@/lib/listings";
 import { getFVM, getFVMFloor, type FVMResult } from "@/lib/fvm";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { userId, cardId, price } = body;
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = user._id.toString();
 
-    if (!userId || !cardId || typeof price !== "number") {
-      return NextResponse.json({ error: "Missing required fields: userId, cardId, price" }, { status: 400 });
+    const body = await req.json();
+    const { cardId, price } = body;
+
+    if (!cardId || typeof price !== "number") {
+      return NextResponse.json({ error: "Missing required fields: cardId, price" }, { status: 400 });
     }
 
     if (price <= 0 || !Number.isInteger(price)) {
@@ -22,9 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
-    const usersCol = await getCollection("users");
-    const user = await usersCol.findOne({ _id: parseObjectId(userId) });
-    if (!user || user.walletAddress !== card.ownerAddress) {
+    if (user.walletAddress !== card.ownerAddress) {
       return NextResponse.json({ error: "You do not own this card" }, { status: 403 });
     }
 

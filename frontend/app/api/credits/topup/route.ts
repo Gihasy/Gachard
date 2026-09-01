@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { addCredits } from "@/lib/credits";
 import { getCollection } from "@/lib/mongodb";
+import { getAuthenticatedUser } from "@/lib/session";
 
 export async function POST(request: Request) {
   try {
-    const { userId, amountCents } = await request.json();
+    const { amountCents } = await request.json();
 
-    if (!userId || typeof userId !== "string") {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = user._id.toString();
 
     if (!amountCents || typeof amountCents !== "number" || amountCents <= 0 || !Number.isFinite(amountCents)) {
       return NextResponse.json({ error: "amountCents must be a positive number" }, { status: 400 });

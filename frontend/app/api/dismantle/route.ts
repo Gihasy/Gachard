@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { after } from "next/server";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getAuthenticatedUser } from "@/lib/session";
 import { burnCard, waitForReceipt } from "@/lib/blockchain";
 import { addCrystal, getDismantleRate } from "@/lib/crystal";
 import { generateInvoiceId } from "@/lib/invoice";
@@ -11,17 +12,16 @@ const RARITY_NAMES = ["Common", "Rare", "Epic", "Legendary"];
 
 export async function POST(request: Request) {
   try {
-    const { userId, cardId, tokenId } = await request.json();
+    const { cardId, tokenId } = await request.json();
 
-    if (!userId || (!cardId && tokenId === undefined)) {
-      return NextResponse.json({ error: "userId and cardId (or tokenId) are required" }, { status: 400 });
-    }
-
-    // Get user
-    const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: parseObjectId(userId) } as Record<string, unknown>);
+    const user = await getAuthenticatedUser(request);
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = user._id.toString();
+
+    if (!cardId && tokenId === undefined) {
+      return NextResponse.json({ error: "cardId (or tokenId) is required" }, { status: 400 });
     }
 
     // Get card — prefer cardId, fallback to tokenId

@@ -3,6 +3,7 @@ import { after } from "next/server";
 import { ObjectId } from "mongodb";
 import { getListingById, markListingSold } from "@/lib/listings";
 import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getAuthenticatedUser } from "@/lib/session";
 import { deductCrystal, addCrystal } from "@/lib/crystal";
 import { marketplaceTransfer, waitForReceipt, recordVerification } from "@/lib/blockchain";
 import { calculateTradeSignals } from "@/lib/fraud-signals";
@@ -18,12 +19,12 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const body = await req.json();
-    const { userId } = body;
 
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
+    const buyer = await getAuthenticatedUser(req);
+    if (!buyer) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = buyer._id.toString();
 
     const listing = await getListingById(id);
     if (!listing) {
@@ -34,12 +35,6 @@ export async function POST(
     }
     if (listing.sellerId === userId) {
       return NextResponse.json({ error: "Cannot buy your own listing" }, { status: 400 });
-    }
-
-    const usersCol = await getCollection("users");
-    const buyer = await usersCol.findOne({ _id: parseObjectId(userId) });
-    if (!buyer) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Get card for rarity

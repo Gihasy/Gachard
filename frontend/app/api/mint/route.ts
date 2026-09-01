@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 
 export const maxDuration = 15;
 import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getAuthenticatedUser } from "@/lib/session";
 import { mintBatch, waitForReceipt } from "@/lib/blockchain";
 import { buildPackRarities } from "@/lib/odds";
 import { pickCardTemplate, seedCardTemplates, updateArtworkUrls } from "@/lib/card-templates";
@@ -65,11 +66,13 @@ const PACK_TYPES: Record<string, { price: number; cards: number; guaranteed: num
 };
 
 export async function POST(request: Request) {
-  const { userId, packType = "standard" } = await request.json();
+  const { packType = "standard" } = await request.json();
 
-  if (!userId) {
-    return NextResponse.json({ error: "userId required" }, { status: 400 });
+  const user = await getAuthenticatedUser(request);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const userId = user._id.toString();
 
   const pack = PACK_TYPES[packType];
   if (!pack) {
@@ -77,13 +80,6 @@ export async function POST(request: Request) {
       { error: "Invalid pack type. Use 'standard' or 'booster'." },
       { status: 400 }
     );
-  }
-
-  // Get user from DB
-  const usersCollection = await getCollection("users");
-  const user = await usersCollection.findOne({ _id: parseObjectId(userId) } as Record<string, unknown>);
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   // Deduct credit FIRST
