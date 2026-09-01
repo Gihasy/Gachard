@@ -128,7 +128,8 @@ export async function POST(request: Request) {
       rateLimitRemaining: rateLimit.remaining,
     });
   } catch (error) {
-    console.error("Redeem error:", error);
-    return NextResponse.json({ error: "Redeem failed" }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error("Redeem error:", errMsg, error);
+    return NextResponse.json({ error: `Redeem failed: ${errMsg}` }, { status: 500 });
   }
 }
