@@ -42,7 +42,7 @@ async function createIndexes(database: Db) {
     // Cards — most queried collection
     database.collection("cards").createIndex({ ownerAddress: 1 }),
     database.collection("cards").createIndex({ cardId: 1 }, { unique: true }),
-    database.collection("cards").createIndex({ tokenId: 1 }, { unique: true }),
+    database.collection("cards").createIndex({ tokenId: 1 }, { sparse: true }),
     database.collection("cards").createIndex({ templateId: 1 }),
     database.collection("cards").createIndex({ status: 1 }),
     database.collection("cards").createIndex({ isListed: 1 }),
