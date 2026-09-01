@@ -253,14 +253,12 @@ export default function CardDetailModal({
                     }
                   />
                   <MetaRow label="Last Owner" value={<span className="text-[0.65rem] text-white/70">{data.onChain.lastOwner || "—"}</span>} />
-                  <MetaRow
-                    label="Purchase Price"
-                    value={
-                      data.purchasePrice !== null
-                        ? <span className="font-semibold text-[0.65rem]" style={{ color: "var(--crystal)" }}>{data.purchasePrice} Crystal</span>
-                        : <span className="text-[0.65rem] text-white/40">—</span>
-                    }
-                  />
+                  {data.purchasePrice !== null && (
+                    <MetaRow
+                      label="Purchase Price"
+                      value={<span className="font-semibold text-[0.65rem]" style={{ color: "var(--crystal)" }}>{data.purchasePrice} Crystal</span>}
+                    />
+                  )}
                   <MetaRow
                     label="Fair Value Market"
                     value={
@@ -324,7 +322,7 @@ export default function CardDetailModal({
                             </span>
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
-                            {tx.price && tx.price > 0 && (
+                            {tx.price && tx.price > 0 && tx.type !== "mint" && (
                               <span className="text-[0.55rem] font-semibold" style={{ color: "var(--crystal)" }}>
                                 {tx.price} Crystal
                               </span>
