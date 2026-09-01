@@ -58,16 +58,35 @@ export function verifySessionToken(token: string): { userId: string } | null {
 
 export async function getAuthenticatedUser(req: Request) {
   const cookieHeader = req.headers.get("cookie") || "";
-  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]*)`));
-  if (!match) return null;
 
-  const token = decodeURIComponent(match[1]);
-  const session = verifySessionToken(token);
-  if (!session) return null;
+  // Try session cookie first
+  const sessionMatch = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]*)`));
+  if (sessionMatch) {
+    const token = decodeURIComponent(sessionMatch[1]);
+    const session = verifySessionToken(token);
+    if (session) {
+      const usersCollection = await getCollection("users");
+      const user = await usersCollection.findOne(
+        { _id: parseObjectId(session.userId) } as Record<string, unknown>
+      );
+      if (user) return user;
+    }
+  }
 
-  const usersCollection = await getCollection("users");
-  const user = await usersCollection.findOne(
-    { _id: parseObjectId(session.userId) } as Record<string, unknown>
-  );
-  return user;
+  // Fallback: legacy gachard_uid cookie (pre-session-auth users)
+  const legacyMatch = cookieHeader.match(/(?:^|;\s*)gachard_uid=([^;]*)/);
+  if (legacyMatch) {
+    const uid = decodeURIComponent(legacyMatch[1]);
+    try {
+      const usersCollection = await getCollection("users");
+      const user = await usersCollection.findOne(
+        { _id: parseObjectId(uid) } as Record<string, unknown>
+      );
+      if (user) return user;
+    } catch {
+      // invalid ObjectId format — ignore
+    }
+  }
+
+  return null;
 }

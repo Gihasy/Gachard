@@ -121,40 +121,23 @@ export async function middleware(req: NextRequest) {
       return NextResponse.next();
     }
 
-    let sessionCookie = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+    const sessionCookie = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+    const legacyUid = req.cookies.get("gachard_uid")?.value;
 
-    // Auto-migration: if user has gachard_uid but no session cookie,
-    // create one from the legacy cookie (pre-session-auth users)
-    if (!sessionCookie) {
-      const legacyUid = req.cookies.get("gachard_uid")?.value;
-      if (legacyUid && /^[0-9a-fA-F]{24}$/.test(legacyUid)) {
-        const timestamp = Math.floor(Date.now() / 1000);
-        const payload = `${legacyUid}.${timestamp}`;
-        const secret = process.env.ENCRYPTION_SECRET_KEY;
-        if (secret && secret.length >= 32) {
-          const sig = await hmacSha256(payload, secret);
-          sessionCookie = `${payload}.${sig}`;
-          // Set the cookie for future requests
-          const res = NextResponse.next();
-          res.cookies.set(SESSION_COOKIE_NAME, sessionCookie, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/",
-            maxAge: SESSION_MAX_AGE,
-          });
-          return res;
-        }
-      }
+    // Accept if EITHER session cookie OR legacy uid cookie exists
+    // Route handlers do full verification via getAuthenticatedUser()
+    if (!sessionCookie && !legacyUid) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const valid = await verifySessionTokenEdge(sessionCookie);
-    if (!valid) {
-      return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
+    // If has session cookie, verify it at edge for fast rejection
+    if (sessionCookie) {
+      const valid = await verifySessionTokenEdge(sessionCookie);
+      if (!valid && !legacyUid) {
+        return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
+      }
     }
 
-    // Session valid — let the request through
     return NextResponse.next();
   }
 
