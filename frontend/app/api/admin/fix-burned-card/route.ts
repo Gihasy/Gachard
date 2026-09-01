@@ -12,7 +12,9 @@ export async function POST() {
 
     // Find all dismantle transactions
     const dismantleTxs = await txCollection.find({ type: "dismantled" }).toArray();
-    const dismantledTokenIds = dismantleTxs.flatMap((tx) => tx.tokenIds || []);
+    const dismantledTokenIds = dismantleTxs.flatMap((tx) =>
+      tx.tokenIds?.length ? tx.tokenIds : (tx.tokenId != null ? [tx.tokenId] : [])
+    );
 
     // Find cards with those tokenIds that are NOT marked as Burned
     const results: string[] = [];
