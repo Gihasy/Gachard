@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { getCrystalBalance } from "@/lib/crystal";
+import { getAuthenticatedUser } from "@/lib/session";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = user._id.toString();
 
     const balance = await getCrystalBalance(userId);
     return NextResponse.json({ balance });

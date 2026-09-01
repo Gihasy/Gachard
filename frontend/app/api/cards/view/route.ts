@@ -1,25 +1,22 @@
 import { NextResponse } from "next/server";
-import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getCollection } from "@/lib/mongodb";
+import { getAuthenticatedUser } from "@/lib/session";
 
 /**
  * POST /api/cards/view
  * Mark cards as viewed (removes "New" badge).
- * Body: { userId: string, cardIds?: string[] }
+ * Body: { cardIds?: string[] }
  * If cardIds omitted, marks ALL user's cards as viewed.
  */
 export async function POST(request: Request) {
   try {
-    const { userId, cardIds } = await request.json();
-
-    if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
-    }
-
-    const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: parseObjectId(userId) } as Record<string, unknown>);
+    const user = await getAuthenticatedUser(request);
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = user._id.toString();
+
+    const { cardIds } = await request.json();
 
     const cardsCollection = await getCollection("cards");
 
