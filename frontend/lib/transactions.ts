@@ -10,7 +10,7 @@ export type TxStatus = "pending" | "confirmed" | "failed";
 export interface Transaction {
   _id?: ObjectId;
   userId: string;
-  type: "mint" | "print" | "redeem" | "transfer" | "topup" | "dismantled" | "sold" | "listed";
+  type: "mint" | "print" | "redeem" | "transfer" | "topup" | "dismantled" | "sold" | "listed" | "claimed";
   tokenId?: number;
   tokenIds?: number[];
   rarity?: number;

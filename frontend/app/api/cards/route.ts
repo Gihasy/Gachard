@@ -27,18 +27,15 @@ export async function GET(request: Request) {
     const cardsCollection = await getCollection("cards");
     const templatesCollection = await getCollection("card_templates");
 
-    // Auto-reconciliation: if any cards are pending, try to confirm their transactions
-    const pendingCards = await cardsCollection
-      .find({ ownerAddress: user.walletAddress, status: "pending" })
+    // Auto-reconciliation: confirm pending transactions for this user's cards
+    const txCollection = await getCollection("transactions");
+    const pendingTxs = await txCollection
+      .find({ userId, status: "pending", txHash: { $ne: null } })
       .toArray();
 
-    if (pendingCards.length > 0) {
-      const txCollection = await getCollection("transactions");
-      const pendingTxIds = [...new Set(pendingCards.map((c) => c.txId).filter(Boolean))];
-
-      // Confirm all pending transactions in parallel
+    if (pendingTxs.length > 0) {
       await Promise.allSettled(
-        pendingTxIds.map((txId) => confirmTransaction(txId))
+        pendingTxs.map((tx) => confirmTransaction(tx._id.toString()))
       );
     }
 

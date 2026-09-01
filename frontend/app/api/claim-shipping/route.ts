@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { getAuthenticatedUser } from "@/lib/session";
+import { generateInvoiceId } from "@/lib/invoice";
 
 /**
  * POST /api/claim-shipping
@@ -60,6 +61,25 @@ export async function POST(request: Request) {
         $unset: { claimId: "" },
       }
     );
+
+    // Record transaction for history
+    const txCollection = await getCollection("transactions");
+    await txCollection.insertOne({
+      userId: user._id.toString(),
+      type: "claimed",
+      tokenId: card.tokenId,
+      tokenIds: [card.tokenId],
+      rarity: card.rarity ?? 0,
+      rarities: [card.rarity ?? 0],
+      templateIds: [card.templateId],
+      txHash: null,
+      status: "confirmed",
+      contractAddress: null,
+      fromAddress: "shipping",
+      toAddress: user.walletAddress,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
 
     return NextResponse.json({
       success: true,

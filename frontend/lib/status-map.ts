@@ -24,6 +24,7 @@ const TX_TYPE_MAP: Record<string, string> = {
   listed: "Listed for Sale",
   sold: "Sold",
   dismantled: "Dismantled",
+  claimed: "Claimed Shipping",
 };
 
 /**
