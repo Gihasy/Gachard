@@ -1,19 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 
-/**
- * Auth guard for protected routes.
- *
- * The client stores the session as a `user` entry in localStorage AND mirrors
- * a lightweight cookie `gachard_uid` on login so this middleware can enforce
- * the same rule at the edge. If the cookie is missing on a protected page,
- * redirect to /login.
- *
- * This runs before the page bundle loads, so it's much more reliable than a
- * useEffect-based redirect in dev.
- *
- * Also enforces HTTP Basic Auth on /admin routes.
- */
 const PROTECTED = ["/collection", "/profile", "/topup"];
+
+// Public API routes that don't require authentication
+const PUBLIC_API = [
+  "/api/auth/",       // login endpoints
+  "/api/scan",        // QR scan — public by design
+  "/api/cards/",      // QR generation (/api/cards/[tokenId]/qr)
+  "/api/marketplace/wishlist-stats", // anonymous wishlist interaction
+];
+
+function isPublicApi(pathname: string): boolean {
+  return PUBLIC_API.some((p) => pathname.startsWith(p));
+}
 
 // Constant-time string comparison (safe for Edge Runtime)
 function safeEqual(a: string, b: string): boolean {
@@ -56,7 +56,27 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protected user routes: cookie-based auth
+  // API routes: session-based auth (except public APIs and auth endpoints)
+  if (pathname.startsWith("/api/")) {
+    if (isPublicApi(pathname)) {
+      return NextResponse.next();
+    }
+
+    const sessionCookie = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+    if (!sessionCookie) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    const session = verifySessionToken(sessionCookie);
+    if (!session) {
+      return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
+    }
+
+    // Session valid — let the request through
+    return NextResponse.next();
+  }
+
+  // Protected user pages: cookie-based auth (existing behavior)
   const isProtected = PROTECTED.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
@@ -72,5 +92,12 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/collection/:path*", "/profile/:path*", "/topup/:path*", "/admin/:path*", "/api/admin/:path*"],
+  matcher: [
+    "/collection/:path*",
+    "/profile/:path*",
+    "/topup/:path*",
+    "/admin/:path*",
+    "/api/admin/:path*",
+    "/api/:path*",
+  ],
 };
