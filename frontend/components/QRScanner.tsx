@@ -23,11 +23,34 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
 
     const startScanner = async () => {
       try {
-        // Check camera permission first
+        // Check camera API exists
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          setError("Camera is not supported in this browser.");
+          setError("Camera is not supported in this browser. Try using manual input instead.");
           return;
         }
+
+        // Explicitly request camera permission first — triggers browser prompt
+        let stream: MediaStream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+          });
+        } catch (permErr) {
+          const msg = permErr instanceof Error ? permErr.name : String(permErr);
+          if (msg === "NotAllowedError" || msg === "PermissionDeniedError") {
+            setError("Camera permission denied. Please allow camera access in your browser settings and reload.");
+          } else if (msg === "NotFoundError") {
+            setError("No camera found on this device.");
+          } else if (msg === "NotReadableError") {
+            setError("Camera is in use by another app.");
+          } else {
+            setError(`Camera error: ${msg}`);
+          }
+          return;
+        }
+
+        // Stop the stream immediately — html5-qrcode will manage its own stream
+        stream.getTracks().forEach((t) => t.stop());
 
         // Dynamic import to avoid SSR issues
         const { Html5Qrcode } = await import("html5-qrcode");
@@ -76,11 +99,15 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
         if (mounted) setScanning(true);
       } catch (err) {
         if (mounted) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Could not access camera. Please allow camera permission."
-          );
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error("[QRScanner] Error:", msg, err);
+          if (msg.includes("NotAllowed") || msg.includes("Permission")) {
+            setError("Camera permission denied. Please allow camera access in browser settings.");
+          } else if (msg.includes("NotFoundError") || msg.includes("No camera")) {
+            setError("No camera found on this device.");
+          } else {
+            setError(`Camera error: ${msg}`);
+          }
         }
       }
     };
