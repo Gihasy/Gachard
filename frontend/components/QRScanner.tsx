@@ -156,21 +156,10 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
     const handleDetected = (decodedText: string) => {
       if (!mounted) return;
       setDetected(true);
-      let scannedId = decodedText;
-      try {
-        const url = new URL(decodedText);
-        const cardId = url.searchParams.get("cardId");
-        const claimId = url.searchParams.get("claimId");
-        const tokenId = url.searchParams.get("tokenId");
-        if (cardId) scannedId = cardId;
-        else if (claimId) scannedId = claimId;
-        else if (tokenId) scannedId = tokenId;
-      } catch {
-        // Not a URL, use as-is
-      }
+      // Pass original raw content so caller can distinguish URL vs raw ID
       setTimeout(() => {
         stopCamera();
-        onScanRef.current(scannedId);
+        onScanRef.current(decodedText);
       }, 300);
     };
 
