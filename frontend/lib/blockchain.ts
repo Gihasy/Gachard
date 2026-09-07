@@ -56,7 +56,10 @@ export function getProvider() {
 
 export function getAdminWallet() {
   const provider = getProvider();
-  const privateKey = process.env.ADMIN_PRIVATE_KEY!;
+  const privateKey = process.env.ADMIN_PRIVATE_KEY?.trim()!;
+  if (!privateKey || !privateKey.startsWith('0x') || privateKey.length !== 66) {
+    throw new Error(`Invalid ADMIN_PRIVATE_KEY format`);
+  }
   return new ethers.Wallet(privateKey, provider);
 }
 
@@ -85,9 +88,9 @@ export async function mintBatch(toAddress: string, rarities: number[]): Promise<
   }
   
   // Ensure address is properly formatted (0x + 40 hex chars)
-  const cleanAddress = toAddress.trim();
+  const cleanAddress = toAddress.trim().replace(/[\r\n]/g, '');
   if (!/^0x[0-9a-fA-F]{40}$/.test(cleanAddress)) {
-    throw new Error(`Address format invalid: ${cleanAddress}`);
+    throw new Error(`Address format invalid: "${cleanAddress}" (length: ${cleanAddress.length})`);
   }
   
   // Use getAddress to checksum the address
@@ -95,7 +98,7 @@ export async function mintBatch(toAddress: string, rarities: number[]): Promise<
   console.log("[blockchain] Checksummed address:", checksummedAddress);
   
   const contract = getContract();
-  console.log("[blockchain] Contract address:", await contract.getAddress());
+  console.log("[blockchain] Contract address:", CONTRACT_ADDRESS);
   
   // Use staticCall to test the call without sending a transaction
   try {

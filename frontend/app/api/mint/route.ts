@@ -105,21 +105,22 @@ export async function POST(request: Request) {
     const templates = await Promise.all(rarities.map((r) => pickCardTemplate(r)));
 
     // Validate wallet address before blockchain call
-    console.log("[mint] User wallet address:", user.walletAddress);
+    const walletAddress = user.walletAddress?.trim().replace(/[\r\n]/g, '');
+    console.log("[mint] User wallet address:", walletAddress);
     console.log("[mint] User ID:", user._id);
     console.log("[mint] User object keys:", Object.keys(user));
     
-    if (!user.walletAddress) {
+    if (!walletAddress) {
       throw new Error(`Wallet address is missing for user ${user._id}`);
     }
     
-    if (!ethers.isAddress(user.walletAddress)) {
-      throw new Error(`Invalid wallet address format: ${user.walletAddress}`);
+    if (!ethers.isAddress(walletAddress)) {
+      throw new Error(`Invalid wallet address format: "${walletAddress}"`);
     }
 
     // Mint batch — 1 tx untuk seluruh pack (atomik)
-    console.log("[mint] Calling mintBatch with address:", user.walletAddress);
-    const txHash = await mintBatch(user.walletAddress, rarities);
+    console.log("[mint] Calling mintBatch with address:", walletAddress);
+    const txHash = await mintBatch(walletAddress, rarities);
 
     // Simpan transaksi
     const contractAddress = process.env.CONTRACT_ADDRESS!;
