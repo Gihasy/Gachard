@@ -144,6 +144,19 @@ cd frontend && npx tsx scripts/clean-slate.ts
 5. Implement sesuai sprint — jangan menyimpang dari `DECISIONS.md` tanpa ADR baru
 6. Commit sering — discipline fallback karena MiMoCode masih alpha
 
+## Blockchain Verification
+Semua transaksi blockchain dapat diverifikasi di BSCScan:
+- **Smart Contract**: `0x56390137c171b3167D4055d199DA8Bc8eCeE219c` (AI Anomaly Detection Oracle)
+- **Admin Wallet**: `0x869e4d60819c6C09f672a04bDa0bbADdD924215e`
+- **Chain**: BNB Testnet (Chain ID 97)
+- **Explorer**: https://testnet.bscscan.com
+
+Admin Console (https://www.gachard.com/admin) menampilkan:
+- Semua transaksi dengan txHash yang bisa diklik ke BSCScan
+- Wallet address setiap user
+- Token ID setiap kartu di blockchain
+- Risk score dari AI anomaly detection
+
 ## Catatan untuk AI Coding Agent
 - Baca `MEMORY.md`, `DECISIONS.md`, dan `docs/` sebelum membuat perubahan
 - Jangan gunakan istilah blockchain/crypto/on-chain di UI user-facing

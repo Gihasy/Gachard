@@ -21,8 +21,8 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - Hosting: Vercel (frontend + backend via API routes) + MongoDB Atlas (database), semua free tier
 - **Arsitektur final**: Next.js API routes sebagai SATU-SATUNYA backend (lihat ADR-017). FastAPI sudah dihapus.
 - **Enkripsi**: Private key + redeem code dienkripsi AES-256-GCM (ADR-020)
-- Kontrak aktif: `0x9409fcc78fa2b08f6300bfcfe7dcf43e6be7d58a` (20 Agustus 2026 — dengan marketplaceTransfer)
-- Kontrak sebelumnya: `0x0bb3dd543ff752bd15a50cbb3cba059bea6a278a` (28 Juli 2026)
+- Kontrak aktif: `0x56390137c171b3167D4055d199DA8Bc8eCeE219c` (AI Anomaly Detection Oracle — dengan recordVerification)
+- Kontrak sebelumnya: `0x5359d0bd7d02ad81659526958d606d4c61b2ba46` (security fixes — C-1, C-2, H-1, H-2)
 - Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
 - **29 file** berubah di sesi terakhir (10 baru, 18 ubah, 1 hapus), commit `3fc40c7`
 - Deploy: https://www.gachard.com (Vercel Production)
