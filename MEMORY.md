@@ -166,11 +166,30 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - **Fork Monad Metropolis**: Folder `D:\gachard-monad` dibuat, git init, remote → `Gachard-Monad.git`. Config diupdate untuk Monad testnet (`RPC_URL`, `CHAIN_ID=10143`). Belum di-push.
 - **Deploy**: Semua perubahan di-push ke `main` → Vercel auto-deploy ke https://www.gachard.com
 
+### Session 7 September 2026 — Ringkasan Perubahan (Part 3: UI Fixes & Submission)
+- **Bug fixes lanjutan**:
+  - Contract address trailing space di admin page → `.trim()` di `CONTRACT_ADDR`
+  - Listing ID tidak di-pass setelah create listing → fix: pass dari API response
+  - QR scanner salah parse cardId sebagai claimId → fix: pass raw URL ke handleScan
+  - Listing price tidak muncul setelah re-list → fix: update local state dengan `listingId` dan `listingPrice`
+- **UI improvements**:
+  - Transaction History label: "Claimed Shipping" → "Physical", "Redeemed" → "Digital"
+  - Token ID di admin panel → clickable link ke BSCScan (`/token/{addr}?a={id}#transactions`) + copy URL
+  - Listing price di Card Item → "500 CRYSTAL" uppercase, crystal color, glass background
+  - Cart button disabled untuk listing sendiri di Trade page
+  - QR code di Card Details → clickable link ke scan page
+  - QR encode URL dinamis (pakai `request.origin`, bukan hardcoded env var)
+  - Old admin wallet `0xF7DE...8DEa` dan `0x869E...215e` → resolve ke "Gachard" di Transaction History
+  - From → to transfer info dipindah ke paragraf baru (bukan inline)
+  - Transaction History dibatasi 3 item visible + scrollbar (di Scan page dan Card Details modal)
+  - Play page: tambah hero image dengan glow border effect (`max-w-6xl`, `box-shadow` cosmic-violet)
+  - Back to Scan button muncul saat claim gagal
+- **Submission repo**: Push ke https://github.com/Gihasy/gachard-bnbchain.git (public, exclude internal files, README bahasa Indonesia)
+- **Deploy**: Semua perubahan di-push ke `main` → Vercel Production https://www.gachard.com
+
 ### Open Items (belum selesai)
-1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: NS1 → ns1.vercel-dns.com + NS2 → ns2.vercel-dns.com
-2. **Demo Day prep** — video backup, pitch deck, rehearsal, test full loop dengan alamat sungguhan
-3. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
-4. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — run with `cd frontend && npx tsx scripts/clean-slate.ts`
+1. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
+2. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — run with `cd frontend && npx tsx scripts/clean-slate.ts`
 
 ### Documentation Cleanup (7 September 2026)
 - **10 file outdated dihapus**: Execution-Plan-Gachard.md, LAPORAN_AKHIR.md, UPDATE_REPORT.md, docs/SESSION_CHANGELOG.md, docs/BUG_FIX_REPORT.md, docs/PRIORITY_FIXES_REPORT.md, docs/compose/reports/status-lengkap.md, memory/test_credentials.md, memory/PRD.md, frontend/README.md
