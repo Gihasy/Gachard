@@ -1,7 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 
+// Constant-time string comparison
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 export async function POST(req: NextRequest) {
+  // Protect clean-slate with admin credentials
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader || !authHeader.startsWith("Basic ")) {
+    return NextResponse.json(
+      { error: "Admin credentials required for clean-slate operation" },
+      { status: 401 }
+    );
+  }
+
+  const encoded = authHeader.slice(6);
+  const decoded = atob(encoded);
+  const [username, password] = decoded.split(":");
+
+  const expectedUser = process.env.ADMIN_USERNAME;
+  const expectedPass = process.env.ADMIN_PASSWORD;
+
+  if (!expectedUser || !expectedPass || !safeEqual(username, expectedUser) || !safeEqual(password, expectedPass)) {
+    return NextResponse.json(
+      { error: "Invalid admin credentials" },
+      { status: 401 }
+    );
+  }
+
   return doCleanSlate(req);
 }
 
