@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import PageShell from "@/components/PageShell";
 
 export default function PlayTradePage() {
@@ -14,6 +15,19 @@ export default function PlayTradePage() {
       }
       description="Two worlds. One ecosystem. Play for fun or play to win."
     >
+      {/* Hero Image */}
+      <div className="relative w-full max-w-4xl mx-auto mb-10 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(184,172,255,0.2)" }}>
+        <Image
+          src="/images/play-hero.png"
+          alt="Gachard Game Arena"
+          width={1200}
+          height={675}
+          priority
+          className="w-full h-auto"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
+        />
+      </div>
+
       {/* Coming Soon Banner */}
       <div
         className="relative overflow-hidden rounded-3xl p-8 sm:p-10 mb-16"
