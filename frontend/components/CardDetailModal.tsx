@@ -204,11 +204,19 @@ export default function CardDetailModal({
                     <p className="text-[0.55rem] text-white/60">Signature validated against verified record.</p>
                   </div>
                   {data.tokenId !== null && (
-                    <img
-                      src={`/api/cards/${data.tokenId}/qr`}
-                      alt={`QR for #${data.cardId ?? data.tokenId}`}
-                      className="w-14 h-14 rounded-lg shrink-0"
-                    />
+                    <a
+                      href={`/scan?cardId=${data.cardId ?? data.tokenId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0"
+                      title="View on Scan page"
+                    >
+                      <img
+                        src={`/api/cards/${data.tokenId}/qr`}
+                        alt={`QR for #${data.cardId ?? data.tokenId}`}
+                        className="w-14 h-14 rounded-lg"
+                      />
+                    </a>
                   )}
                 </div>
 

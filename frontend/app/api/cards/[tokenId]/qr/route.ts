@@ -18,7 +18,8 @@ export async function GET(
     const card = await cardsCollection.findOne({ tokenId });
     const cardId = card?.cardId || tokenIdStr;
 
-    const buffer = await generateQRCodeBuffer(cardId);
+    const origin = new URL(request.url).origin;
+    const buffer = await generateQRCodeBuffer(cardId, origin);
 
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
