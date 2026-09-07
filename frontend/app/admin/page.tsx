@@ -624,22 +624,29 @@ function StatusPill({ status, rgb }: { status: string; rgb: string }) {
 
 function TokenIdCell({ tokenId }: { tokenId: number }) {
   const [copied, setCopied] = useState(false);
-  const tokenUrl = `${CONTRACT_ADDR}?a=${tokenId}`;
   const fullUrl = `https://testnet.bscscan.com/token/${CONTRACT_ADDR}?a=${tokenId}`;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(tokenUrl);
+    navigator.clipboard.writeText(fullUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
 
   return (
     <div className="flex items-center gap-2">
-      <span className="font-mono text-white/90">{tokenId}</span>
+      <a
+        href={fullUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-mono text-white/90 hover:text-white transition-colors"
+        title={`View Token #${tokenId} on BSCScan`}
+      >
+        {tokenId}
+      </a>
       <button
         onClick={handleCopy}
         className="text-white/40 hover:text-white/80 transition-colors cursor-pointer"
-        title={copied ? "Copied!" : "Copy contract address + tokenId"}
+        title={copied ? "Copied!" : "Copy token URL"}
       >
         {copied ? (
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--electric-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
@@ -648,11 +655,11 @@ function TokenIdCell({ tokenId }: { tokenId: number }) {
         )}
       </button>
       <a
-        href={`https://testnet.bscscan.com/address/${CONTRACT_ADDR}`}
+        href={fullUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="text-white/40 hover:text-white/80 transition-colors"
-        title={`View contract on BSCScan (Token #${tokenId})`}
+        title={`View Token #${tokenId} on BSCScan`}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
       </a>
