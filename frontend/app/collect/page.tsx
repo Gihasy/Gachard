@@ -67,6 +67,39 @@ export default function PacksPage() {
             .then((d) => setBalance(d.balance ?? 0))
             .catch(() => {});
           window.dispatchEvent(new Event("balance-change"));
+
+          // Poll for card confirmation every 3 seconds for up to 2 minutes
+          const txId = data.txId;
+          if (txId) {
+            let attempts = 0;
+            const maxAttempts = 40; // 40 * 3s = 120s
+            const pollInterval = setInterval(async () => {
+              attempts++;
+              if (attempts >= maxAttempts) {
+                clearInterval(pollInterval);
+                return;
+              }
+              try {
+                // Fetch cards to trigger auto-reconciliation
+                const cardsRes = await fetch("/api/cards", { credentials: "include" });
+                if (cardsRes.ok) {
+                  const cardsData = await cardsRes.json();
+                  // Check if any cards from this mint are still pending
+                  const hasPending = cardsData.cards?.some(
+                    (c: { status: string; createdAt: string }) =>
+                      c.status === "pending" && new Date(c.createdAt).getTime() > Date.now() - 300000
+                  );
+                  if (!hasPending) {
+                    clearInterval(pollInterval);
+                    // Update reveal data with confirmed cards
+                    window.dispatchEvent(new Event("cards-updated"));
+                  }
+                }
+              } catch {
+                // Ignore polling errors
+              }
+            }, 3000);
+          }
         } else {
           setReveal({ error: data.error || "Failed to open pack" });
         }

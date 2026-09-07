@@ -135,7 +135,7 @@ export async function waitForReceipt(
     } catch {
       // Provider error — retry
     }
-    await new Promise((r) => setTimeout(r, baseDelayMs * (i + 1)));
+    await new Promise((r) => setTimeout(r, baseDelayMs));
   }
   return null;
 }

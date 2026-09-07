@@ -17,7 +17,9 @@ async function confirmMint(txHash: string, txId: string, contractAddress: string
   try {
     const cleanContractAddress = contractAddress.trim().toLowerCase();
     console.log("[confirmMint] Starting for tx:", txHash, "txId:", txId, "contract:", cleanContractAddress);
-    const receipt = await waitForReceipt(txHash, 10, 2000);
+    
+    // Poll with shorter intervals since client is also polling
+    const receipt = await waitForReceipt(txHash, 15, 1000);
     if (!receipt) {
       console.error("[confirmMint] No receipt found for tx:", txHash);
       return;
@@ -193,7 +195,12 @@ export async function POST(request: Request) {
     }));
 
     // Fire-and-forget: confirm on-chain in background
-    confirmMint(txHash, txResult.insertedId.toString(), contractAddress);
+    // Use setTimeout to allow the response to be sent first
+    setTimeout(() => {
+      confirmMint(txHash, txResult.insertedId.toString(), contractAddress).catch(err => {
+        console.error("[mint] background confirm failed:", err);
+      });
+    }, 100);
 
     return NextResponse.json({
       status: friendlyTxStatus("pending"),
