@@ -64,14 +64,18 @@ export function getContract(signer?: ethers.Signer) {
 }
 
 export async function mintCard(toAddress: string, rarity: number): Promise<string> {
+  // Validate and normalize address to prevent ENS resolution
+  const normalizedAddress = ethers.getAddress(toAddress);
   const contract = getContract();
-  const tx = await contract.mintCard(toAddress, rarity);
+  const tx = await contract.mintCard(normalizedAddress, rarity);
   return tx.hash;
 }
 
 export async function mintBatch(toAddress: string, rarities: number[]): Promise<string> {
+  // Validate and normalize address to prevent ENS resolution
+  const normalizedAddress = ethers.getAddress(toAddress);
   const contract = getContract();
-  const tx = await contract.mintBatch(toAddress, rarities);
+  const tx = await contract.mintBatch(normalizedAddress, rarities);
   return tx.hash;
 }
 
