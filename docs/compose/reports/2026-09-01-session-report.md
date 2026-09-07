@@ -94,14 +94,14 @@ Sistem autentikasi server-side untuk menutup Mass IDOR pada semua 19 endpoint:
 
 | Credential | Lama | Baru | Status |
 |-----------|------|------|--------|
-| MongoDB password | `%23Gihasy2811` | Di-rotate oleh user | Done |
-| `ADMIN_USERNAME` | `admin-uylbdz` | `admin-97df4f37` | Done (Vercel + local) |
-| `ADMIN_PASSWORD` | `GwX+hXgQ3xd3...` | `lTFxRfCLH3hma1s...` | Done (Vercel + local) |
-| `ENCRYPTION_SECRET_KEY` | `gachard-hackathon-2026...` | `L6CfIKs2MuX2l7L6...` | Done (Vercel + local) |
-| `ADMIN_PRIVATE_KEY` | `0xf77d18e4...` | `0x05a3996c...` | Done (Vercel + local) |
-| `ADMIN_WALLET_ADDRESS` | `0xF7DEd49E...` | `0x869e4d60...` | Done (Vercel + local) |
-| `GEMINI_API_KEY` | `AQ.Ab8RN6I...` | Dilewati | Pending |
-| `CONTRACT_ADDRESS` | `0x16df46a0...` | `0x5359d0bd...` | Done (Vercel + local) |
+| MongoDB password | `[REDACTED]` | Di-rotate oleh user | Done |
+| `ADMIN_USERNAME` | `[REDACTED]` | `[REDACTED]` | Done (Vercel + local) |
+| `ADMIN_PASSWORD` | `[REDACTED]` | `[REDACTED]` | Done (Vercel + local) |
+| `ENCRYPTION_SECRET_KEY` | `[REDACTED]` | `[REDACTED]` | Done (Vercel + local) |
+| `ADMIN_PRIVATE_KEY` | `[REDACTED]` | `[REDACTED]` | Done (Vercel + local) |
+| `ADMIN_WALLET_ADDRESS` | `[REDACTED]` | `[REDACTED]` | Done (Vercel + local) |
+| `GEMINI_API_KEY` | `[REDACTED]` | Dilewati | Pending |
+| `CONTRACT_ADDRESS` | `[REDACTED]` | `[REDACTED]` | Done (Vercel + local) |
 
 **Secrets scrubbed** dari 11 tracked files. `.gitignore` updated: `memory/`, `MEMORY.md`, `LAPORAN_AKHIR.md` excluded.
 
