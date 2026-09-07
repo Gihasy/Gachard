@@ -624,7 +624,7 @@ function StatusPill({ status, rgb }: { status: string; rgb: string }) {
 
 function TokenIdCell({ tokenId }: { tokenId: number }) {
   const [copied, setCopied] = useState(false);
-  const fullUrl = `https://testnet.bscscan.com/token/${CONTRACT_ADDR}?a=${tokenId}`;
+  const fullUrl = `https://testnet.bscscan.com/token/${CONTRACT_ADDR}?a=${tokenId}#transactions`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(fullUrl);
@@ -639,14 +639,14 @@ function TokenIdCell({ tokenId }: { tokenId: number }) {
         target="_blank"
         rel="noopener noreferrer"
         className="font-mono text-white/90 hover:text-white transition-colors"
-        title={`View Token #${tokenId} on BSCScan`}
+        title={fullUrl}
       >
         {tokenId}
       </a>
       <button
         onClick={handleCopy}
         className="text-white/40 hover:text-white/80 transition-colors cursor-pointer"
-        title={copied ? "Copied!" : "Copy token URL"}
+        title={copied ? "Copied!" : fullUrl}
       >
         {copied ? (
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--electric-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
@@ -659,7 +659,7 @@ function TokenIdCell({ tokenId }: { tokenId: number }) {
         target="_blank"
         rel="noopener noreferrer"
         className="text-white/40 hover:text-white/80 transition-colors"
-        title={`View Token #${tokenId} on BSCScan`}
+        title={fullUrl}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
       </a>
