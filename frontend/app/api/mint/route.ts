@@ -15,7 +15,8 @@ import { ethers } from "ethers";
 /** Background confirm: poll receipt and update cards/tokenIds */
 async function confirmMint(txHash: string, txId: string, contractAddress: string) {
   try {
-    console.log("[confirmMint] Starting for tx:", txHash, "txId:", txId, "contract:", contractAddress);
+    const cleanContractAddress = contractAddress.trim().toLowerCase();
+    console.log("[confirmMint] Starting for tx:", txHash, "txId:", txId, "contract:", cleanContractAddress);
     const receipt = await waitForReceipt(txHash, 10, 2000);
     if (!receipt) {
       console.error("[confirmMint] No receipt found for tx:", txHash);
@@ -36,11 +37,11 @@ async function confirmMint(txHash: string, txId: string, contractAddress: string
     let mintIndex = 0;
 
     for (const log of receipt.logs) {
-      console.log("[confirmMint] Log address:", log.address, "topic:", log.topics[0]);
-      console.log("[confirmMint] Address match:", log.address.toLowerCase() === contractAddress.toLowerCase());
-      console.log("[confirmMint] Topic match:", log.topics[0] === CARD_MINTED_TOPIC);
+      const logAddress = log.address.toLowerCase();
+      const topicMatch = log.topics[0] === CARD_MINTED_TOPIC;
+      const addressMatch = logAddress === cleanContractAddress;
       
-      if (log.topics[0] === CARD_MINTED_TOPIC && log.address.toLowerCase() === contractAddress.toLowerCase()) {
+      if (topicMatch && addressMatch) {
         const tokenId = parseInt(log.topics[1], 16);
         const logData = log.data.slice(2);
         const rarity = parseInt(logData.slice(64, 128), 16);
@@ -142,7 +143,7 @@ export async function POST(request: Request) {
     const txHash = await mintBatch(walletAddress, rarities);
 
     // Simpan transaksi
-    const contractAddress = process.env.CONTRACT_ADDRESS!;
+    const contractAddress = process.env.CONTRACT_ADDRESS?.trim()!;
     const txCollection = await getCollection("transactions");
     const txResult = await txCollection.insertOne({
       userId: user._id.toString(),
@@ -155,7 +156,7 @@ export async function POST(request: Request) {
       txHash,
       status: "pending",
       contractAddress,
-      fromAddress: process.env.ADMIN_WALLET_ADDRESS,
+      fromAddress: process.env.ADMIN_WALLET_ADDRESS?.trim(),
       toAddress: user.walletAddress,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

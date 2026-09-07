@@ -31,7 +31,7 @@ export async function POST() {
         continue;
       }
 
-      const contractAddress = tx.contractAddress?.toLowerCase() || process.env.CONTRACT_ADDRESS?.toLowerCase();
+      const contractAddress = (tx.contractAddress || process.env.CONTRACT_ADDRESS || "").trim().toLowerCase();
       const tokenIds: number[] = [];
       let mintIndex = 0;
 
