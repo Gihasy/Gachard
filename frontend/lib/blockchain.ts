@@ -1,7 +1,9 @@
 import { ethers } from "ethers";
 
-const RPC_URL = process.env.BSC_TESTNET_RPC!;
-const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS!;
+const RPC_URL = process.env.BSC_TESTNET_RPC?.trim()!;
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS?.trim()!;
+console.log("[blockchain] CONTRACT_ADDRESS:", CONTRACT_ADDRESS);
+console.log("[blockchain] RPC_URL:", RPC_URL);
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
@@ -60,6 +62,9 @@ export function getAdminWallet() {
 
 export function getContract(signer?: ethers.Signer) {
   const s = signer || getAdminWallet();
+  if (!CONTRACT_ADDRESS || !ethers.isAddress(CONTRACT_ADDRESS)) {
+    throw new Error(`Invalid CONTRACT_ADDRESS: "${CONTRACT_ADDRESS}"`);
+  }
   return new ethers.Contract(CONTRACT_ADDRESS, GACHARD_ABI, s);
 }
 
