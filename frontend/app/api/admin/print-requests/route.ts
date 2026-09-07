@@ -59,6 +59,21 @@ export async function GET() {
           status: "accepted",
         });
 
+        // Get redeemer info if code was claimed
+        let redeemer: { username: string; walletAddress: string } | null = null;
+        if (codeDoc?.status === "claimed" && codeDoc?.redeemedBy) {
+          try {
+            const { ObjectId } = await import("mongodb");
+            const redeemerDoc = await usersCollection.findOne({ _id: new ObjectId(codeDoc.redeemedBy) } as Record<string, unknown>);
+            if (redeemerDoc) {
+              redeemer = {
+                username: redeemerDoc.username,
+                walletAddress: redeemerDoc.walletAddress,
+              };
+            }
+          } catch { /* ignore */ }
+        }
+
         return {
           txId: generateInvoiceId(tx._id.toString()),
           rawTxId: tx._id.toString(),
@@ -66,6 +81,7 @@ export async function GET() {
           redeemCode,
           codeStatus,
           accepted: !!accepted,
+          redeemer,
           fulfillmentStatus: card?.fulfillmentStatus || null,
           shippingAddress: shipping
             ? {

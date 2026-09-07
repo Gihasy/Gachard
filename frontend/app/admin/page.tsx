@@ -65,6 +65,7 @@ type PrintRequest = {
   shippingAddress: ShippingAddress | null;
   user: { email: string; username: string; walletAddress: string } | null;
   card: { cardId: string | null; claimId: string | null; status: string; rarity: number; templateId: string; fulfillmentStatus: string | null } | null;
+  redeemer: { username: string; walletAddress: string } | null;
   txStatus: string;
   createdAt: string;
   updatedAt: string;
@@ -379,7 +380,25 @@ export default function AdminPage() {
               <CardsTable cards={filteredCards} />
             </>
           )}
-          {tab === "prints" && <PrintRequestsTable prints={prints} onAccept={fetchAll} />}
+          {tab === "prints" && (
+            <>
+              <div className="mb-4">
+                <button
+                  onClick={async () => {
+                    const res = await fetch("/api/admin/fix-claimed-cards", { method: "POST", credentials: "include" });
+                    const data = await res.json();
+                    alert(data.fixed !== undefined ? `Fixed ${data.fixed} card(s)` : data.error || "Failed");
+                    if (data.fixed > 0) fetchAll();
+                  }}
+                  className="btn-ghost !py-1.5 !px-3 !text-xs"
+                  data-testid="admin-fix-claimed-cards"
+                >
+                  Fix Claimed Cards
+                </button>
+              </div>
+              <PrintRequestsTable prints={prints} onAccept={fetchAll} />
+            </>
+          )}
           {tab === "health" && (
             <HealthTable
               pendingCards={pendingCards}
@@ -866,7 +885,19 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
                   style={{ background: "rgba(255,196,102,0.1)", border: "1px solid rgba(255,196,102,0.3)", color: "#ffc466" }}>
                   {pr.redeemCode ?? "N/A"}
                 </p>
-                <p className="text-[0.6rem] text-white/40 mt-1">Status: {pr.codeStatus ?? "unknown"}</p>
+                <p className="text-[0.6rem] text-white/40 mt-1">
+                  Status: {pr.codeStatus === "claimed" ? "Claimed" : pr.codeStatus ?? "unknown"}
+                </p>
+                {pr.codeStatus === "claimed" && pr.redeemer && (
+                  <div className="mt-1.5 space-y-0.5">
+                    <p className="text-[0.6rem] text-white/50">
+                      Claimed by <span className="text-white/80 font-medium">@{pr.redeemer.username}</span>
+                    </p>
+                    <p className="text-[0.55rem] font-mono text-white/35">
+                      {pr.redeemer.walletAddress.slice(0, 10)}...{pr.redeemer.walletAddress.slice(-6)}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="min-w-[200px]">

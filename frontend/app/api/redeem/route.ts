@@ -55,6 +55,19 @@ export async function POST(request: Request) {
     // Hash code yang dimasukkan user
     const redeemHash = hashRedeemCode(code);
 
+    // Mark redeem code as claimed before on-chain call
+    const codesCollection = await getCollection("redeem_codes");
+    await codesCollection.updateMany(
+      { tokenId: card.tokenId },
+      {
+        $set: {
+          status: "claimed",
+          redeemedBy: userId,
+          redeemedAt: new Date().toISOString(),
+        },
+      }
+    );
+
     // Submit redeemCard transaction (async — ADR-018)
     // recipientAddress = wallet user yang login (ADR-007)
     const txHash = await redeemCard(card.tokenId, redeemHash, user.walletAddress);
