@@ -104,6 +104,11 @@ export async function POST(request: Request) {
     // Pick templates in parallel
     const templates = await Promise.all(rarities.map((r) => pickCardTemplate(r)));
 
+    // Validate wallet address before blockchain call
+    if (!user.walletAddress || !ethers.isAddress(user.walletAddress)) {
+      throw new Error(`Invalid wallet address: ${user.walletAddress}`);
+    }
+
     // Mint batch — 1 tx untuk seluruh pack (atomik)
     const txHash = await mintBatch(user.walletAddress, rarities);
 
