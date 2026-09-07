@@ -29,7 +29,29 @@ credentials.json
 .credentials
 .env*
 
-# Prevent secrets in docs from being tracked
+# Tool-specific folders (not needed in repo)
+.mimo/
+.mimocode/
+.commandcode/
+
+# Historical/archived documentation (not needed in repo)
+docs/archive/
+docs/screenshots/
+sprints/
+
+# Large binary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.mp4
+*.mov
+
+# Test reports (historical)
+test_reports/
+
+# Secrets prevention
 memory/
 MEMORY.md
 LAPORAN_AKHIR.md

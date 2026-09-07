@@ -26,6 +26,10 @@ Dibangun untuk submission **Indonesia Web3 Hackathon 2026** (track Consumer Apps
 - **Unique Card ID** — Setiap kartu punya ID hex unik (e.g. `#8a866`)
 - **Invoice ID** — Setiap transaksi punya Invoice ID (e.g. `GC-20260730-a3f1`)
 - **Admin Console** — Manage users, transactions, cards, print requests
+- **Trade Marketplace** — Jual beli kartu antar user dengan FVM pricing
+- **Dismantle & Crystal** — Burn kartu untuk mendapatkan Crystal currency
+- **AI Anomaly Detection** — Deteksi wash-trading pada marketplace
+- **Support Gachard** — Floating CTA button untuk early supporters
 
 ## Quick Start
 
@@ -58,13 +62,15 @@ Lihat `frontend/.env.local.example`.
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 16 (App Router), React, Tailwind CSS |
-| Backend | Next.js API Routes |
-| Database | MongoDB Atlas |
+| Frontend | Next.js 16 (App Router), React 19, Tailwind CSS 4 |
+| Backend | Next.js API Routes (single service) |
+| Database | MongoDB Atlas (free tier) |
 | Blockchain | BNB Chain Testnet, BEP-1155 |
-| Wallet | Custodial (ethers.js), sponsored gas |
+| Smart Contracts | Solidity 0.8.24, Foundry, OpenZeppelin v5 |
+| Wallet | Custodial (ethers.js v6), sponsored gas |
 | Auth | Google OAuth + demo accounts |
 | Payment | Stripe Test Mode (credit + direct) |
+| AI | MiMo V2.5 Pro (risk scoring), Gemini API (market insight) |
 | Hosting | Vercel (frontend + backend), Vercel Edge |
 
 ## Architecture
@@ -76,22 +82,33 @@ Lihat `frontend/.env.local.example`.
 - **ADR-017**: Next.js API routes sebagai satu-satunya backend
 - **ADR-018**: Async pattern untuk transaksi blockchain
 - **ADR-020**: AES-256-GCM encryption untuk private key
+- **ADR-024**: Marketplace fungsional (trade system)
+- **ADR-025**: AI Anomaly Detection Oracle
+- **ADR-026**: Dismantle & Crystal (burn-to-earn)
+- **ADR-027**: Become a Creator (whitelist form)
 
-Lihat `DECISIONS.md` untuk semua ADR.
+Lihat `DECISIONS.md` untuk semua 27 ADR.
 
 ### Project Structure
 ```
 Gachard/
-├── frontend/           # Next.js app
+├── frontend/           # Next.js app (single service)
 │   ├── app/           # Pages & API routes
 │   ├── components/    # React components
 │   ├── lib/           # Utilities & blockchain
+│   ├── hooks/         # React hooks
 │   └── public/        # Static assets
-├── contracts/         # Solidity smart contracts
+├── contracts/         # Solidity smart contracts (Foundry)
 ├── docs/              # Documentation
-├── sprints/           # Sprint plans
-├── MEMORY.md          # Project status & rules
-└── DECISIONS.md       # Architecture decisions
+│   ├── compose/       # Session & feature reports
+│   └── archive/       # Historical documentation
+├── .commandcode/      # Command Code config
+├── .mimo/             # MiMoCode config
+├── .mimocode/         # MiMoCode plugin
+├── MEMORY.md          # Project status & rules (auto-loaded)
+├── DECISIONS.md       # Architecture decisions (27 ADRs)
+├── PRD-Gachard-Hackathon.md  # Product Requirements Document
+└── vercel.json        # Vercel deployment config
 ```
 
 ## Deployment
@@ -116,21 +133,24 @@ Gachard/
 ### Database Scripts
 ```bash
 # Clean slate (hapus semua data testing)
-cd frontend && node scripts/clean-state.mjs
+cd frontend && npx tsx scripts/clean-slate.ts
 ```
 
 ## Development Workflow
-1. Baca `MEMORY.md` — status & sprint saat ini
-2. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci
+1. Baca `MEMORY.md` — status & sprint saat ini (auto-loaded oleh MiMoCode)
+2. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci (27 ADR)
 3. Baca `docs/00-project-overview.md` — problem, solution, scope
-4. Implement sesuai sprint — jangan menyimpang dari `DECISIONS.md` tanpa ADR baru
-5. Commit sering — discipline fallback karena MiMoCode masih alpha
+4. Baca `PRD-Gachard-Hackathon.md` — PRD lengkap
+5. Implement sesuai sprint — jangan menyimpang dari `DECISIONS.md` tanpa ADR baru
+6. Commit sering — discipline fallback karena MiMoCode masih alpha
 
 ## Catatan untuk AI Coding Agent
 - Baca `MEMORY.md`, `DECISIONS.md`, dan `docs/` sebelum membuat perubahan
 - Jangan gunakan istilah blockchain/crypto/on-chain di UI user-facing
 - Semua perubahan harus kompatibel dengan ADR yang sudah dikunci
 - Test di mobile (iPhone 12 Pro/390px, Galaxy S8+/360px) sebelum deploy
+- Gunakan `getAuthenticatedUser(req)` untuk semua API routes (server-side session)
+- Semua transaksi blockchain menggunakan pola async (ADR-018)
 
 ## License
 Private — Indonesia Web3 Hackathon 2026 submission.

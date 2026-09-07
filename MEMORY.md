@@ -150,6 +150,11 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 3. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
 4. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — run with `cd frontend && npx tsx scripts/clean-slate.ts`
 
+### Documentation Cleanup (7 September 2026)
+- **10 file outdated dihapus**: Execution-Plan-Gachard.md, LAPORAN_AKHIR.md, UPDATE_REPORT.md, docs/SESSION_CHANGELOG.md, docs/BUG_FIX_REPORT.md, docs/PRIORITY_FIXES_REPORT.md, docs/compose/reports/status-lengkap.md, memory/test_credentials.md, memory/PRD.md, frontend/README.md
+- **20 file diarsipkan ke `docs/archive/`**: Semua plan files (sprint 1-6, clean-slate, pack system, cart-wishlist, trade marketplace, AI anomaly detection, dismantle crystal, support gachard, server-side session, brand identity) + beberapa report outdated (latest-changes-deploy, github-changes-report, emergent-audit-final, pitch-deck-outline, card-artwork-guideline)
+- **File yang dipertahankan**: Sprint reports (sprint-1-final.md s/d sprint-6-brand-identity-report.md), session reports (2026-07-28 s/d 2026-09-01), feature reports (ai-anomaly-detection-oracle, blockchain-abstraction, blockchain-hiding, dismantle-crystal, security-audit, support-gachard, pack-economy), DECISIONS.md, README.md, docs/00-project-overview.md
+
 ### Session 10 Agustus 2026 — Ringkasan Perubahan
 - **Responsive Fixes**: All pages audited and fixed for mobile (320-425px)
   - PackCard: stack title + stats on mobile
