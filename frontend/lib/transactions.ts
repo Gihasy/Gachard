@@ -209,10 +209,12 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
                 {
                   $set: {
                     status: "Digital",
+                    fulfillmentStatus: null,
                     ownerAddress: tx.toAddress,
                     lastOnChainSync: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                   },
+                  $unset: { deliveredAt: "", claimId: "" },
                 }
               );
             }
