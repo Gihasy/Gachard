@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { friendlyTxType } from "@/lib/status-map";
 
 const RARITY_COLORS = [
   "var(--rarity-common)",
@@ -295,19 +296,21 @@ export default function CardDetailModal({
                         </button>
                       )}
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       {(historyExpanded ? data.history : data.history.slice(0, 3)).map((tx, i) => (
                         <div
                           key={`${tx.type}-${tx.timestamp}-${i}`}
-                          className="flex justify-between items-center p-2 rounded-lg bg-white/[0.03] border border-white/[0.06]"
+                          className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
                         >
-                          <div className="flex items-center gap-1.5 min-w-0">
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-wrap">
                             {tx.invoiceId && (
-                              <span className="text-[0.5rem] font-mono text-white/40 shrink-0">{tx.invoiceId}</span>
+                              <span className="text-[0.6rem] font-mono text-white/40 shrink-0">{tx.invoiceId}</span>
                             )}
-                            <span className="text-[0.65rem] font-medium capitalize text-white shrink-0">{tx.type}</span>
+                            <span className="text-sm font-medium capitalize text-white shrink-0">
+                              {friendlyTxType(tx.type)}
+                            </span>
                             <span
-                              className="text-[0.5rem] uppercase tracking-widest px-1 py-0.5 rounded shrink-0"
+                              className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded shrink-0"
                               style={{
                                 background: tx.status === "Success" ? "rgba(0,204,255,0.15)" : "rgba(255,196,102,0.15)",
                                 color: tx.status === "Success" ? "var(--electric-blue)" : "var(--aurora-gold)",
@@ -315,16 +318,22 @@ export default function CardDetailModal({
                             >
                               {tx.status}
                             </span>
+                            {tx.from && tx.to && (
+                              <span className="text-[0.65rem] text-white/40 truncate">
+                                {tx.from} → {tx.to}
+                              </span>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2 shrink-0 ml-2">
+                          <div className="flex items-center gap-2 shrink-0 sm:ml-3">
                             {tx.price && tx.price > 0 && tx.type !== "mint" && (
                               <span className="text-[0.55rem] font-semibold" style={{ color: "var(--crystal)" }}>
                                 {tx.price} Crystal
                               </span>
                             )}
-                            <span className="text-[0.55rem] text-white/50">
-                              {new Date(tx.timestamp).toLocaleDateString()}
+                            <span className="text-xs text-white/50">
+                              {new Date(tx.timestamp).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} WIB
                             </span>
+                          </div>
                           </div>
                         </div>
                       ))}
