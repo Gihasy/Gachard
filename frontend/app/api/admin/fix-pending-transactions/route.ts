@@ -27,6 +27,7 @@ export async function POST() {
 
     for (const tx of pendingTxs) {
       try {
+        const confirmedTokenIds: number[] = [];
         const receipt = await provider.getTransactionReceipt(tx.txHash);
         if (!receipt) {
           results.push(`tx ${tx.txHash.slice(0, 10)}... (${tx.type}): still pending on-chain`);
@@ -47,7 +48,21 @@ export async function POST() {
           for (const log of receipt.logs) {
             if (log.address.toLowerCase() !== contractAddress) continue;
 
-            if (tx.type === "redeem" && log.topics[0] === CARD_STATUS_CHANGED_TOPIC) {
+            if (tx.type === "mint" && log.topics[0] === CARD_MINTED_TOPIC) {
+              const tokenId = parseInt(log.topics[1], 16);
+              const data = log.data.slice(2);
+              const rarity = parseInt(data.slice(64, 128), 16);
+
+              // Find the card by txId and update
+              const mintIndex = confirmedTokenIds.length;
+              confirmedTokenIds.push(tokenId);
+
+              await cardsCollection.updateOne(
+                { txId: tx._id.toString(), pickIndex: mintIndex },
+                { $set: { tokenId, status: "Digital", rarity, lastOnChainSync: new Date().toISOString() } }
+              );
+              results.push(`Card tokenId ${tokenId} (rarity ${rarity}): mint confirmed`);
+            } else if (tx.type === "redeem" && log.topics[0] === CARD_STATUS_CHANGED_TOPIC) {
               const tokenId = parseInt(log.topics[1], 16);
               const data = log.data.slice(2);
               const newCardStatus = parseInt(data.slice(64, 128), 16);

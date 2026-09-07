@@ -15,21 +15,37 @@ import { ethers } from "ethers";
 /** Background confirm: poll receipt and update cards/tokenIds */
 async function confirmMint(txHash: string, txId: string, contractAddress: string) {
   try {
+    console.log("[confirmMint] Starting for tx:", txHash, "txId:", txId, "contract:", contractAddress);
     const receipt = await waitForReceipt(txHash, 10, 2000);
-    if (!receipt || receipt.status !== 1) return;
+    if (!receipt) {
+      console.error("[confirmMint] No receipt found for tx:", txHash);
+      return;
+    }
+    if (receipt.status !== 1) {
+      console.error("[confirmMint] Transaction failed on-chain. Status:", receipt.status);
+      return;
+    }
 
+    console.log("[confirmMint] Receipt found, logs count:", receipt.logs.length);
     const CARD_MINTED_TOPIC = ethers.id("CardMinted(uint256,address,uint8,uint8)");
+    console.log("[confirmMint] Expected topic:", CARD_MINTED_TOPIC);
+    
     const cardsCollection = await getCollection("cards");
     const txCollection = await getCollection("transactions");
     const confirmedTokenIds: number[] = [];
     let mintIndex = 0;
 
     for (const log of receipt.logs) {
+      console.log("[confirmMint] Log address:", log.address, "topic:", log.topics[0]);
+      console.log("[confirmMint] Address match:", log.address.toLowerCase() === contractAddress.toLowerCase());
+      console.log("[confirmMint] Topic match:", log.topics[0] === CARD_MINTED_TOPIC);
+      
       if (log.topics[0] === CARD_MINTED_TOPIC && log.address.toLowerCase() === contractAddress.toLowerCase()) {
         const tokenId = parseInt(log.topics[1], 16);
         const logData = log.data.slice(2);
         const rarity = parseInt(logData.slice(64, 128), 16);
         confirmedTokenIds.push(tokenId);
+        console.log("[confirmMint] Confirmed tokenId:", tokenId, "rarity:", rarity);
 
         await cardsCollection.updateOne(
           { txId, pickIndex: mintIndex },
@@ -44,6 +60,9 @@ async function confirmMint(txHash: string, txId: string, contractAddress: string
         { _id: parseObjectId(txId) },
         { $set: { status: "confirmed", tokenIds: confirmedTokenIds } }
       );
+      console.log("[confirmMint] Updated", confirmedTokenIds.length, "cards to confirmed");
+    } else {
+      console.warn("[confirmMint] No matching CardMinted events found in logs");
     }
   } catch (err) {
     console.error("[mint] background confirm failed:", err);
