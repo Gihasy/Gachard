@@ -126,15 +126,24 @@ export async function GET(request: Request) {
         statusMatch,
         flag: verificationFlag,
       },
-      history: history.map((tx) => ({
-        invoiceId: generateInvoiceId(tx._id.toString()),
-        type: tx.type,
-        status: friendlyTxStatus(tx.status),
-        price: tx.amount || null,
-        from: tx.fromAddress === "vault" ? "Gachard Vault" : (tx.fromAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() || tx.fromAddress?.toLowerCase() === "0xf7ded49eb412f69520c38c3f7e36523d71428dea") ? "Gachard" : addressToUsername.get(tx.fromAddress?.toLowerCase()) || tx.fromAddress,
-        to: tx.toAddress === "vault" ? "Gachard Vault" : (tx.toAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() || tx.toAddress?.toLowerCase() === "0xf7ded49eb412f69520c38c3f7e36523d71428dea") ? "Gachard" : addressToUsername.get(tx.toAddress?.toLowerCase()) || tx.toAddress,
-        timestamp: tx.createdAt,
-      })),
+      history: history.map((tx) => {
+        const cleanFrom = tx.fromAddress?.trim().replace(/^"|"$/g, '').toLowerCase();
+        const cleanTo = tx.toAddress?.trim().replace(/^"|"$/g, '').toLowerCase();
+        const ADMIN_WALLETS = [
+          process.env.ADMIN_WALLET_ADDRESS?.toLowerCase(),
+          "0xf7ded49eb412f69520c38c3f7e36523d71428dea",
+          "0x869e4d60819c6c09f672a04bda0bbaddd924215e",
+        ].filter(Boolean);
+        return {
+          invoiceId: generateInvoiceId(tx._id.toString()),
+          type: tx.type,
+          status: friendlyTxStatus(tx.status),
+          price: tx.amount || null,
+          from: cleanFrom === "vault" ? "Gachard Vault" : ADMIN_WALLETS.includes(cleanFrom) ? "Gachard" : addressToUsername.get(cleanFrom) || tx.fromAddress?.trim().replace(/^"|"$/g, ''),
+          to: cleanTo === "vault" ? "Gachard Vault" : ADMIN_WALLETS.includes(cleanTo) ? "Gachard" : addressToUsername.get(cleanTo) || tx.toAddress?.trim().replace(/^"|"$/g, ''),
+          timestamp: tx.createdAt,
+        };
+      }),
     });
   } catch (error) {
     console.error("Scan error:", error);
