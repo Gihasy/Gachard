@@ -131,8 +131,8 @@ export async function GET(request: Request) {
         type: tx.type,
         status: friendlyTxStatus(tx.status),
         price: tx.amount || null,
-        from: tx.fromAddress === "vault" ? "Gachard Vault" : tx.fromAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() ? "Gachard" : addressToUsername.get(tx.fromAddress?.toLowerCase()) || tx.fromAddress,
-        to: tx.toAddress === "vault" ? "Gachard Vault" : tx.toAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() ? "Gachard" : addressToUsername.get(tx.toAddress?.toLowerCase()) || tx.toAddress,
+        from: tx.fromAddress === "vault" ? "Gachard Vault" : (tx.fromAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() || tx.fromAddress?.toLowerCase() === "0xf7ded49eb412f69520c38c3f7e36523d71428dea") ? "Gachard" : addressToUsername.get(tx.fromAddress?.toLowerCase()) || tx.fromAddress,
+        to: tx.toAddress === "vault" ? "Gachard Vault" : (tx.toAddress?.toLowerCase() === process.env.ADMIN_WALLET_ADDRESS?.toLowerCase() || tx.toAddress?.toLowerCase() === "0xf7ded49eb412f69520c38c3f7e36523d71428dea") ? "Gachard" : addressToUsername.get(tx.toAddress?.toLowerCase()) || tx.toAddress,
         timestamp: tx.createdAt,
       })),
     });

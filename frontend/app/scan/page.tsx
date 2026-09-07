@@ -550,41 +550,43 @@ function ScanContent() {
                     {data.history.map((tx, i) => (
                       <div
                         key={`${tx.type}-${tx.timestamp}-${i}`}
-                        className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
+                        className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]"
                       >
-                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-wrap">
-                          {tx.invoiceId && (
-                            <span className="text-[0.6rem] font-mono text-white/40 shrink-0">
-                              {tx.invoiceId}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                            {tx.invoiceId && (
+                              <span className="text-[0.6rem] font-mono text-white/40 shrink-0">
+                                {tx.invoiceId}
+                              </span>
+                            )}
+                            <span className="text-sm font-medium capitalize text-white shrink-0">
+                              {friendlyTxType(tx.type)}
                             </span>
-                          )}
-                          <span className="text-sm font-medium capitalize text-white shrink-0">
-                            {friendlyTxType(tx.type)}
-                          </span>
-                          <span
-                            className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded shrink-0"
-                            style={{
-                              background:
-                                tx.status === "Success"
-                                  ? "rgba(0,204,255,0.15)"
-                                  : "rgba(255,196,102,0.15)",
-                              color:
-                                tx.status === "Success"
-                                  ? "var(--electric-blue)"
-                                  : "var(--aurora-gold)",
-                            }}
-                          >
-                            {tx.status}
-                          </span>
-                          {tx.from && tx.to && (
-                            <span className="text-[0.65rem] text-white/40 truncate">
-                              {tx.from} → {tx.to}
+                            <span
+                              className="text-[0.6rem] uppercase tracking-widest px-2 py-0.5 rounded shrink-0"
+                              style={{
+                                background:
+                                  tx.status === "Success"
+                                    ? "rgba(0,204,255,0.15)"
+                                    : "rgba(255,196,102,0.15)",
+                                color:
+                                  tx.status === "Success"
+                                    ? "var(--electric-blue)"
+                                    : "var(--aurora-gold)",
+                              }}
+                            >
+                              {tx.status}
                             </span>
-                          )}
+                          </div>
+                          <span className="text-xs text-white/50 shrink-0 ml-3">
+                            {new Date(tx.timestamp).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} WIB
+                          </span>
                         </div>
-                        <span className="text-xs text-white/50 shrink-0 sm:ml-3">
-                          {new Date(tx.timestamp).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} WIB
-                        </span>
+                        {tx.from && tx.to && (
+                          <p className="text-[0.65rem] text-white/40 mt-1.5">
+                            {tx.from} → {tx.to}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
