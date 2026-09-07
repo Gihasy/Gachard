@@ -181,30 +181,51 @@ export default function Navbar() {
             </div>
 
             {user ? (
-              <div
-                className="relative hidden sm:block"
-                onMouseEnter={() => { setShowUserMenu(true); refreshBalance(); }}
-                onMouseLeave={() => setShowUserMenu(false)}
-              >
-                <div
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-full cursor-pointer transition-all hover:brightness-125"
+              <>
+                {/* Admin Console Link */}
+                <Link
+                  href="/admin"
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.7rem] font-medium uppercase tracking-[0.1em] transition-all hover:brightness-125"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.10)",
+                    background: "rgba(184,172,255,0.12)",
+                    border: "1px solid rgba(184,172,255,0.2)",
+                    color: "var(--cosmic-violet)",
                   }}
-                  data-testid="nav-user-chip"
+                  data-testid="nav-admin-link"
                 >
-                  <span
-                    className="w-2 h-2 rounded-full"
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                  Admin
+                </Link>
+
+                <div
+                  className="relative hidden sm:block"
+                  onMouseEnter={() => { setShowUserMenu(true); refreshBalance(); }}
+                  onMouseLeave={() => setShowUserMenu(false)}
+                >
+                  <div
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-full cursor-pointer transition-all hover:brightness-125"
                     style={{
-                      background: "var(--aurora-gold)",
-                      boxShadow: "0 0 8px var(--aurora-gold)",
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.10)",
                     }}
-                  />
-                  <span className="text-xs font-medium text-white/85">
-                    @{user.username}
-                  </span>
-                </div>
+                    data-testid="nav-user-chip"
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        background: "var(--aurora-gold)",
+                        boxShadow: "0 0 8px var(--aurora-gold)",
+                      }}
+                    />
+                    <span className="text-xs font-medium text-white/85">
+                      @{user.username}
+                    </span>
+                  </div>
 
                 {/* Invisible bridge to prevent hover gap */}
                 {showUserMenu && <div className="absolute right-0 w-full h-2" style={{ top: "100%" }} />}
@@ -277,6 +298,7 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
+              </>
             ) : (
               <Link
                 href="/login"
@@ -367,12 +389,31 @@ export default function Navbar() {
             })}
             <div className="mt-3 pt-3 border-t border-white/10">
               {user ? (
-                <div className="text-sm text-white/70 px-3 py-2">
-                  Signed in as{" "}
-                  <span className="text-white font-semibold">
-                    @{user.username}
-                  </span>
-                </div>
+                <>
+                  <div className="text-sm text-white/70 px-3 py-2">
+                    Signed in as{" "}
+                    <span className="text-white font-semibold">
+                      @{user.username}
+                    </span>
+                  </div>
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-2 py-3 px-3 rounded-xl text-sm font-medium uppercase tracking-[0.14em] transition-colors"
+                    style={{
+                      color: "var(--cosmic-violet)",
+                      background: "rgba(184,172,255,0.1)",
+                    }}
+                    data-testid="mobile-nav-admin"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="7" height="7" />
+                      <rect x="14" y="3" width="7" height="7" />
+                      <rect x="14" y="14" width="7" height="7" />
+                      <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    Admin Console
+                  </Link>
+                </>
               ) : (
                 <Link
                   href="/login"

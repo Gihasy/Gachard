@@ -87,31 +87,8 @@ async function verifySessionTokenEdge(token: string): Promise<boolean> {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Admin routes: HTTP Basic Auth (covers /admin pages AND /api/admin endpoints)
+  // Admin routes: No auth required (accessible to all logged-in users)
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-    const authHeader = req.headers.get("authorization");
-
-    if (!authHeader || !authHeader.startsWith("Basic ")) {
-      return new NextResponse("Authentication required", {
-        status: 401,
-        headers: { "WWW-Authenticate": 'Basic realm="Gachard Admin"' },
-      });
-    }
-
-    const encoded = authHeader.slice(6);
-    const decoded = atob(encoded);
-    const [username, password] = decoded.split(":");
-
-    const expectedUser = process.env.ADMIN_USERNAME;
-    const expectedPass = process.env.ADMIN_PASSWORD;
-
-    if (!expectedUser || !expectedPass || !safeEqual(username, expectedUser) || !safeEqual(password, expectedPass)) {
-      return new NextResponse("Invalid credentials", {
-        status: 401,
-        headers: { "WWW-Authenticate": 'Basic realm="Gachard Admin"' },
-      });
-    }
-
     return NextResponse.next();
   }
 
