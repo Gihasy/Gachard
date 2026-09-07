@@ -55,7 +55,6 @@ export default function CardDetailModal({
   const [data, setData] = useState<ScanData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [historyExpanded, setHistoryExpanded] = useState(false);
 
   useEffect(() => {
     const id = cardId || tokenId;
@@ -273,31 +272,9 @@ export default function CardDetailModal({
                       <p className="text-[0.6rem] uppercase tracking-[0.22em]" style={{ color: "var(--cosmic-violet)" }}>
                         Transaction History
                       </p>
-                      {data.history.length > 3 && (
-                        <button
-                          onClick={() => setHistoryExpanded(!historyExpanded)}
-                          className="flex items-center gap-1 text-[0.55rem] text-white/50 hover:text-white/80 transition-colors"
-                          data-testid="modal-history-toggle"
-                        >
-                          {historyExpanded ? "Show less" : `+${data.history.length - 3} more`}
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`transition-transform duration-200 ${historyExpanded ? "rotate-180" : ""}`}
-                          >
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                        </button>
-                      )}
                     </div>
-                    <div className="space-y-1">
-                      {(historyExpanded ? data.history : data.history.slice(0, 3)).map((tx, i) => (
+                    <div className="space-y-1 max-h-[calc(3*3rem)] overflow-y-auto pr-1" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.15) transparent" }}>
+                      {data.history.map((tx, i) => (
                         <div
                           key={`${tx.type}-${tx.timestamp}-${i}`}
                           className="flex items-center justify-between p-2 rounded-lg bg-white/[0.03] border border-white/[0.06]"

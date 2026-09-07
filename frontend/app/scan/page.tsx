@@ -546,7 +546,7 @@ function ScanContent() {
                   <p className="text-[0.72rem] uppercase tracking-[0.22em] mb-4" style={{ color: "var(--cosmic-violet)" }}>
                     Transaction History
                   </p>
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-[calc(3*5.5rem)] overflow-y-auto pr-1" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.15) transparent" }}>
                     {data.history.map((tx, i) => (
                       <div
                         key={`${tx.type}-${tx.timestamp}-${i}`}
