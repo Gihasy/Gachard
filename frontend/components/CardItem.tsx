@@ -315,13 +315,14 @@ export default function CardItem({
               <>
                 {listingPrice && (
                   <div
-                    className="text-center py-1.5 rounded-lg mb-1.5"
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg mb-1.5"
                     style={{
-                      background: "rgba(0,204,255,0.1)",
-                      border: "1px solid rgba(0,204,255,0.3)",
+                      background: "rgba(125,249,255,0.06)",
+                      border: "1px solid rgba(125,249,255,0.15)",
                     }}
                   >
-                    <span className="text-[0.65rem] font-semibold" style={{ color: "var(--electric-blue)" }}>
+                    <span className="text-[0.6rem] uppercase tracking-wider text-white/40">Listed</span>
+                    <span className="text-[0.7rem] font-semibold" style={{ color: "var(--crystal)" }}>
                       {listingPrice} Crystal
                     </span>
                   </div>
