@@ -334,7 +334,6 @@ export default function CardDetailModal({
                               {new Date(tx.timestamp).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} WIB
                             </span>
                           </div>
-                          </div>
                         </div>
                       ))}
                     </div>
