@@ -123,14 +123,26 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - **Seed Script**: `frontend/scripts/seed-marketplace.ts` — ~25 dummy sold transactions with 3 ownership chains (Legendary 5x, Epic 4x, Rare 3x)
 - **ADR-024**: Supersedes ADR-010 (marketplace "Coming Soon" → functional)
 
-### Session 7 September 2026 — Ringkasan Perubahan
+### Session 7 September 2026 — Ringkasan Perubahan (Part 1: Review)
 - **Rangkuman menyeluruh project** sudah diselesaikan dan disimpan di plan file: `C:\Users\gigih\.commandcode\plans\gachard-full-project-summary.md`.
-- **Scope review**: arsitektur final (Next.js API routes = satu-satunya backend), stack, ADR kunci, alur domain (core loop + marketplace + economy), struktur repo, data layer (MongoDB collections), API surface penting, konfigurasi env/deploy, serta risiko/tech-debt.
-- **Current state**: branch aktif `feat/ai-anomaly-detection-oracle`; sprint sudah selesai; current goal diupdate ke “rangkuman menyeluruh selesai” supaya mudah dilanjutkan di sesi berikutnya.
-- **Rekomendasi lanjutan** (saat siap eksekusi):
-  - Fokus audit/optimasi ke `frontend/lib/*` (terutama `blockchain.ts`, `transactions.ts`, `listings.ts`, `fvm.ts`, `risk-score.ts`) + `frontend/middleware.ts`.
-  - QA alur on-chain: `forge test` + uji mint→list→buy/print→redeem di testnet.
-  - Demo readiness: `clean-slate` + seed marketplace + verifikasi env production.
+- **Scope review**: arsitektur final, stack, ADR kunci, alur domain, struktur repo, data layer, API surface, konfigurasi env/deploy, serta risiko/tech-debt.
+- **Current state**: branch aktif `feat/ai-anomaly-detection-oracle`; sprint sudah selesai.
+
+### Session 7 September 2026 — Ringkasan Perubahan (Part 2: Eksekusi)
+- **Label “Real” → “Physical”** (11 file): Semua user-facing card status label diubah dari “Real” menjadi “Physical”. DB values tetap “Real” (tanpa migrasi data), display mapping di `status-map.ts` dan `getDisplayStatus()`.
+  - `lib/status-map.ts`, `api/cards/route.ts`, `api/scan/route.ts`, `api/redeem/route.ts`
+  - `components/CardItem.tsx`, `profile/page.tsx`, `scan/page.tsx`, `play/page.tsx`, `dismantle/page.tsx`
+  - `admin/page.tsx` (StatusPill + FULFILLMENT_DISPLAY mapping)
+- **Bug fix: redeem status stuck** (`lib/transactions.ts`): Polling fallback `confirmTransaction()` tidak reset `fulfillmentStatus` ke `null` saat redeem berhasil. Fix: tambah `fulfillmentStatus: null` + `$unset: { deliveredAt, claimId }`.
+- **Admin: Claimed status + redeemer info** (4 file):
+  - `api/redeem/route.ts`: Track redeemer di `redeem_codes` collection (`redeemedBy`, `redeemedAt`)
+  - `api/admin/print-requests/route.ts`: Return redeemer info (username, wallet)
+  - `admin/page.tsx`: Show “Status: Claimed” + `@username` + wallet address
+  - `api/admin/fix-claimed-cards/route.ts`: **Baru** — fix endpoint untuk kartu yang sudah terlanjur stuck “Physical”
+- **UI cleanup** (3 file): Hapus eyebrow labels (“Your Account”, “Verify Authenticity”, “Marketplace”) dari Profile, Scan, Trade pages. Samakan warna judul pakai `text-gradient-aurora`.
+- **Submission repo** (`Gachard-Submission`): Force push dengan clean history (single commit, no secrets). Docs di-update (`00-project-overview.md` — marketplace fungsional, dismantle, anomaly detection). Hapus `card-artwork-guideline.md` dan `pitch-deck-outline.md`.
+- **Fork Monad Metropolis**: Folder `D:\gachard-monad` dibuat, git init, remote → `Gachard-Monad.git`. Config diupdate untuk Monad testnet (`RPC_URL`, `CHAIN_ID=10143`). Belum di-push.
+- **Deploy**: Semua perubahan di-push ke `main` → Vercel auto-deploy ke https://www.gachard.com
 
 ### Open Items (belum selesai)
 1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: NS1 → ns1.vercel-dns.com + NS2 → ns2.vercel-dns.com
