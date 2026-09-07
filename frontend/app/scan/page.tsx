@@ -179,6 +179,11 @@ function ScanContent() {
               View Collection
             </Link>
           )}
+          {!claimResult.success && (
+            <Link href="/scan" className="btn-ghost mt-6 inline-block">
+              Back to Scan
+            </Link>
+          )}
         </div>
       </PageShell>
     );
