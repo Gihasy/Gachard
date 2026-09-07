@@ -185,15 +185,17 @@ export default function Navbar() {
                 {/* Admin Console Link */}
                 <Link
                   href="/admin"
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.7rem] font-medium uppercase tracking-[0.1em] transition-all hover:brightness-125"
+                  className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[0.7rem] font-bold uppercase tracking-[0.12em] transition-all hover:brightness-110 hover:scale-105"
                   style={{
-                    background: "rgba(184,172,255,0.12)",
-                    border: "1px solid rgba(184,172,255,0.2)",
-                    color: "var(--cosmic-violet)",
+                    background: "linear-gradient(135deg, #FF4D6D, #FF6BBA)",
+                    border: "1px solid rgba(255,77,109,0.4)",
+                    color: "white",
+                    boxShadow: "0 0 12px rgba(255,77,109,0.3), 0 0 24px rgba(255,107,186,0.15)",
+                    textShadow: "0 1px 2px rgba(0,0,0,0.2)",
                   }}
                   data-testid="nav-admin-link"
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="7" height="7" />
                     <rect x="14" y="3" width="7" height="7" />
                     <rect x="14" y="14" width="7" height="7" />
@@ -398,14 +400,16 @@ export default function Navbar() {
                   </div>
                   <Link
                     href="/admin"
-                    className="flex items-center gap-2 py-3 px-3 rounded-xl text-sm font-medium uppercase tracking-[0.14em] transition-colors"
+                    className="flex items-center gap-2 py-3 px-3 rounded-xl text-sm font-bold uppercase tracking-[0.14em] transition-all hover:brightness-110"
                     style={{
-                      color: "var(--cosmic-violet)",
-                      background: "rgba(184,172,255,0.1)",
+                      color: "white",
+                      background: "linear-gradient(135deg, #FF4D6D, #FF6BBA)",
+                      boxShadow: "0 0 12px rgba(255,77,109,0.3)",
+                      textShadow: "0 1px 2px rgba(0,0,0,0.2)",
                     }}
                     data-testid="mobile-nav-admin"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="7" height="7" />
                       <rect x="14" y="3" width="7" height="7" />
                       <rect x="14" y="14" width="7" height="7" />
