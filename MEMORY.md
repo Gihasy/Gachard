@@ -21,9 +21,10 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - Hosting: Vercel (frontend + backend via API routes) + MongoDB Atlas (database), semua free tier
 - **Arsitektur final**: Next.js API routes sebagai SATU-SATUNYA backend (lihat ADR-017). FastAPI sudah dihapus.
 - **Enkripsi**: Private key + redeem code dienkripsi AES-256-GCM (ADR-020)
-- Kontrak aktif: `0x56390137c171b3167D4055d199DA8Bc8eCeE219c` (AI Anomaly Detection Oracle — dengan recordVerification)
-- Kontrak sebelumnya: `0x5359d0bd7d02ad81659526958d606d4c61b2ba46` (security fixes — C-1, C-2, H-1, H-2)
-- Admin wallet: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa`
+- Kontrak aktif: `0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4` (AI Anomaly Detection Oracle — dengan recordVerification)
+- Kontrak sebelumnya: `0x56390137c171b3167D4055d199DA8Bc8eCeE219c` (lama, sudah tidak aktif)
+- Admin wallet baru: `0x3F4CBDCb5bFb014d63C07400DcD11513DB5F7b56`
+- Admin wallet lama: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa` (masih di-recognize sebagai "Gachard" di UI)
 - **29 file** berubah di sesi terakhir (10 baru, 18 ubah, 1 hapus), commit `3fc40c7`
 - Deploy: https://www.gachard.com (Vercel Production)
 
@@ -127,6 +128,27 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - **Rangkuman menyeluruh project** sudah diselesaikan dan disimpan di plan file: `C:\Users\gigih\.commandcode\plans\gachard-full-project-summary.md`.
 - **Scope review**: arsitektur final, stack, ADR kunci, alur domain, struktur repo, data layer, API surface, konfigurasi env/deploy, serta risiko/tech-debt.
 - **Current state**: branch aktif `feat/ai-anomaly-detection-oracle`; sprint sudah selesai.
+
+### Session 7 September 2026 — Ringkasan Perubahan (Part 2: New Wallet & Contract)
+- **Wallet baru**: Generate wallet baru `0x3F4CBDCb5bFb014d63C07400DcD11513DB5F7b56` (private key baru) karena wallet lama bukan untuk address yang terdaftar.
+- **Contract baru**: Deploy GachardCard baru ke `0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4` (tokenId mulai dari1).
+- **Bug fixes**:
+  - Trailing space di env vars Vercel → mint confirmation gagal. Fix: `.trim()` di semua tempat yang baca env vars.
+  - `confirmMint` background task gagal di Vercel serverless → tambah client-side polling di collect page.
+  - Listing ID tidak di-pass setelah create listing → cancel listing gagal. Fix: pass `listingId` dari API response.
+  - QR scanner salah treat cardId sebagai claimId → fix: pass raw URL, parse di handleScan.
+- **UI improvements**:
+  - Transaction History label: "Claimed Shipping" → "Physical", "Redeemed" → "Digital"
+  - Token ID di admin panel → clickable link ke BSCScan token URL + copy URL
+  - Listing price ditampilkan di atas tombol "Cancel Listing" (CRYSTAL uppercase, crystal color)
+  - Cart button disabled untuk listing sendiri di Trade page
+  - QR code di Card Details → clickable link ke scan page
+  - QR encode URL dinamis (pakai request.origin, bukan hardcoded env var)
+  - Old admin wallet `0xF7DE...8DEa` → resolve ke "Gachard" di Transaction History
+  - From → to transfer info dipindah ke paragraf baru
+  - Transaction History dibatasi 3 item visible + scrollbar
+  - Play page: tambah hero image dengan glow border effect
+- **Deploy**: Semua perubahan di-push ke `main` → Vercel Production https://www.gachard.com
 
 ### Session 7 September 2026 — Ringkasan Perubahan (Part 2: Eksekusi)
 - **Label “Real” → “Physical”** (11 file): Semua user-facing card status label diubah dari “Real” menjadi “Physical”. DB values tetap “Real” (tanpa migrasi data), display mapping di `status-map.ts` dan `getDisplayStatus()`.

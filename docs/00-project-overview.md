@@ -13,7 +13,7 @@ Berbeda dengan platform seperti Courtyard yang men-tokenisasi kartu fisik yang s
 End-user pembeli/kolektor kartu (rencana beta fokus Amerika Serikat; versi hackathon: demo umum). User tidak perlu tahu istilah wallet, gas fee, atau NFT — semua tersembunyi di balik UX seperti aplikasi konsumen biasa.
 
 ## Scope (Hackathon)
-Lihat PRD lengkap (`PRD-Gachard-Hackathon.md`) §9 untuk detail Scope IN/OUT. Ringkasnya: login + wallet custodial, mint pack, vault/print/redeem loop, AI scan (QR + vision), sistem credit dual-track, marketplace hanya placeholder "Coming Soon".
+Lihat PRD lengkap (`PRD-Gachard-Hackathon.md`) §9 untuk detail Scope IN/OUT. Ringkasnya: login + wallet custodial, mint pack, vault/print/redeem loop, AI scan (QR + vision), sistem credit dual-track, marketplace fungsional (trade + FVM + AI price suggestion), dismantle & crystal (burn-to-earn).
 
 ## Track & Chain
 **Track**: Consumer Apps — Indonesia Web3 Hackathon 2026 (kolaborasi Binance Academy, BNB Chain, Coinvestasi, Dev Web3 Jogja).

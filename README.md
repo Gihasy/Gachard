@@ -146,8 +146,8 @@ cd frontend && npx tsx scripts/clean-slate.ts
 
 ## Blockchain Verification
 Semua transaksi blockchain dapat diverifikasi di BSCScan:
-- **Smart Contract**: `0x56390137c171b3167D4055d199DA8Bc8eCeE219c` (AI Anomaly Detection Oracle)
-- **Admin Wallet**: `0x869e4d60819c6C09f672a04bDa0bbADdD924215e`
+- **Smart Contract**: `0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4` (AI Anomaly Detection Oracle)
+- **Admin Wallet**: `0x3F4CBDCb5bFb014d63C07400DcD11513DB5F7b56`
 - **Chain**: BNB Testnet (Chain ID 97)
 - **Explorer**: https://testnet.bscscan.com
 
