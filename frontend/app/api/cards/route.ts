@@ -12,7 +12,7 @@ function getDisplayStatus(fulfillmentStatus: string | null | undefined, cardStat
   if (!fulfillmentStatus) return "Digital";
   if (["Locked", "Processing", "Printed"].includes(fulfillmentStatus)) return "In Progress";
   if (fulfillmentStatus === "Shipping") return "Shipping";
-  if (fulfillmentStatus === "Real") return "Real";
+  if (fulfillmentStatus === "Real") return "Physical";
   return "Digital";
 }
 

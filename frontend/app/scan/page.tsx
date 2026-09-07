@@ -88,7 +88,7 @@ function ScanContent() {
       .then((r) => r.json())
       .then((d) => {
         if (d.success) {
-          setClaimResult({ success: true, message: `Card #${d.cardId || d.tokenId} claimed successfully! Status: Real` });
+          setClaimResult({ success: true, message: `Card #${d.cardId || d.tokenId} claimed successfully! Status: Physical` });
         } else {
           setClaimResult({ success: false, message: d.error || "Claim failed" });
         }

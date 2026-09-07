@@ -106,7 +106,7 @@ export async function GET(request: Request) {
       cardId: card.cardId || null,
       tokenId: card.tokenId ?? null,
       onChain: {
-        status: card.status === "Real" ? "Real" : friendlyCardStatus(STATUS_LABELS[statusCode] || "Unknown"),
+        status: card.status === "Real" ? "Physical" : friendlyCardStatus(STATUS_LABELS[statusCode] || "Unknown"),
         statusCode,
         rarity: RARITY_LABELS[rarityCode] || "Unknown",
         rarityCode,

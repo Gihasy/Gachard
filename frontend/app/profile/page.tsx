@@ -127,7 +127,7 @@ export default function Profil() {
     common: cards.filter((c) => c.rarity === 0).length,
     digital: cards.filter((c) => (c.displayStatus ?? "Digital") === "Digital").length,
     inProgress: cards.filter((c) => c.displayStatus === "In Progress").length,
-    real: cards.filter((c) => c.displayStatus === "Real").length,
+    physical: cards.filter((c) => c.displayStatus === "Physical").length,
   };
 
   const handleLogout = () => {
@@ -306,7 +306,7 @@ export default function Profil() {
               <StatBlock label="Total" value={stats.total} color="#FFFFFF" />
               <StatBlock label="Digital" value={stats.digital} color="var(--electric-blue)" />
               <StatBlock label="In Progress" value={stats.inProgress} color="var(--aurora-gold)" />
-              <StatBlock label="Real" value={stats.real} color="#00ff88" />
+              <StatBlock label="Physical" value={stats.physical} color="#00ff88" />
               <StatBlock label="Legendary" value={stats.legendary} color="var(--aurora-gold)" />
               <StatBlock label="Epic" value={stats.epic} color="var(--cosmic-violet)" />
             </div>
@@ -354,10 +354,10 @@ export default function Profil() {
               className="text-[0.65rem] sm:text-[0.72rem] uppercase tracking-[0.22em] mb-2 sm:mb-3"
               style={{ color: "#00ff88" }}
             >
-              Redeem a Real Card
+              Redeem a Physical Card
             </p>
             <p className="text-[0.7rem] sm:text-xs text-white/50 mb-3 sm:mb-4">
-              Received a real card? Enter the Card ID and the redeem code printed on the card to transfer ownership to your account.
+              Received a physical card? Enter the Card ID and the redeem code printed on the card to transfer ownership to your account.
             </p>
             <div className="space-y-3">
               <div>

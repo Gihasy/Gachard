@@ -13,7 +13,7 @@ Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru. Jangan membangun 
 Sprint 6 selesai. Semua sprint selesai.
 
 ## Current Goal
-Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
+Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi perubahan/fitur berikutnya.
 
 ## Project Status
 - PRD selesai — lihat `docs/00-project-overview.md` (ringkas) dan `PRD-Gachard-Hackathon.md` (lengkap)
@@ -122,6 +122,15 @@ Persiapan Demo Day — data sudah bersih (clean-slate 28 Juli 2026).
 - **UI**: `/trade` page (listing grid + FVM + Market Insight + rarity filter + clickable cards with quick info popup), ListingModal (price input + FVM + AI suggestion), CardItem (List for Sale / Cancel Listing buttons, Listed badge, print guard)
 - **Seed Script**: `frontend/scripts/seed-marketplace.ts` — ~25 dummy sold transactions with 3 ownership chains (Legendary 5x, Epic 4x, Rare 3x)
 - **ADR-024**: Supersedes ADR-010 (marketplace "Coming Soon" → functional)
+
+### Session 7 September 2026 — Ringkasan Perubahan
+- **Rangkuman menyeluruh project** sudah diselesaikan dan disimpan di plan file: `C:\Users\gigih\.commandcode\plans\gachard-full-project-summary.md`.
+- **Scope review**: arsitektur final (Next.js API routes = satu-satunya backend), stack, ADR kunci, alur domain (core loop + marketplace + economy), struktur repo, data layer (MongoDB collections), API surface penting, konfigurasi env/deploy, serta risiko/tech-debt.
+- **Current state**: branch aktif `feat/ai-anomaly-detection-oracle`; sprint sudah selesai; current goal diupdate ke “rangkuman menyeluruh selesai” supaya mudah dilanjutkan di sesi berikutnya.
+- **Rekomendasi lanjutan** (saat siap eksekusi):
+  - Fokus audit/optimasi ke `frontend/lib/*` (terutama `blockchain.ts`, `transactions.ts`, `listings.ts`, `fvm.ts`, `risk-score.ts`) + `frontend/middleware.ts`.
+  - QA alur on-chain: `forge test` + uji mint→list→buy/print→redeem di testnet.
+  - Demo readiness: `clean-slate` + seed marketplace + verifikasi env production.
 
 ### Open Items (belum selesai)
 1. **DNS gachard.com** — domain dibeli, ditambahkan ke Vercel, tapi DNS belum dikonfigurasi di registrar (Rumahweb). Perlu: NS1 → ns1.vercel-dns.com + NS2 → ns2.vercel-dns.com

@@ -585,17 +585,20 @@ const FULFILLMENT_COLORS: Record<string, { rgb: string }> = {
   Printed: { rgb: "0,204,255" },
   Shipping: { rgb: "255,107,186" },
   Real: { rgb: "0,255,136" },
+  Physical: { rgb: "0,255,136" },
 };
 
 function statusRgb(status: string) {
-  return status === "Real" ? "0,255,136" : status === "Vaulted" ? "255,107,186" : status === "Digital" ? "0,204,255" : "255,196,102";
+  return (status === "Real" || status === "Physical") ? "0,255,136" : status === "Vaulted" ? "255,107,186" : status === "Digital" ? "0,204,255" : "255,196,102";
 }
+
+const FULFILLMENT_DISPLAY: Record<string, string> = { Real: "Physical" };
 
 function StatusPill({ status, rgb }: { status: string; rgb: string }) {
   return (
     <span className="text-[0.62rem] uppercase tracking-widest px-2.5 py-1 rounded-full inline-block"
       style={{ background: `rgba(${rgb},0.14)`, color: `rgb(${rgb})`, border: `1px solid rgba(${rgb},0.35)` }}>
-      {status}
+      {FULFILLMENT_DISPLAY[status] ?? status}
     </span>
   );
 }
@@ -906,7 +909,7 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
                 {fs && (
                   <span className="text-[0.68rem] uppercase tracking-widest px-3 py-1 rounded-full inline-block mb-3"
                     style={{ background: `rgba(${fsRgb},0.14)`, color: `rgb(${fsRgb})`, border: `1px solid rgba(${fsRgb},0.35)` }}>
-                    {fs}
+                    {FULFILLMENT_DISPLAY[fs] ?? fs}
                   </span>
                 )}
                 {fs === "Printed" && (

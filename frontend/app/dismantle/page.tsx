@@ -198,7 +198,7 @@ export default function DismantlePage() {
       ) : cards.length === 0 ? (
         <div className="glass p-16 text-center text-white/50">
           <p className="mb-2">No Digital cards available to dismantle.</p>
-          <p className="text-xs text-white/30">Cards that are Listed, In Progress, or Real cannot be dismantled.</p>
+          <p className="text-xs text-white/30">Cards that are Listed, In Progress, or Physical cannot be dismantled.</p>
         </div>
       ) : (
         <>

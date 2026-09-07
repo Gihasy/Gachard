@@ -118,13 +118,13 @@ export default function PlayTradePage() {
               <p className="text-white/70 leading-relaxed mb-5">
                 Got a <strong className="text-white">Collect Card</strong> from 
                 a Card Pack? That's where things get serious. Whether it's a 
-                Digital card in your collection or a Real physical card you've 
+                Digital card in your collection or a physical card you've 
                 redeemed — you can <strong className="text-white">level up</strong> and{" "}
                 <strong className="text-white">evolve</strong> it to unlock 
                 devastating new abilities and bring it into competitive play.
               </p>
               <ul className="space-y-3">
-                <FeatureItem text="Collect Cards from Card Packs — Digital or Real" />
+                <FeatureItem text="Collect Cards from Card Packs — Digital or Physical" />
                 <FeatureItem text="Level up your cards through gameplay and achievements" />
                 <FeatureItem text="Evolve cards to unlock exclusive abilities and art" />
                 <FeatureItem text="Your evolved cards become your competitive arsenal" />

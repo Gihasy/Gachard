@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     }
     if (card.fulfillmentStatus !== "Real") {
       return NextResponse.json(
-        { error: "Card must be claimed (status: Real) before redeeming. Please claim shipping first." },
+        { error: "Card must be claimed (status: Physical) before redeeming. Please claim shipping first." },
         { status: 400 }
       );
     }

@@ -12,7 +12,7 @@ const CARD_STATUS_MAP: Record<string, string> = {
   pending: "Processing",
   Digital: "Digital",
   Vaulted: "Print Requested",
-  Real: "Real",
+  Real: "Physical",
 };
 
 const TX_TYPE_MAP: Record<string, string> = {

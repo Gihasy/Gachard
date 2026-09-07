@@ -89,7 +89,7 @@ export default function CardItem({
   const canList = currentStatus === "Digital" && !isListed && tokenId !== null;
   const isInProgress = currentStatus === "In Progress";
   const isShipping = currentStatus === "Shipping";
-  const isReal = currentStatus === "Real";
+  const isPhysical = currentStatus === "Physical";
 
   const isFormValid =
     form.recipientName.trim() &&
@@ -120,8 +120,8 @@ export default function CardItem({
       });
       const data = await res.json();
       if (res.ok) {
-        setCurrentStatus("Real");
-        if (tokenId) onStatusChange?.(tokenId, "Real");
+        setCurrentStatus("Physical");
+        if (tokenId) onStatusChange?.(tokenId, "Physical");
       } else {
         setClaimError(data.error || "Claim failed");
       }
@@ -284,7 +284,7 @@ export default function CardItem({
               style={{
                 background: isListed
                   ? "rgba(255,196,102,0.15)"
-                  : isReal
+                  : isPhysical
                   ? "rgba(0,255,136,0.15)"
                   : isShipping
                   ? "rgba(138,92,255,0.15)"
@@ -293,7 +293,7 @@ export default function CardItem({
                   : "rgba(0,204,255,0.15)",
                 color: isListed
                   ? "var(--aurora-gold)"
-                  : isReal
+                  : isPhysical
                   ? "#00ff88"
                   : isShipping
                   ? "var(--cosmic-violet)"
@@ -381,7 +381,7 @@ export default function CardItem({
                 )}
               </div>
             )}
-            {isReal && deliveredAt && (
+            {isPhysical && deliveredAt && (
               <div
                 className="text-center text-[0.6rem] py-1.5 rounded-lg"
                 style={{
@@ -389,7 +389,7 @@ export default function CardItem({
                   border: "1px solid rgba(0,255,136,0.15)",
                   color: "#00ff88",
                 }}
-                data-testid={`real-card-${tokenId}`}
+                data-testid={`physical-card-${tokenId}`}
               >
                 {new Date(deliveredAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
               </div>
