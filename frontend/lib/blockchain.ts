@@ -72,10 +72,31 @@ export async function mintCard(toAddress: string, rarity: number): Promise<strin
 }
 
 export async function mintBatch(toAddress: string, rarities: number[]): Promise<string> {
-  // Validate and normalize address to prevent ENS resolution
-  const normalizedAddress = ethers.getAddress(toAddress);
+  console.log("[blockchain] mintBatch called with address:", toAddress);
+  console.log("[blockchain] Address type:", typeof toAddress);
+  console.log("[blockchain] Address length:", toAddress?.length);
+  
+  // Validate address format
+  if (!toAddress || typeof toAddress !== 'string') {
+    throw new Error(`Invalid address: ${toAddress}`);
+  }
+  
+  // Ensure address is properly formatted (0x + 40 hex chars)
+  const cleanAddress = toAddress.trim();
+  if (!/^0x[0-9a-fA-F]{40}$/.test(cleanAddress)) {
+    throw new Error(`Address format invalid: ${cleanAddress}`);
+  }
+  
+  // Use getAddress to checksum the address
+  const checksummedAddress = ethers.getAddress(cleanAddress);
+  console.log("[blockchain] Checksummed address:", checksummedAddress);
+  
   const contract = getContract();
-  const tx = await contract.mintBatch(normalizedAddress, rarities);
+  console.log("[blockchain] Calling contract.mintBatch...");
+  
+  const tx = await contract.mintBatch(checksummedAddress, rarities);
+  console.log("[blockchain] Transaction hash:", tx.hash);
+  
   return tx.hash;
 }
 
