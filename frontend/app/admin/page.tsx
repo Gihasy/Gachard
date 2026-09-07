@@ -74,7 +74,7 @@ type PrintRequest = {
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 const BSC_TESTNET_TX = "https://testnet.bscscan.com/tx/";
 const BSC_TESTNET_TOKEN = "https://testnet.bscscan.com/token/";
-const CONTRACT_ADDR = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x56390137c171b3167D4055d199DA8Bc8eCeE219c";
+const CONTRACT_ADDR = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4";
 
 type PendingCard = {
   cardId: string | null;

@@ -1,7 +1,7 @@
 const { ethers } = require('ethers');
 
 // Contract address
-const CONTRACT_ADDRESS = '0x56390137c171b3167D4055d199DA8Bc8eCeE219c';
+const CONTRACT_ADDRESS = '0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4';
 
 // RPC URL
 const RPC_URL = 'https://bsc-testnet.bnbchain.org';

@@ -1,7 +1,7 @@
 const { ethers } = require('ethers');
 
 // Admin wallet address
-const ADMIN_WALLET = '0x869e4d60819c6C09f672a04bDa0bbADdD924215e';
+const ADMIN_WALLET = '0x3F4CBDCb5bFb014d63C07400DcD11513DB5F7b56';
 
 // RPC URL
 const RPC_URL = 'https://bsc-testnet.bnbchain.org';

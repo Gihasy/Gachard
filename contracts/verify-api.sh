@@ -3,7 +3,7 @@
 # BSCScan API Verification Script
 # This script verifies the contract using the BSCScan API
 
-CONTRACT_ADDRESS="0x56390137c171b3167D4055d199DA8Bc8eCeE219c"
+CONTRACT_ADDRESS="0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4"
 API_KEY="VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K"
 
 echo "=========================================="
