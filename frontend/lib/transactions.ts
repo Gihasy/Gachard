@@ -120,7 +120,7 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
     }
 
     const newStatus: TxStatus = receipt.status === 1 ? "confirmed" : "failed";
-    const contractAddress = process.env.CONTRACT_ADDRESS?.toLowerCase();
+    const contractAddress = process.env.CONTRACT_ADDRESS?.trim().toLowerCase();
 
     if (newStatus === "confirmed" && receipt.logs) {
       const cardsCollection = await collection.db.collection("cards");

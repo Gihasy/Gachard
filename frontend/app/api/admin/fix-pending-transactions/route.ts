@@ -16,7 +16,7 @@ export async function POST() {
     const txCollection = await getCollection("transactions");
     const cardsCollection = await getCollection("cards");
     const provider = getProvider();
-    const contractAddress = process.env.CONTRACT_ADDRESS?.toLowerCase();
+    const contractAddress = process.env.CONTRACT_ADDRESS?.trim().toLowerCase();
 
     // Find all pending transactions with a txHash
     const pendingTxs = await txCollection

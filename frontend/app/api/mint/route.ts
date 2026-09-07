@@ -202,6 +202,9 @@ export async function POST(request: Request) {
       });
     }, 100);
 
+    // Also trigger immediate confirmation attempt (non-blocking)
+    confirmMint(txHash, txResult.insertedId.toString(), contractAddress).catch(() => {});
+
     return NextResponse.json({
       status: friendlyTxStatus("pending"),
       txId: generateInvoiceId(txResult.insertedId.toString()),
