@@ -420,8 +420,9 @@ export default function CardItem({
           templateId={templateId}
           userId={userId}
           onClose={() => setShowListingModal(false)}
-          onListed={() => {
+          onListed={(newListingId) => {
             setIsListed(true);
+            setListingId(newListingId);
             onStatusChange?.(tokenId!, "Digital");
           }}
         />

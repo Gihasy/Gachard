@@ -7,7 +7,7 @@ interface ListingModalProps {
   templateId: string;
   userId: string;
   onClose: () => void;
-  onListed: () => void;
+  onListed: (listingId: string) => void;
 }
 
 export default function ListingModal({ cardId, templateId, userId, onClose, onListed }: ListingModalProps) {
@@ -65,7 +65,7 @@ export default function ListingModal({ cardId, templateId, userId, onClose, onLi
       });
       const data = await res.json();
       if (res.ok) {
-        onListed();
+        onListed(data.listing?.listingId || "");
         onClose();
       } else {
         setError(data.error || "Failed to create listing");
