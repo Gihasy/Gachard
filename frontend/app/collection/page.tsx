@@ -27,6 +27,7 @@ type Card = {
   isNew?: boolean;
   isListed?: boolean;
   listingId?: string | null;
+  listingPrice?: number | null;
 };
 
 export default function Koleksi() {
