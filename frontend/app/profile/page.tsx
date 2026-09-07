@@ -181,7 +181,6 @@ export default function Profil() {
   return (
     <PageShell
       testId="profile-page"
-      eyebrow="Your Account"
       title={
         <>
           <span className="text-gradient-aurora">Profile</span>

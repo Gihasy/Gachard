@@ -205,10 +205,9 @@ function ScanContent() {
         )}
         <PageShell
           testId="scan-page"
-          eyebrow="Verify Authenticity"
           title={
             <>
-              Scan a <span className="text-gradient-aurora">card</span>
+              <span className="text-gradient-aurora">Scan a Card</span>
             </>
           }
           description="Every Gachard card carries a unique verified signature. Scan its QR code with your camera or enter the Card ID below to verify ownership, rarity, and history."

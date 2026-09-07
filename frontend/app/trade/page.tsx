@@ -166,8 +166,7 @@ export default function MarketplacePage() {
 
   return (
     <PageShell
-      eyebrow="Marketplace"
-      title="Trade Cards"
+      title={<span className="text-gradient-aurora">Trade Cards</span>}
       description="Buy and sell digital cards with other collectors."
     >
       {insight && (
