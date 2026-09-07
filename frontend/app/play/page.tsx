@@ -16,15 +16,21 @@ export default function PlayTradePage() {
       description="Two worlds. One ecosystem. Play for fun or play to win."
     >
       {/* Hero Image */}
-      <div className="relative w-full max-w-4xl mx-auto mb-10 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(184,172,255,0.2)" }}>
+      <div
+        className="relative w-full max-w-6xl mx-auto mb-10 rounded-2xl overflow-hidden"
+        style={{
+          border: "1px solid rgba(184,172,255,0.4)",
+          boxShadow: "0 0 30px rgba(184,172,255,0.2), 0 0 60px rgba(138,92,255,0.1), inset 0 0 30px rgba(184,172,255,0.05)",
+        }}
+      >
         <Image
           src="/images/play-hero.png"
           alt="Gachard Game Arena"
-          width={1200}
-          height={675}
+          width={1920}
+          height={1080}
           priority
           className="w-full h-auto"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1280px"
         />
       </div>
 
