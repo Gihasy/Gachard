@@ -18,13 +18,13 @@ const CARD_STATUS_MAP: Record<string, string> = {
 const TX_TYPE_MAP: Record<string, string> = {
   mint: "Pack Opened",
   print: "Print Request",
-  redeem: "Redeemed",
+  redeem: "Digital",
   transfer: "Transfer",
   topup: "Top Up",
   listed: "Listed for Sale",
   sold: "Sold",
   dismantled: "Dismantled",
-  claimed: "Claimed Shipping",
+  claimed: "Physical",
 };
 
 /**
