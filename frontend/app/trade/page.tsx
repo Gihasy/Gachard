@@ -353,14 +353,15 @@ export default function MarketplacePage() {
                         if (!user) { setShowLoginPrompt(true); return; }
                         addToCart(listing.listingId);
                       }}
-                      disabled={isInCartFn(listing.listingId)}
+                      disabled={isInCartFn(listing.listingId) || (user && listing.sellerId === user.user_id)}
                       className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
                       style={{
                         background: isInCartFn(listing.listingId) ? "rgba(0,204,255,0.2)" : "rgba(255,255,255,0.05)",
                         border: `1px solid ${isInCartFn(listing.listingId) ? "rgba(0,204,255,0.5)" : "rgba(255,255,255,0.1)"}`,
-                        opacity: isInCartFn(listing.listingId) ? 0.5 : 1,
+                        opacity: (isInCartFn(listing.listingId) || (user && listing.sellerId === user.user_id)) ? 0.5 : 1,
+                        cursor: (isInCartFn(listing.listingId) || (user && listing.sellerId === user.user_id)) ? "not-allowed" : "pointer",
                       }}
-                      title={isInCartFn(listing.listingId) ? "Already in cart" : "Add to cart"}
+                      title={isInCartFn(listing.listingId) ? "Already in cart" : (user && listing.sellerId === user.user_id) ? "Your listing" : "Add to cart"}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isInCartFn(listing.listingId) ? "var(--electric-blue)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="9" cy="21" r="1" />
