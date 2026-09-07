@@ -31,6 +31,7 @@ interface CardItemProps {
   isNew?: boolean;
   isListed?: boolean;
   listingId?: string | null;
+  listingPrice?: number | null;
   onStatusChange?: (tokenId: number, newStatus: string) => void;
 }
 
@@ -67,6 +68,7 @@ export default function CardItem({
   isNew,
   isListed: initialIsListed,
   listingId: initialListingId,
+  listingPrice: initialListingPrice,
   onStatusChange,
 }: CardItemProps) {
   const [printing, setPrinting] = useState(false);
@@ -81,6 +83,7 @@ export default function CardItem({
   const [showDetail, setShowDetail] = useState(false);
   const [isListed, setIsListed] = useState(initialIsListed || false);
   const [listingId, setListingId] = useState(initialListingId || null);
+  const [listingPrice, setListingPrice] = useState<number | null>(initialListingPrice || null);
   const [showListingModal, setShowListingModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -309,13 +312,28 @@ export default function CardItem({
           {/* Action buttons */}
           <div className="mt-2">
             {isListed && (
-              <button
-                onClick={() => setShowCancelConfirm(true)}
-                disabled={cancelling}
-                className="btn-ghost !py-2 !px-3 !text-[0.65rem] disabled:opacity-50 w-full"
-              >
-                {cancelling ? "…" : "Cancel Listing"}
-              </button>
+              <>
+                {listingPrice && (
+                  <div
+                    className="text-center py-1.5 rounded-lg mb-1.5"
+                    style={{
+                      background: "rgba(0,204,255,0.1)",
+                      border: "1px solid rgba(0,204,255,0.3)",
+                    }}
+                  >
+                    <span className="text-[0.65rem] font-semibold" style={{ color: "var(--electric-blue)" }}>
+                      {listingPrice} Crystal
+                    </span>
+                  </div>
+                )}
+                <button
+                  onClick={() => setShowCancelConfirm(true)}
+                  disabled={cancelling}
+                  className="btn-ghost !py-2 !px-3 !text-[0.65rem] disabled:opacity-50 w-full"
+                >
+                  {cancelling ? "…" : "Cancel Listing"}
+                </button>
+              </>
             )}
             {!isListed && canList && (
               <SellButton onClick={() => setShowListingModal(true)} />
@@ -420,9 +438,10 @@ export default function CardItem({
           templateId={templateId}
           userId={userId}
           onClose={() => setShowListingModal(false)}
-          onListed={(newListingId) => {
+          onListed={(newListingId, price) => {
             setIsListed(true);
             setListingId(newListingId);
+            setListingPrice(price);
             onStatusChange?.(tokenId!, "Digital");
           }}
         />

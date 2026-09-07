@@ -488,6 +488,7 @@ export default function Profil() {
                     userId={user.user_id}
                     isListed={card.isListed}
                     listingId={card.listingId}
+                    listingPrice={card.listingPrice}
                   />
                 ))}
               </div>

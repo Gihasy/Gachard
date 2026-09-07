@@ -52,6 +52,14 @@ export async function GET(request: Request) {
       : [];
     const templateMap = new Map(templates.map((t) => [t.templateId, t]));
 
+    // Fetch listing prices for listed cards
+    const listedCardIds = cards.filter(c => c.isListed && c.listingId).map(c => c.listingId);
+    const listingsCollection = await getCollection("listings");
+    const listings = listedCardIds.length > 0
+      ? await listingsCollection.find({ listingId: { $in: listedCardIds }, status: "active" }).toArray()
+      : [];
+    const listingPriceMap = new Map(listings.map((l) => [l.listingId, l.price]));
+
     const enrichedCards = cards.map((card) => {
       const template = templateMap.get(card.templateId);
       return {
@@ -68,6 +76,7 @@ export async function GET(request: Request) {
         isNew: !card.viewed,
         isListed: card.isListed || false,
         listingId: card.listingId || null,
+        listingPrice: card.listingId ? listingPriceMap.get(card.listingId) || null : null,
         createdAt: card.createdAt || null,
       };
     });
