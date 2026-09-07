@@ -73,8 +73,6 @@ export async function mintCard(toAddress: string, rarity: number): Promise<strin
 
 export async function mintBatch(toAddress: string, rarities: number[]): Promise<string> {
   console.log("[blockchain] mintBatch called with address:", toAddress);
-  console.log("[blockchain] Address type:", typeof toAddress);
-  console.log("[blockchain] Address length:", toAddress?.length);
   
   // Validate address format
   if (!toAddress || typeof toAddress !== 'string') {
@@ -92,8 +90,20 @@ export async function mintBatch(toAddress: string, rarities: number[]): Promise<
   console.log("[blockchain] Checksummed address:", checksummedAddress);
   
   const contract = getContract();
-  console.log("[blockchain] Calling contract.mintBatch...");
+  console.log("[blockchain] Contract address:", await contract.getAddress());
   
+  // Use staticCall to test the call without sending a transaction
+  try {
+    console.log("[blockchain] Testing mintBatch with staticCall...");
+    await contract.mintBatch.staticCall(checksummedAddress, rarities);
+    console.log("[blockchain] staticCall succeeded");
+  } catch (error) {
+    console.error("[blockchain] staticCall failed:", error);
+    throw error;
+  }
+  
+  // If staticCall succeeds, send the actual transaction
+  console.log("[blockchain] Sending actual transaction...");
   const tx = await contract.mintBatch(checksummedAddress, rarities);
   console.log("[blockchain] Transaction hash:", tx.hash);
   
