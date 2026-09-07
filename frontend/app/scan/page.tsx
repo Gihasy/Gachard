@@ -59,6 +59,19 @@ function ScanContent() {
   const handleScan = useCallback(
     (scannedId: string) => {
       setShowScanner(false);
+      // If the scanned content is a URL, extract the cardId from it
+      try {
+        if (scannedId.startsWith("http")) {
+          const url = new URL(scannedId);
+          const cid = url.searchParams.get("cardId");
+          if (cid) {
+            router.push(`/scan?cardId=${cid}`);
+            return;
+          }
+        }
+      } catch {
+        // Not a URL, continue with hex check
+      }
       // Check if it's a claim QR (short hex) or card QR (5-char hex)
       if (scannedId.length <= 8 && /^[a-f0-9]+$/i.test(scannedId)) {
         router.push(`/scan?claimId=${scannedId}`);
