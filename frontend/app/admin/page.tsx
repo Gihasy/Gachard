@@ -274,7 +274,7 @@ export default function AdminPage() {
       testId="admin-page"
       eyebrow="Control Room"
       title={<span className="text-gradient-aurora">Admin Console</span>}
-      description="Manage users, monitor on-chain transactions, and fulfil physical card print requests."
+      description="Transparent proof of blockchain integration — view wallet addresses, verify on-chain transactions via BSCScan, and track every card's journey from mint to physical redemption."
     >
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-8 gap-4 mb-8">
