@@ -192,6 +192,15 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - **Commit**: `feat(ui): update play hero image` (c80f1c7)
 - **Deploy**: Push ke `main` → Vercel auto-deploy ke https://www.gachard.com
 
+### Session 9 September 2026 — Public Trade Page (Tanpa Login)
+- **Task**: User bisa melihat kartu yang dijual di Trade page tanpa perlu login
+- **Root cause**: Middleware memblokir semua API routes kecuali yang di-whitelist. `/api/marketplace/listings` dan `/api/marketplace/insight` belum di-whitelist.
+- **Fix**: Tambahkan kedua endpoint ke `PUBLIC_API` array di `frontend/middleware.ts`
+- **Security**: POST endpoints (buy, cancel, create listing) tetap terlindungi oleh `getAuthenticatedUser()` di masing-masing route handler
+- **Commit**: `feat(api): allow public access to marketplace listings and insight endpoints` (9a50737)
+- **Deploy**: Push ke `main` → Vercel auto-deploy ke https://www.gachard.com
+- **Verified**: API `/api/marketplace/listings` mengembalikan 200 tanpa cookie autentikasi
+
 ### Open Items (belum selesai)
 1. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
 2. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — run with `cd frontend && npx tsx scripts/clean-slate.ts`
