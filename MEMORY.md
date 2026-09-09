@@ -187,6 +187,11 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - **Submission repo**: Push ke https://github.com/Gihasy/gachard-bnbchain.git (public, exclude internal files, README bahasa Indonesia)
 - **Deploy**: Semua perubahan di-push ke `main` → Vercel Production https://www.gachard.com
 
+### Session 9 September 2026 — Ringkasan Perubahan
+- **Update play-hero.png**: Gambar hero di halaman `/play` di-update dengan versi baru
+- **Commit**: `feat(ui): update play hero image` (c80f1c7)
+- **Deploy**: Push ke `main` → Vercel auto-deploy ke https://www.gachard.com
+
 ### Open Items (belum selesai)
 1. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
 2. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — run with `cd frontend && npx tsx scripts/clean-slate.ts`
