@@ -142,7 +142,7 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
 
             // Match by txId DAN pickIndex + cache on-chain data
             await cardsCollection.updateOne(
-              { txId: tx._id.toString(), pickIndex: mintIndex },
+              { txId: tx._id.toString(), pickIndex: mintIndex, status: { $ne: "Burned" } },
               {
                 $set: {
                   tokenId,
@@ -180,7 +180,7 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
 
             if (newCardStatus === 1) {
               await cardsCollection.updateOne(
-                { tokenId },
+                { tokenId, status: { $ne: "Burned" } },
                 {
                   $set: {
                     status: "Vaulted",
@@ -205,7 +205,7 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
 
             if (newCardStatus === 0) {
               await cardsCollection.updateOne(
-                { tokenId },
+                { tokenId, status: { $ne: "Burned" } },
                 {
                   $set: {
                     status: "Digital",

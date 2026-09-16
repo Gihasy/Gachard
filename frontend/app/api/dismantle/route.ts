@@ -69,6 +69,7 @@ export async function POST(request: Request) {
     const txResult = await txCollection.insertOne({
       userId: user._id.toString(),
       type: "dismantled",
+      cardId: resolvedCardId,
       tokenId: card.tokenId,
       tokenIds: [card.tokenId],
       rarity,

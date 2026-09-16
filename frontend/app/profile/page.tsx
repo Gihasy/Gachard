@@ -120,15 +120,16 @@ export default function Profil() {
     };
   }, [ready, user]);
 
+  const ownedCards = cards.filter((c) => c.displayStatus !== "Burned");
   const stats = {
-    total: cards.length,
-    legendary: cards.filter((c) => c.rarity === 3).length,
-    epic: cards.filter((c) => c.rarity === 2).length,
-    rare: cards.filter((c) => c.rarity === 1).length,
-    common: cards.filter((c) => c.rarity === 0).length,
-    digital: cards.filter((c) => (c.displayStatus ?? "Digital") === "Digital").length,
-    inProgress: cards.filter((c) => c.displayStatus === "In Progress").length,
-    physical: cards.filter((c) => c.displayStatus === "Physical").length,
+    total: ownedCards.length,
+    legendary: ownedCards.filter((c) => c.rarity === 3).length,
+    epic: ownedCards.filter((c) => c.rarity === 2).length,
+    rare: ownedCards.filter((c) => c.rarity === 1).length,
+    common: ownedCards.filter((c) => c.rarity === 0).length,
+    digital: ownedCards.filter((c) => (c.displayStatus ?? "Digital") === "Digital").length,
+    inProgress: ownedCards.filter((c) => c.displayStatus === "In Progress").length,
+    physical: ownedCards.filter((c) => c.displayStatus === "Physical").length,
   };
 
   const handleLogout = () => {
@@ -440,7 +441,7 @@ export default function Profil() {
             </Link>
           </div>
 
-          {cards.length === 0 ? (
+          {stats.total === 0 ? (
             <div
               className="glass p-6 sm:p-8 lg:p-10 text-center"
               data-testid="profile-empty"
@@ -461,7 +462,7 @@ export default function Profil() {
           ) : (
             <>
               {(() => {
-                const visibleCards = cards.filter((c) => c.displayStatus !== "Burned");
+                const visibleCards = ownedCards;
                 const totalPages = Math.ceil(visibleCards.length / CARDS_PER_PAGE);
                 return (
               <>

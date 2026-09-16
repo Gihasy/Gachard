@@ -58,7 +58,7 @@ export async function POST() {
               confirmedTokenIds.push(tokenId);
 
               await cardsCollection.updateOne(
-                { txId: tx._id.toString(), pickIndex: mintIndex },
+                { txId: tx._id.toString(), pickIndex: mintIndex, status: { $ne: "Burned" } },
                 { $set: { tokenId, status: "Digital", rarity, lastOnChainSync: new Date().toISOString() } }
               );
               results.push(`Card tokenId ${tokenId} (rarity ${rarity}): mint confirmed`);
@@ -69,7 +69,7 @@ export async function POST() {
 
               if (newCardStatus === 0) {
                 await cardsCollection.updateOne(
-                  { tokenId },
+                  { tokenId, status: { $ne: "Burned" } },
                   {
                     $set: {
                       status: "Digital",
@@ -90,7 +90,7 @@ export async function POST() {
 
               if (newCardStatus === 1) {
                 await cardsCollection.updateOne(
-                  { tokenId },
+                  { tokenId, status: { $ne: "Burned" } },
                   {
                     $set: {
                       status: "Vaulted",

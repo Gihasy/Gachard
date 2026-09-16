@@ -93,8 +93,9 @@ export default function Koleksi() {
   }, [ready, user]);
 
   const counts = useMemo(() => {
-    const c = { all: cards.length, common: 0, rare: 0, epic: 0, legendary: 0 };
-    cards.forEach((card) => {
+    const visible = cards.filter((card) => card.displayStatus !== "Burned");
+    const c = { all: visible.length, common: 0, rare: 0, epic: 0, legendary: 0 };
+    visible.forEach((card) => {
       if (card.rarity === 0) c.common++;
       if (card.rarity === 1) c.rare++;
       if (card.rarity === 2) c.epic++;

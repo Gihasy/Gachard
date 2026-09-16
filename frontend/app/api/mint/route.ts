@@ -51,7 +51,7 @@ async function confirmMint(txHash: string, txId: string, contractAddress: string
         console.log("[confirmMint] Confirmed tokenId:", tokenId, "rarity:", rarity);
 
         await cardsCollection.updateOne(
-          { txId, pickIndex: mintIndex },
+          { txId, pickIndex: mintIndex, status: { $ne: "Burned" } },
           { $set: { tokenId, status: "Digital", rarity, lastOnChainSync: new Date().toISOString() } }
         );
         mintIndex++;
