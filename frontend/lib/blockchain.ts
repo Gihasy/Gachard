@@ -50,8 +50,20 @@ async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
   throw new Error(`[blockchain] ${label} failed after ${MAX_RETRIES} attempts: ${lastError?.message}`);
 }
 
+// Cached across calls within a warm serverless instance. `staticNetwork` skips
+// the eth_chainId probe ethers otherwise issues before every first request —
+// that probe was being paid once per getProvider() call, and routes like
+// /api/cards call it once per pending transaction.
+let cachedProvider: ethers.JsonRpcProvider | null = null;
+
 export function getProvider() {
-  return new ethers.JsonRpcProvider(RPC_URL);
+  if (!cachedProvider) {
+    const chainId = Number(process.env.CHAIN_ID?.trim()) || undefined;
+    cachedProvider = chainId
+      ? new ethers.JsonRpcProvider(RPC_URL, chainId, { staticNetwork: true })
+      : new ethers.JsonRpcProvider(RPC_URL);
+  }
+  return cachedProvider;
 }
 
 export function getAdminWallet() {

@@ -29,8 +29,14 @@ export async function GET(request: Request) {
 
     // Auto-reconciliation: confirm pending transactions for this user's cards
     const txCollection = await getCollection("transactions");
+    // Each pending transaction costs an RPC round-trip, and this route is hit on
+    // every Collection page load. Bound the work to the newest few so a backlog
+    // of stale pending transactions cannot stall the page; older ones are
+    // reconciled by the admin Health dashboard (Confirm All).
     const pendingTxs = await txCollection
       .find({ userId, status: "pending", txHash: { $ne: null } })
+      .sort({ createdAt: -1 })
+      .limit(10)
       .toArray();
 
     if (pendingTxs.length > 0) {

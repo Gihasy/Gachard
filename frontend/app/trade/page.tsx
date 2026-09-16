@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
-import CardDetailModal from "@/components/CardDetailModal";
+import dynamic from "next/dynamic";
+
+const CardDetailModal = dynamic(() => import("@/components/CardDetailModal"), { ssr: false });
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
 

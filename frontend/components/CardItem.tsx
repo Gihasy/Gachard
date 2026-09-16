@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import QRScanner from "./QRScanner";
-import CardDetailModal from "./CardDetailModal";
-import ListingModal from "./ListingModal";
+import dynamic from "next/dynamic";
 import SellButton from "./SellButton";
+
+// Rendered only on interaction — keeping them out of the card-grid bundle
+// matters because a collection page mounts dozens of CardItem at once.
+const QRScanner = dynamic(() => import("./QRScanner"), { ssr: false });
+const CardDetailModal = dynamic(() => import("./CardDetailModal"), { ssr: false });
+const ListingModal = dynamic(() => import("./ListingModal"), { ssr: false });
 
 const RARITY_COLORS = [
   "var(--rarity-common)",

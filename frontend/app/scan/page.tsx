@@ -5,7 +5,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import PageShell from "@/components/PageShell";
-import QRScanner from "@/components/QRScanner";
+import dynamic from "next/dynamic";
+
+// Camera + jsQR decode path — only needed once the user opens the scanner.
+const QRScanner = dynamic(() => import("@/components/QRScanner"), { ssr: false });
 import { friendlyTxType } from "@/lib/status-map";
 
 const RARITY_COLORS = [

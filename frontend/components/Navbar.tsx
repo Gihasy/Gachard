@@ -52,7 +52,10 @@ export default function Navbar() {
     const onScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          setScrolled(window.scrollY > 12);
+          // Only commit when the boolean actually flips — a raw setState here
+          // schedules a render on every scroll frame.
+          const next = window.scrollY > 12;
+          setScrolled((prev) => (prev === next ? prev : next));
           ticking = false;
         });
         ticking = true;

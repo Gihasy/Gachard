@@ -526,3 +526,37 @@ input[type="number"] { -moz-appearance: textfield; }
   .aura-legendary, .aura-epic, .aura-rare, .label-pop { animation: none !important; }
   .card-pop { opacity: 1 !important; transform: none !important; }
 }
+
+/* ─── MOBILE PERFORMANCE BUDGET ─────────────────────── */
+/* Phones pay a heavy compositing cost for the always-on background
+   effects and for stacked backdrop blurs. On small screens we trade
+   those for visually near-identical static equivalents: the page keeps
+   its look, but scrolling stops repainting the whole viewport. */
+@media (max-width: 768px) {
+  /* Full-screen star drift repaints the entire fixed layer every frame. */
+  .cosmic-bg::before { animation: none; }
+
+  /* Noise overlay uses mix-blend-mode on a fixed, viewport-sized layer,
+     forcing a backdrop readback on every paint. Its visual weight is
+     ~3% alpha, so dropping it on mobile is imperceptible. */
+  .cosmic-bg::after { display: none; }
+
+  /* backdrop-filter is the single most expensive property here: 60+ glass
+     surfaces each re-blur the backdrop on every scroll frame. Swap in an
+     opaque base colour that matches the blurred result. */
+  .glass {
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)), rgba(17, 21, 38, 0.82);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .card-surface {
+    background: rgba(11, 14, 26, 0.92);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Decorative idle loops — invisible on a phone, but they keep the
+     compositor awake and hold extra layers alive via will-change. */
+  .floaty { animation: none; will-change: auto; }
+  .pulse-glow { animation: none; }
+}
