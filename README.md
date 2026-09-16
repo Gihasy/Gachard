@@ -76,6 +76,100 @@ Lihat `frontend/.env.local.example`.
 
 ## Architecture
 
+### System Overview
+
+Satu service Next.js menangani frontend dan backend sekaligus (ADR-017). Blockchain, AI,
+dan database semuanya diakses dari API routes — tidak pernah dari browser, sehingga wallet
+custodial dan private key tidak pernah menyentuh client.
+
+```mermaid
+flowchart LR
+    U["User<br/>PWA di browser"]
+    N["Next.js 16 App Router<br/>pages + API routes"]
+    DB[("MongoDB Atlas<br/>cards · transactions<br/>listings · crystal")]
+    BC["GachardCard.sol<br/>BEP-1155 · BNB Testnet"]
+    G["Gemini<br/>market insight<br/>price suggestion"]
+    MM["MiMo<br/>anomaly risk scoring"]
+
+    U -->|"cookie session"| N
+    N --> DB
+    N -->|"ethers v6<br/>gas disponsori platform"| BC
+    N --> G
+    N --> MM
+
+    style U fill:#1a1f35,stroke:#8A5CFF,color:#E6E8F0
+    style N fill:#1a1f35,stroke:#00CCFF,color:#E6E8F0
+    style DB fill:#1a1f35,stroke:#7DF9FF,color:#E6E8F0
+    style BC fill:#1a1f35,stroke:#FFC466,color:#E6E8F0
+    style G fill:#1a1f35,stroke:#FF6BBA,color:#E6E8F0
+    style MM fill:#1a1f35,stroke:#FF6BBA,color:#E6E8F0
+```
+
+### Card Lifecycle
+
+Inti produknya: satu kartu, satu token ID, seumur hidupnya. Cetak fisik **mengunci** kartu di
+vault — bukan burn-and-remint — sehingga provenance tidak pernah terputus (ADR-004).
+
+```mermaid
+stateDiagram-v2
+    state "In Progress" as InProgress
+
+    [*] --> Processing: Buy pack · mintBatch()
+    Processing --> Digital: receipt terkonfirmasi
+
+    Digital --> Digital: Trade · marketplaceTransfer()
+
+    Digital --> InProgress: Request print · requestPrint()
+    InProgress --> Shipping: admin: Printed lalu Shipping
+    Shipping --> Physical: user scan QR klaim
+    Physical --> Digital: Redeem · redeemCard()
+
+    Digital --> Burned: Dismantle · burnCard()
+    Burned --> [*]
+```
+
+Catatan:
+
+- **Trade** memindahkan kepemilikan tanpa mengubah status — kartu tetap `Digital`.
+- **In Progress** memayungi tiga tahap fulfillment internal: `Locked` → `Processing` → `Printed`.
+  Saat `requestPrint()`, NFT benar-benar berpindah ke alamat kontrak (vault) dan transfer diblokir.
+- **Physical** berarti kartu fisik sudah di tangan user. Redeem mengembalikannya ke digital dengan
+  syarat kartu fisiknya dirusak permanen.
+- **Burned** adalah status terminal — token dihancurkan on-chain, tapi record-nya tetap disimpan
+  supaya riwayatnya masih bisa ditelusuri lewat Scan (ADR-026, ADR-028).
+
+### Pola Async untuk Transaksi Blockchain
+
+Endpoint tidak pernah menunggu receipt on-chain, karena batas waktu function Vercel akan
+memotongnya di tengah jalan dan membuat refund ter-skip. Semua POST langsung mengembalikan
+`pending`, lalu frontend polling (ADR-018).
+
+```mermaid
+sequenceDiagram
+    participant U as Browser
+    participant API as API Route
+    participant DB as MongoDB
+    participant BC as BNB Chain
+
+    U->>API: POST /api/mint
+    API->>BC: submit mintBatch()
+    BC-->>API: txHash (belum terkonfirmasi)
+    API->>DB: simpan card status "pending"
+    API-->>U: { status: "pending", invoiceId }
+
+    loop polling sampai selesai
+        U->>API: GET /api/transactions
+        API->>BC: getTransactionReceipt(txHash)
+        alt receipt siap
+            BC-->>API: receipt sukses
+            API->>DB: card "Digital" + tokenId
+            API-->>U: { status: "Success" }
+        else belum siap
+            API-->>U: { status: "Processing" }
+        end
+    end
+```
+
 ### Key Design Decisions
 - **ADR-002**: Wallet custodial, tersembunyi dari user
 - **ADR-003**: Gas fee disponsori platform
