@@ -7,6 +7,7 @@ import HomeFeaturedCards from "@/components/home/HomeFeaturedCards";
 import HomeWhyGachard from "@/components/home/HomeWhyGachard";
 import HomeCoreLoop from "@/components/home/HomeCoreLoop";
 import HomeCtaBand from "@/components/home/HomeCtaBand";
+import SupportGachard from "@/components/support/SupportGachard";
 
 interface SessionUser {
   user_id: string;
@@ -34,6 +35,7 @@ export default function Home() {
       <HomeCoreLoop />
       <HomeFeaturedCards />
       <HomeCtaBand />
+      <SupportGachard />
     </div>
   );
 }
