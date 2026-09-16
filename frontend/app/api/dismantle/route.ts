@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { after } from "next/server";
-import { getCollection, parseObjectId } from "@/lib/mongodb";
+import { getCollection } from "@/lib/mongodb";
 import { getAuthenticatedUser } from "@/lib/session";
 import { burnCard, waitForReceipt } from "@/lib/blockchain";
 import { addCrystal, getDismantleRate } from "@/lib/crystal";
@@ -18,13 +18,13 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const userId = user._id.toString();
 
     if (!cardId && tokenId === undefined) {
       return NextResponse.json({ error: "cardId (or tokenId) is required" }, { status: 400 });
     }
 
-    // Get card — prefer cardId, fallback to tokenId
+    // Read the card first — only to resolve its identity and to produce a
+    // specific error message. The authoritative check is the atomic claim below.
     const cardsCollection = await getCollection("cards");
     const card = cardId
       ? await cardsCollection.findOne({ cardId })
@@ -37,31 +37,82 @@ export async function POST(request: Request) {
     // (cardId from body could be undefined if only tokenId was sent)
     const resolvedCardId = card.cardId ?? card._id.toString();
 
-    // Verify ownership
-    if (card.ownerAddress !== user.walletAddress) {
-      return NextResponse.json({ error: "Card does not belong to this user" }, { status: 403 });
-    }
-
-    // Validate card state: must be Digital, not listed, not in fulfillment
-    if (card.status !== "Digital") {
-      return NextResponse.json({ error: "Only Digital cards can be dismantled" }, { status: 400 });
-    }
-    if (card.isListed) {
-      return NextResponse.json({ error: "Card is listed for sale. Cancel listing before dismantling." }, { status: 400 });
-    }
-    if (card.fulfillmentStatus) {
-      return NextResponse.json({ error: "Card is in fulfillment process and cannot be dismantled" }, { status: 400 });
-    }
-
-    // Calculate Crystal reward
     const rarity = card.rarity ?? 0;
     const crystalReward = getDismantleRate(rarity);
     if (crystalReward === 0) {
       return NextResponse.json({ error: "Invalid card rarity" }, { status: 400 });
     }
 
+    // Claim the card atomically BEFORE touching the chain.
+    //
+    // Checking the card's state and then writing "Burned" after the on-chain
+    // submit used to leave a window of several hundred ms (the submit itself) in
+    // which a concurrent mint-confirmation pass could write the card back to
+    // "Digital" — the card stayed visible in Collection even though its token was
+    // burned and Crystal had been paid out. Claiming first closes that window:
+    // once the status is "Burned", every other writer's `$ne: "Burned"` guard
+    // (ADR-028) applies. It also makes a double dismantle of the same card
+    // impossible, since only one claim can match `status: "Digital"`.
+    const claimedAt = new Date().toISOString();
+    const claimed = await cardsCollection.findOneAndUpdate(
+      {
+        cardId: resolvedCardId,
+        ownerAddress: user.walletAddress,
+        status: "Digital",
+        isListed: { $ne: true },
+        $or: [{ fulfillmentStatus: null }, { fulfillmentStatus: { $exists: false } }],
+      },
+      {
+        $set: {
+          status: "Burned",
+          burnedAt: claimedAt,
+          crystalReward,
+          updatedAt: claimedAt,
+        },
+      },
+      { returnDocument: "after" }
+    );
+
+    if (!claimed) {
+      // Claim failed — explain why, using the copy we read above.
+      if (card.ownerAddress !== user.walletAddress) {
+        return NextResponse.json({ error: "Card does not belong to this user" }, { status: 403 });
+      }
+      if (card.isListed) {
+        return NextResponse.json(
+          { error: "Card is listed for sale. Cancel listing before dismantling." },
+          { status: 400 }
+        );
+      }
+      if (card.fulfillmentStatus) {
+        return NextResponse.json(
+          { error: "Card is in fulfillment process and cannot be dismantled" },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json({ error: "Only Digital cards can be dismantled" }, { status: 400 });
+    }
+
+    // Undo the claim if the card never actually makes it onto the chain.
+    const releaseClaim = async () => {
+      await cardsCollection.updateOne(
+        { cardId: resolvedCardId, status: "Burned", burnedAt: claimedAt },
+        {
+          $set: { status: "Digital", updatedAt: new Date().toISOString() },
+          $unset: { burnedAt: "", crystalReward: "" },
+        }
+      );
+    };
+
     // Burn on-chain
-    const txHash = await burnCard(card.tokenId, user.walletAddress);
+    let txHash: string;
+    try {
+      txHash = await burnCard(card.tokenId, user.walletAddress);
+    } catch (err) {
+      await releaseClaim();
+      console.error("[dismantle] burn submit failed, claim released:", err);
+      return NextResponse.json({ error: "Dismantle failed" }, { status: 500 });
+    }
 
     // Record transaction as pending
     const contractAddress = process.env.CONTRACT_ADDRESS!;
@@ -85,19 +136,10 @@ export async function POST(request: Request) {
       updatedAt: new Date().toISOString(),
     });
 
-    // Mark card as Burned and credit Crystal in parallel
     const [, newBalance] = await Promise.all([
       cardsCollection.updateOne(
         { cardId: resolvedCardId },
-        {
-          $set: {
-            status: "Burned",
-            burnedAt: new Date().toISOString(),
-            dismantleTxId: txResult.insertedId.toString(),
-            crystalReward,
-            updatedAt: new Date().toISOString(),
-          },
-        }
+        { $set: { dismantleTxId: txResult.insertedId.toString() } }
       ),
       addCrystal(user._id.toString(), crystalReward),
     ]);

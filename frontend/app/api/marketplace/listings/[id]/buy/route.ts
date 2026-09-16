@@ -161,7 +161,7 @@ export async function POST(
     if (confirmed) {
       // On-chain confirmed — finalize card ownership immediately
       await cardsCol.updateOne(
-        { cardId: listing.cardId },
+        { cardId: listing.cardId, status: { $ne: "Burned" } },
         {
           $set: {
             ownerAddress: buyer.walletAddress,

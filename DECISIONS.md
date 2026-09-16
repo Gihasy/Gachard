@@ -171,15 +171,51 @@ Kartu non-jaminan mengikuti odds table normal; slot jaminan (Rare/Epic/Legendary
 **Decision**: Halaman `/creators` menyediakan form whitelist untuk kolaborasi IP Owner eksternal. Fitur murni web2 (MongoDB collection `creator_applications`, tanpa blockchain). Form mengumpulkan: nama, brand/IP, tipe IP, social media, email, minat, estimasi community size. Honeypot field `website_url` untuk anti-spam bot (return 200 palsu tanpa insert). Admin tab "Creators" menampilkan semua submission. Revenue split 70/30 (creator/platform) sesuai model infrastruktur-first dari PRD.
 **Reason**: Mengakuisisi IP Creator eksternal adalah growth vector utama Gachard. Form whitelist memungkinkan pipeline partner tanpa commitment teknis dari creator. Web2-only karena tidak ada kebutuhan blockchain untuk pendaftaran — blockchain hanya relevan setelah IP di-onboard dan kartu di-mint.
 
-## ADR-028: Rekonsiliasi Tidak Boleh Menimpa Status Terminal
+## ADR-028: Status Terminal Kartu — Klaim Atomik + Guard Anti-Timpa
 **Status**: Accepted
-**Decision**: Setiap proses rekonsiliasi on-chain — `confirmTransaction()` di `lib/transactions.ts`, `confirmMint()` di `api/mint`, dan endpoint `api/admin/fix-pending-transactions` — WAJIB menyertakan guard `status: { $ne: "Burned" }` pada filter update kartu. Rekonsiliasi hanya boleh memajukan kartu dari state sementara, tidak pernah menarik kartu keluar dari state terminal.
-**Masalah yang dicegah**: `GET /api/cards` menjalankan rekonsiliasi untuk setiap transaksi `pending` milik user setiap kali halaman Collection dibuka. Cabang `mint` menulis ulang kartu tanpa memeriksa status saat ini, sehingga transaksi mint yang tersangkut `pending` memutar ulang receipt lamanya dan **menghidupkan kembali kartu yang sudah di-dismantle** — kartu muncul lagi di Collection padahal token-nya sudah di-burn on-chain dan Crystal sudah dibayarkan. Cabang `print` dan `redeem` punya lubang yang sama, dan mencocokkan hanya dengan `{ tokenId }` — padahal tokenId **tidak unik lintas kontrak**, karena project ini sudah men-deploy ulang kontrak beberapa kali dan penomoran tokenId mulai dari 1 lagi setiap kali.
+
+**Decision** — dua lapis:
+
+**Lapis 1 — guard anti-timpa (menutup bug yang terbukti terjadi).** Setiap penulisan status kartu dari proses rekonsiliasi/latar belakang WAJIB menyertakan `status: { $ne: "Burned" }` pada filter: `confirmTransaction()` (mint/print/redeem) di `lib/transactions.ts`, `confirmMint()` di `api/mint`, `api/admin/fix-pending-transactions`, `api/admin/fix-mint-cards`, `api/redeem`, dan `api/marketplace/listings/[id]/buy`. Rekonsiliasi hanya boleh memajukan kartu dari state sementara, tidak pernah menariknya keluar dari state terminal.
+
+**Lapis 2 — klaim atomik sebelum menyentuh chain (pengerasan preventif).** Operasi yang memindahkan kartu ke status terminal mengklaim kartu lebih dulu lewat satu `findOneAndUpdate` yang memuat seluruh prasyarat di filter-nya, BUKAN pola cek-lalu-tulis. Di `api/dismantle`:
+
+```js
+const claimed = await cards.findOneAndUpdate(
+  { cardId, ownerAddress, status: "Digital", isListed: { $ne: true },
+    $or: [{ fulfillmentStatus: null }, { fulfillmentStatus: { $exists: false } }] },
+  { $set: { status: "Burned", burnedAt, crystalReward } },
+  { returnDocument: "after" }
+);
+if (!claimed) return 400;   // tidak memenuhi syarat — tidak ada yang berubah
+```
+
+Kalau langkah on-chain berikutnya gagal, klaim WAJIB dilepas kembali (`status` dikembalikan ke `"Digital"`).
+
+**Masalah yang terbukti terjadi**: `GET /api/cards` menjalankan rekonsiliasi untuk setiap transaksi `pending` milik user setiap kali halaman Collection dibuka. Sebelum Lapis 1 ada, cabang `mint` menulis ulang kartu tanpa memeriksa status, sehingga konfirmasi mint yang datang belakangan **menghidupkan kembali kartu yang sudah di-dismantle** — kartu muncul lagi di Collection padahal token sudah di-burn on-chain dan Crystal sudah dibayarkan.
+
+Bukti terukur dari database (16 September 2026), kartu `#b73ab`:
+
+```
+burnedAt = 02:02:51.544        <- dismantle menulis "Burned"
+lastSync = 02:02:51.667        <- 123 ms kemudian, konfirmasi mint menimpanya jadi "Digital"
+```
+
+Total 6 kartu rusak dari 168 transaksi dismantle. **Seluruh 6 kartu itu di-dismantle sebelum Lapis 1 ter-deploy** — dengan guard yang sekarang, penulisan penimpa itu akan tertolak. Jadi Lapis 1 sudah cukup untuk kasus ini.
+
+**Kenapa Lapis 2 tetap dipasang, padahal Lapis 1 sudah cukup**: `api/dismantle` versi lama membaca status kartu, lalu memanggil `burnCard()` (submit blockchain, ratusan milidetik sampai beberapa detik), baru menulis `"Burned"`. Jendela cek-lalu-tulis selebar itu adalah balapan yang nyata secara struktural, meski belum pernah terbukti terpicu. Klaim atomik menutupnya, dan sebagai efek samping membuat dismantle ganda pada kartu yang sama mustahil — hanya satu klaim yang bisa cocok dengan `status: "Digital"`. Ini pengerasan preventif, bukan perbaikan atas kegagalan yang teramati.
+
 **Konsekuensi**:
-- Transaksi dismantle mencatat `cardId`, supaya perbaikan data bisa mencocokkan secara eksak dan tidak menebak lewat tokenId.
-- Endpoint perbaikan `api/admin/fix-burned-card` mencocokkan lewat `cardId`. Untuk transaksi lama yang hanya punya tokenId, pencocokan di-scope dengan `contractAddress`, dan yang ambigu dilewati — bukan ditebak.
-- Kalau nanti ada state terminal baru (mis. kartu hangus/expired), guard yang sama harus ikut diperluas.
-**Reason**: Kegagalan yang sama pernah terjadi 1 September 2026 dan hanya ditambal dengan endpoint perbaikan (commit `8152d8a`, `3904fae`) tanpa akar masalahnya ditemukan — sehingga terulang. ADR ini mengunci invariannya, bukan gejalanya.
+- Transaksi dismantle mencatat `cardId`, supaya perbaikan data mencocokkan secara eksak dan tidak menebak lewat tokenId.
+- `api/admin/fix-burned-card` mencocokkan lewat `cardId`; untuk transaksi lama yang hanya punya tokenId, pencocokan di-scope dengan `contractAddress`, dan yang ambigu dilewati.
+- `tokenId` **tidak unik lintas kontrak** — kontrak sudah di-deploy ulang beberapa kali dan penomoran mulai dari 1 lagi. Penulisan yang match by `{ tokenId }` saja berbahaya.
+- `api/admin/fix-claimed-cards` diperiksa dan aman: `status: "Digital"` di sana hanya filter `.find()`, dan `status: "claimed"` menulis ke koleksi `redeem_codes`, bukan `cards`.
+- Endpoint seeding (`api/seed-marketplace`, `api/seed-onchain`) sengaja TIDAK di-guard, karena tugasnya memang menata ulang data demo.
+- Kalau nanti ada status terminal baru (mis. kartu hangus/expired), kedua lapis harus ikut diperluas.
+
+**Reason**: Kegagalan ini muncul dua kali. Pertama 1 September 2026, ditambal endpoint perbaikan (`8152d8a`, `3904fae`) tanpa akar masalah dicari, sehingga terulang. Kedua 16 September 2026, akar masalahnya ditemukan dan dikunci di ADR ini.
+
+**Catatan metode (16 September 2026)**: saat 6 kartu rusak itu dilaporkan, sempat disimpulkan bahwa guard "tidak cukup" dan ada balapan tulis yang masih hidup. Kesimpulan itu **salah** — dibangun dari asumsi bahwa kartu-kartu tersebut di-dismantle setelah guard ter-deploy, tanpa memverifikasi timestamp-nya lebih dulu. Setelah dicek, dismantle terjadi 14 menit sebelum guard di-commit. Pelajaran: bandingkan timestamp data dengan waktu deploy SEBELUM menyimpulkan sebuah perbaikan gagal.
 
 ## ADR-029: Tool Development — Pindah dari MiMoCode ke Claude Code
 **Status**: Accepted — melanjutkan ADR-015

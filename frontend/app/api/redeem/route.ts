@@ -112,7 +112,7 @@ export async function POST(request: Request) {
 
             if (newCardStatus === 0) {
               await cardsCollection.updateOne(
-                { tokenId: logTokenId },
+                { tokenId: logTokenId, status: { $ne: "Burned" } },
                 {
                   $set: {
                     status: "Digital",

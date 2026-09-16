@@ -47,7 +47,7 @@ export async function POST() {
 
           // Update the card with tokenId and status
           const updateResult = await cardsCollection.updateOne(
-            { txId: tx._id.toString(), pickIndex: mintIndex },
+            { txId: tx._id.toString(), pickIndex: mintIndex, status: { $ne: "Burned" } },
             {
               $set: {
                 tokenId,

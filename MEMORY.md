@@ -212,6 +212,17 @@ Per 16 September 2026: bug dismantle sudah diperbaiki di akarnya, performa mobil
 - Kartu Burned juga dikeluarkan dari hitungan rarity Collection dan stats Profile (sebelumnya disembunyikan dari grid tapi masih ikut dihitung).
 - **Catatan**: masalah yang sama pernah terjadi 1 September 2026 dan hanya ditambal endpoint perbaikan (`8152d8a`, `3904fae`) tanpa akar masalah ditemukan — makanya terulang.
 
+**1b. Verifikasi dengan data asli + pengerasan preventif** (lanjutan hari yang sama)
+- Setelah guard di-deploy, akun Demo51 melaporkan 2 kartu dismantle masih muncul di Collection (#b73ab, #4cee1).
+- **Sempat salah didiagnosis** sebagai "guard tidak cukup, ada balapan tulis yang masih hidup". Itu KELIRU — kesimpulan dibangun dari asumsi kartu-kartu itu di-dismantle setelah deploy, tanpa mengecek timestamp lebih dulu.
+- **Fakta setelah database bisa diakses**: dismantle terjadi 02:02:51 UTC, sedangkan guard baru di-commit 02:16:02 UTC (09:16 WIB). Jadi **14 menit sebelum guard ada** — ini murni data lama, persis kasus yang memang butuh endpoint perbaikan.
+- **Bukti guard sudah cukup** — kartu `#b73ab`: `burnedAt=02:02:51.544`, lalu `lastSync=02:02:51.667` menimpanya jadi `Digital` 123 ms kemudian. Dengan guard `$ne: "Burned"`, penulisan penimpa itu akan tertolak.
+- **Kondisi database sebenarnya**: 168 transaksi dismantle, 162 kartu benar `Burned`, **6 kartu rusak** — bukan 2: `#0e505` (110), `#8df37` (130), `#5f1b3` (211), `#11777` (230), `#b73ab` (251), `#4cee1` (260). Semuanya akan dipulihkan sekali jalan oleh `fix-burned-card`.
+- **Pengerasan preventif yang tetap dipasang** (bukan perbaikan atas bug yang terbukti): `api/dismantle` sekarang mengklaim kartu secara atomik lewat satu `findOneAndUpdate` (seluruh prasyarat di filter) SEBELUM menyentuh chain; kalau submit on-chain gagal, klaim dilepas. Alasannya: pola cek-lalu-tulis yang membentang melintasi submit blockchain adalah jendela balapan nyata secara struktural. Efek samping bagus: dismantle ganda jadi mustahil.
+- Guard juga ditambahkan ke 3 lokasi yang sebelumnya terlewat: `api/admin/fix-mint-cards`, `api/redeem` (ini juga match `{ tokenId }` saja — berbahaya karena tokenId tidak unik lintas kontrak), dan `api/marketplace/listings/[id]/buy`.
+- `api/admin/fix-claimed-cards` diperiksa dan **aman** — `status: "Digital"` di sana hanya filter `.find()`, dan `status: "claimed"` menulis ke koleksi `redeem_codes`, bukan `cards`.
+- **Pelajaran metode**: bandingkan timestamp data dengan waktu deploy SEBELUM menyimpulkan sebuah perbaikan gagal.
+
 **2. Optimisasi performa mobile** (commit `33213d7`)
 - `app/globals.css`: blok `@media (max-width: 768px)` baru — matikan animasi `driftStars` (repaint layar penuh tiap frame), buang `.cosmic-bg::after` (`mix-blend-mode` di layer fixed = backdrop readback tiap paint), ganti `backdrop-filter` di `.glass`/`.card-surface` dengan warna solid, matikan `.floaty`/`.pulse-glow`. Desktop tidak tersentuh.
 - `CardItem`, `/scan`, `/trade`: `QRScanner`, `CardDetailModal`, `ListingModal` jadi `next/dynamic` — sebelumnya ikut terunduh di halaman yang me-mount puluhan CardItem.
@@ -230,11 +241,24 @@ Per 16 September 2026: bug dismantle sudah diperbaiki di akarnya, performa mobil
 - `contracts/VERIFICATION_GUIDE.md` + `TROUBLESHOOTING.md` diarahkan ke kontrak aktif `0x3E1Cf18D...` (sebelumnya menunjuk `0x56390137...` yang sudah mati).
 
 ### Open Items (belum selesai)
-1. **Jalankan `POST /api/admin/fix-burned-card`** di production — memulihkan kartu yang terlanjur "hidup lagi" sebelum ADR-028 diterapkan. Sekali jalan saja.
-2. **AI Vision (Gemini)** — DITUNDA (ADR-022). Catatan lama bilang WAJIB sebelum submission final demi tema "AI x Web3"; tapi sekarang sudah ada dua fitur AI yang berjalan (anomaly detection + market insight), jadi perlu dipastikan ulang apakah ini masih benar-benar blocking.
-3. **`MIMO_API_KEY` tidak ada di `frontend/.env.local`** padahal `lib/risk-score.ts` membutuhkannya — AI risk scoring kemungkinan diam-diam jatuh ke fallback. Perlu dicek di Vercel Production.
-4. **Kredensial MongoDB di `.env.local` ditolak Atlas** (`bad auth`) — kemungkinan password sudah dirotasi tapi yang lokal belum diperbarui.
-5. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — jalankan dengan `cd frontend && npx tsx scripts/clean-slate.ts`
+1. **Perbarui `MONGODB_URL` di Vercel Production.** Password user `gihasy` dirotasi di Atlas pada 16 September 2026, `.env.local` sudah diperbarui, tapi Vercel **belum** — produksi mati (HTTP 500 di semua endpoint yang menyentuh database) sampai ini dikerjakan:
+   ```
+   npx vercel env rm MONGODB_URL production --yes
+   npx vercel env add MONGODB_URL production
+   npx vercel --prod
+   ```
+   Redeploy wajib — env var baru hanya berlaku pada deployment berikutnya.
+2. **Jalankan `POST /api/admin/fix-burned-card`** setelah produksi pulih. Ada **6 kartu** yang perlu dipulihkan: `#0e505`, `#8df37`, `#5f1b3`, `#11777`, `#b73ab`, `#4cee1`. Sekali jalan saja.
+3. **`GEMINI_API_KEY` ditolak — Gemini API belum diaktifkan** di GCP project `779312331118` (`403 SERVICE_DISABLED`). Terkonfirmasi memutus produksi: `GET /api/marketplace/insight` mengembalikan 500. Jadi **Market Insight dan AI Price Suggestion sedang mati**. Key-nya juga janggal: 53 karakter dan tidak diawali `AIza`, padahal API key Google biasanya begitu.
+4. **AI Vision (Gemini)** — DITUNDA (ADR-022). Catatan lama bilang WAJIB sebelum submission final demi tema "AI x Web3"; tapi sekarang sudah ada dua fitur AI (anomaly detection + market insight), jadi perlu dipastikan ulang apakah ini masih benar-benar blocking.
+5. **`NEXT_PUBLIC_APP_URL` = `https://gachard.vercel.app`**, sedangkan domain produksi `https://www.gachard.com`. QR kartu aman (pakai `request.url` origin), tapi QR claim shipping memakai nilai env ini dan ikut tercetak di kiriman fisik. Keputusan user 16 September 2026: **dibiarkan apa adanya untuk sekarang**.
+6. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — jalankan dengan `cd frontend && npx tsx scripts/clean-slate.ts`
+
+### Catatan Environment (per 16 September 2026)
+- `MIMO_API_KEY`, `MIMO_BASE_URL`, `MIMO_MODEL` **ADA di Vercel Production** — AI risk scoring di produksi berjalan normal. Yang tidak punya hanya `.env.local`; kalau mau menguji anomaly detection secara lokal, ketiganya perlu ditambahkan.
+- `.env.vercel` memuat `MONGODB_URL="[SENSITIVE]"` — Vercel menandai var sensitif dan tidak mengembalikan nilainya lewat `vercel env pull`. Jangan mengandalkan file itu untuk memulihkan kredensial.
+- Sisa env lain sudah diverifikasi benar: `CONTRACT_ADDRESS` cocok kontrak aktif dan bytecode-nya ada di chain, `ADMIN_PRIVATE_KEY` menurunkan `ADMIN_WALLET_ADDRESS`, `owner()` kontrak = admin wallet, `CHAIN_ID` 97 cocok dengan RPC.
+- Saldo admin wallet 0.0072 tBNB. Gas BSC testnet 0.1 gwei, jadi itu cukup untuk ~100 kali mint pack. **Tidak perlu top-up.**
 
 ### Documentation Cleanup (7 September 2026)
 - **10 file outdated dihapus**: Execution-Plan-Gachard.md, LAPORAN_AKHIR.md, UPDATE_REPORT.md, docs/SESSION_CHANGELOG.md, docs/BUG_FIX_REPORT.md, docs/PRIORITY_FIXES_REPORT.md, docs/compose/reports/status-lengkap.md, memory/test_credentials.md, memory/PRD.md, frontend/README.md
