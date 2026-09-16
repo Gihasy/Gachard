@@ -8,8 +8,7 @@ import { deductCrystal, addCrystal } from "@/lib/crystal";
 import { marketplaceTransfer, waitForReceipt, recordVerification } from "@/lib/blockchain";
 import { calculateTradeSignals } from "@/lib/fraud-signals";
 import { calculateRiskScore } from "@/lib/risk-score";
-
-const MARKETPLACE_FEE_PERCENT = 8;
+import { calculateSellerProceeds } from "@/lib/marketplace";
 
 export const maxDuration = 15;
 
@@ -174,7 +173,7 @@ export async function POST(
         }
       );
 
-      const sellerProceeds = Math.round(listing.price * (1 - MARKETPLACE_FEE_PERCENT / 100));
+      const sellerProceeds = calculateSellerProceeds(listing.price);
       await addCrystal(listing.sellerId, sellerProceeds);
 
       return NextResponse.json({

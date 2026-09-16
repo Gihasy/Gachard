@@ -4,6 +4,8 @@ import { getProvider } from "./blockchain";
 import { ethers } from "ethers";
 import { generateInvoiceId } from "./invoice";
 import { friendlyTxStatus } from "./status-map";
+import { addCrystal } from "./crystal";
+import { calculateSellerProceeds } from "./marketplace";
 
 export type TxStatus = "pending" | "confirmed" | "failed";
 
@@ -101,8 +103,97 @@ export async function getTransactionStatus(txId: string) {
 }
 
 /**
+ * Selesaikan pembelian marketplace yang receipt-nya belum terkonfirmasi saat request
+ * POST /buy selesai (pola async ADR-018).
+ *
+ * Tanpa ini, Crystal pembeli sudah dipotong tapi penjual tidak pernah dibayar dan kartu
+ * tersangkut selamanya di `status: "pending"` — celah yang tercatat di ADR-024.
+ *
+ * Kartu dicari lewat `pendingTxHash`, bukan `tokenId`, karena tokenId tidak unik lintas
+ * kontrak. Pembayaran dibuat idempoten lewat klaim atomik (ADR-028): hanya update yang
+ * benar-benar mengubah dokumen (`modifiedCount === 1`) yang boleh memindahkan Crystal,
+ * jadi rekonsiliasi berulang tidak akan membayar dua kali. Filter `status: "pending"`
+ * sekaligus memenuhi guard anti-timpa ADR-028 karena lebih ketat dari `$ne: "Burned"`.
+ */
+async function settleSoldTransaction(
+  tx: { txHash: string | null; userId: string; amount?: number; fromAddress: string; toAddress: string },
+  newStatus: TxStatus
+): Promise<void> {
+  if (!tx.txHash || newStatus === "pending") return;
+
+  const cardsCollection = await getCollection("cards");
+  const card = await cardsCollection.findOne({ pendingTxHash: tx.txHash });
+  // Tidak ada kartu menggantung berarti jalur sinkron di /buy sudah menyelesaikannya,
+  // atau rekonsiliasi lain sudah menang duluan.
+  if (!card) return;
+
+  const price: number = card.pendingListingPrice ?? tx.amount ?? 0;
+  const sellerId: string | undefined = card.pendingSellerId;
+  const buyerId: string = card.pendingBuyerId ?? tx.userId;
+  const buyerWallet: string = card.pendingBuyerWallet ?? tx.toAddress;
+  const now = new Date().toISOString();
+  const clearPending = {
+    pendingBuyerId: "",
+    pendingBuyerWallet: "",
+    pendingSellerId: "",
+    pendingListingPrice: "",
+    pendingTxHash: "",
+  };
+
+  if (newStatus === "confirmed") {
+    const claimed = await cardsCollection.updateOne(
+      { cardId: card.cardId, status: "pending", pendingTxHash: tx.txHash },
+      {
+        $set: {
+          ownerAddress: buyerWallet,
+          status: "Digital",
+          isListed: false,
+          lastOnChainSync: now,
+          updatedAt: now,
+        },
+        $unset: { ...clearPending, listingId: "" },
+      }
+    );
+    if (claimed.modifiedCount === 1 && sellerId && price > 0) {
+      await addCrystal(sellerId, calculateSellerProceeds(price));
+    }
+    return;
+  }
+
+  // Transaksi ter-mined tapi revert: transfer tidak pernah terjadi. Kembalikan kartu ke
+  // penjual, refund Crystal pembeli, dan aktifkan lagi listing-nya — sama persis dengan
+  // jalur gagal sinkron di /buy.
+  const claimed = await cardsCollection.updateOne(
+    { cardId: card.cardId, status: "pending", pendingTxHash: tx.txHash },
+    {
+      $set: { status: "Digital", ownerAddress: tx.fromAddress, isListed: false, updatedAt: now },
+      $unset: clearPending,
+    }
+  );
+  if (claimed.modifiedCount !== 1) return;
+
+  if (price > 0) {
+    await addCrystal(buyerId, price);
+  }
+
+  const listingsCollection = await getCollection("listings");
+  const listing = await listingsCollection.findOne({ cardId: card.cardId, status: "sold" });
+  if (listing) {
+    await listingsCollection.updateOne(
+      { listingId: listing.listingId, status: "sold" },
+      { $set: { status: "active" }, $unset: { buyerId: "", soldAt: "" } }
+    );
+    await cardsCollection.updateOne(
+      { cardId: card.cardId, status: "Digital" },
+      { $set: { isListed: true, listingId: listing.listingId, updatedAt: now } }
+    );
+  }
+}
+
+/**
  * Check on-chain receipt and update transaction status.
- * Handles mint (batch), print, and redeem events.
+ * Handles mint (batch), print, dan redeem lewat event log, serta penyelesaian
+ * pembelian marketplace ("sold") lewat settleSoldTransaction().
  */
 export async function confirmTransaction(txId: string): Promise<TxStatus> {
   const collection = await getCollection("transactions");
@@ -221,6 +312,19 @@ export async function confirmTransaction(txId: string): Promise<TxStatus> {
           }
         }
       }
+    }
+
+    if (tx.type === "sold") {
+      await settleSoldTransaction(
+        {
+          txHash: tx.txHash,
+          userId: tx.userId,
+          amount: tx.amount,
+          fromAddress: tx.fromAddress,
+          toAddress: tx.toAddress,
+        },
+        newStatus
+      );
     }
 
     await collection.updateOne(
