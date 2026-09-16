@@ -20,6 +20,27 @@ const RARITY_COLORS = [
 const RARITY_GLOW = ["", "glow-rare", "glow-epic", "glow-legendary"];
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
 
+// Status pill colours, keyed by the label /api/scan returns.
+// "Burned" is a terminal state — muted on purpose, so a destroyed card never
+// reads like an active one. Anything unmapped falls back to the active style.
+const STATUS_PILL: Record<string, { fg: string; bg: string; border: string }> = {
+  "Print Requested": {
+    fg: "var(--aurora-pink)",
+    bg: "rgba(255,107,186,0.15)",
+    border: "rgba(255,107,186,0.35)",
+  },
+  Burned: {
+    fg: "var(--silver-mist-dim)",
+    bg: "rgba(168,173,196,0.12)",
+    border: "rgba(168,173,196,0.30)",
+  },
+};
+const STATUS_PILL_DEFAULT = {
+  fg: "var(--electric-blue)",
+  bg: "rgba(0,204,255,0.15)",
+  border: "rgba(0,204,255,0.35)",
+};
+
 interface ScanTx {
   invoiceId?: string;
   type: string;
@@ -496,28 +517,21 @@ function ScanContent() {
                 />
                 <MetaRow
                   label="Status"
-                  value={
-                    <span
-                      className="text-[0.65rem] uppercase tracking-widest px-2 py-0.5 rounded"
-                      style={{
-                        background:
-                          data.onChain.status === "Print Requested"
-                            ? "rgba(255,107,186,0.15)"
-                            : "rgba(0,204,255,0.15)",
-                        color:
-                          data.onChain.status === "Print Requested"
-                            ? "var(--aurora-pink)"
-                            : "var(--electric-blue)",
-                        border: `1px solid ${
-                          data.onChain.status === "Print Requested"
-                            ? "rgba(255,107,186,0.35)"
-                            : "rgba(0,204,255,0.35)"
-                        }`,
-                      }}
-                    >
-                      {data.onChain.status}
-                    </span>
-                  }
+                  value={(() => {
+                    const pill = STATUS_PILL[data.onChain.status] ?? STATUS_PILL_DEFAULT;
+                    return (
+                      <span
+                        className="text-[0.65rem] uppercase tracking-widest px-2 py-0.5 rounded"
+                        style={{
+                          background: pill.bg,
+                          color: pill.fg,
+                          border: `1px solid ${pill.border}`,
+                        }}
+                      >
+                        {data.onChain.status}
+                      </span>
+                    );
+                  })()}
                 />
                 <MetaRow
                   label="Last Owner"

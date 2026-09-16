@@ -97,16 +97,26 @@ export async function GET(request: Request) {
       : null;
     const lastSync = card.lastOnChainSync || null;
 
+    // Label status diambil dari `card.status` yang tersimpan, bukan dari
+    // STATUS_LABELS[statusCode]. Untuk kartu "Burned" token-nya sudah tidak ada,
+    // sehingga `cardStatus` on-chain menahan nilai terakhirnya dan tidak bisa
+    // dibaca balik (ADR-026) — MongoDB adalah sumber kebenarannya.
+    const displayStatus = friendlyCardStatus(card.status ?? "Unknown");
+
     // Verification flag — data di MongoDB sudah terkonfirmasi on-chain
-    // (diupdate saat mint/print/redeem dikonfirmasi), jadi cukup cek konsistensi status
-    const statusMatch = STATUS_LABELS[statusCode] === card.status || card.status === "Real";
+    // (diupdate saat mint/print/redeem dikonfirmasi), jadi cukup cek konsistensi status.
+    // Kartu "Burned" konsisten menurut definisinya: catatannya final dan memang
+    // sengaja dihancurkan, jadi jangan ditandai sebagai ketidakcocokan data.
+    const isBurned = card.status === "Burned";
+    const statusMatch =
+      isBurned || STATUS_LABELS[statusCode] === card.status || card.status === "Real";
     const verificationFlag = card.status !== undefined && statusMatch ? "verified" : "warning";
 
     return NextResponse.json({
       cardId: card.cardId || null,
       tokenId: card.tokenId ?? null,
       onChain: {
-        status: card.status === "Real" ? "Physical" : friendlyCardStatus(STATUS_LABELS[statusCode] || "Unknown"),
+        status: displayStatus,
         statusCode,
         rarity: RARITY_LABELS[rarityCode] || "Unknown",
         rarityCode,

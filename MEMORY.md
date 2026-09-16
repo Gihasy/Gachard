@@ -223,6 +223,13 @@ Per 16 September 2026: bug dismantle sudah diperbaiki di akarnya, performa mobil
 - `api/admin/fix-claimed-cards` diperiksa dan **aman** — `status: "Digital"` di sana hanya filter `.find()`, dan `status: "claimed"` menulis ke koleksi `redeem_codes`, bukan `cards`.
 - **Pelajaran metode**: bandingkan timestamp data dengan waktu deploy SEBELUM menyimpulkan sebuah perbaikan gagal.
 
+**1c. Halaman Scan salah menampilkan kartu Burned**
+- `STATUS_LABELS = ["Digital", "Vaulted"]` di `api/scan` tidak mengenal status `"Burned"`, sehingga jatuh ke indeks 0. Akibatnya kartu yang sudah di-dismantle tampil sebagai **"Digital"** dengan flag **"warning"** — UI menyebutnya "Warning — data mismatch", padahal datanya konsisten dan kartunya memang sengaja dihancurkan.
+- Ini bertentangan dengan ADR-026, yang justru menjaga kartu Burned tetap bisa dicari lewat Card ID demi transparansi provenance.
+- **Fix**: label status diambil langsung dari `card.status` lewat `friendlyCardStatus()` (MongoDB adalah sumber kebenaran status Burned — token-nya sudah tidak ada on-chain), `Burned` ditambahkan ke `CARD_STATUS_MAP`, dan `statusMatch` menganggap Burned sebagai state konsisten.
+- Badge status di halaman Scan: tiga ternary bertumpuk diganti map `STATUS_PILL`; `Burned` diberi warna redup (`--silver-mist-dim`) supaya tidak terbaca seperti kartu aktif.
+- Diverifikasi terhadap database asli: Digital dan Print Requested tidak berubah; hanya kasus Burned yang berubah.
+
 **2. Optimisasi performa mobile** (commit `33213d7`)
 - `app/globals.css`: blok `@media (max-width: 768px)` baru — matikan animasi `driftStars` (repaint layar penuh tiap frame), buang `.cosmic-bg::after` (`mix-blend-mode` di layer fixed = backdrop readback tiap paint), ganti `backdrop-filter` di `.glass`/`.card-surface` dengan warna solid, matikan `.floaty`/`.pulse-glow`. Desktop tidak tersentuh.
 - `CardItem`, `/scan`, `/trade`: `QRScanner`, `CardDetailModal`, `ListingModal` jadi `next/dynamic` — sebelumnya ikut terunduh di halaman yang me-mount puluhan CardItem.

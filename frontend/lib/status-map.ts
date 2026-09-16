@@ -13,6 +13,7 @@ const CARD_STATUS_MAP: Record<string, string> = {
   Digital: "Digital",
   Vaulted: "Print Requested",
   Real: "Physical",
+  Burned: "Burned",
 };
 
 const TX_TYPE_MAP: Record<string, string> = {
