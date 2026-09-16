@@ -87,7 +87,7 @@ Lihat `frontend/.env.local.example`.
 - **ADR-025**: AI Anomaly Detection Oracle
 - **ADR-026**: Dismantle & Crystal (burn-to-earn)
 - **ADR-027**: Become a Creator (whitelist form)
-- **ADR-028**: Rekonsiliasi tidak boleh menimpa status terminal
+- **ADR-028**: Status terminal kartu — klaim atomik + guard anti-timpa
 - **ADR-029**: Tool development pindah ke Claude Code
 
 Lihat `DECISIONS.md` untuk semua ADR (001–029).

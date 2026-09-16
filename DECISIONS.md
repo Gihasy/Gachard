@@ -165,6 +165,7 @@ Kartu non-jaminan mengikuti odds table normal; slot jaminan (Rare/Epic/Legendary
 **Roadmap (TIDAK dibangun di sesi ini)**: Sistem trading Crystal antar-user akan menginfrastruktur ulang Marketplace yang sudah ada. Crystal akan jadi currency alternatif untuk listing dan membeli kartu dari user lain.
 **Reason**: Burn on-chain membuktikan kartu benar-benar dihancurkan (transparan, teraudit di BSCScan). Crystal sebagai non-purchasable currency menghindari liabilitas finansial dan regulasi. Pemisahan collection mencegah bug cross-currency.
 **Known limitation**: Setelah burn, `cardStatus(tokenId)` on-chain tetap menunjukkan nilai terakhir sebelum burn (tidak di-reset ke state "Burned") karena token ERC1155 sudah tidak ada setelah `_burn()`. Sumber kebenaran status "Burned" ada di MongoDB (`cards.status === "Burned"`). Perlu diingat kalau nanti ada fitur yang membaca `cardStatus` langsung dari chain tanpa cross-check MongoDB — perlu cek `balanceOf(owner, tokenId) == 0` sebagai indikator burn.
+**Sudah pernah terpicu (16 September 2026)**: `api/scan` menerjemahkan status lewat array `STATUS_LABELS = ["Digital", "Vaulted"]` yang tidak mengenal `"Burned"`, sehingga kartu yang sudah di-dismantle tampil sebagai "Digital" dengan flag "warning" ("data mismatch") — padahal datanya konsisten. Pola masalahnya sama: status kartu diturunkan lewat perantara yang tidak mengenal state terminal, bukan dibaca langsung dari `cards.status`. Lihat ADR-028.
 
 ## ADR-027: Become a Creator — Whitelist Form untuk IP Owner
 **Status**: Accepted
