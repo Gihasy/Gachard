@@ -340,7 +340,7 @@ Per 16 September 2026: bug dismantle sudah diperbaiki di akarnya, performa mobil
 - Solo developer, non-programmer, vibe coding — dulu MiMoCode, sekarang Claude Code (ADR-029)
 - ~14 jam/minggu waktu efektif
 - Urutan prioritas potong jika waktu mepet: polish UI/UX → fitur AI vision (fallback ke QR lookup polos) → (core mint–vault–redeem TIDAK BOLEH dipotong)
-- Marketplace: **fungsional** sejak 20 Agustus 2026 (ADR-024 menggantikan ADR-010) — listing, buy, cancel, FVM, fee 8%
+- Marketplace: **fungsional** sejak 20 Agustus 2026 (ADR-024 menggantikan ADR-010) — listing, buy, cancel, FVM, fee 8%, floor 70% FVM. Currency-nya **Crystal**, bukan Credit (ADR-026 direvisi 16 September 2026). Pembelian yang receipt-nya telat kini direkonsiliasi oleh `settleSoldTransaction()` di `lib/transactions.ts` (idempoten, refund otomatis kalau tx revert)
 - Tanggal Demo Day pasti belum diumumkan — cek grup peserta hackathon
 - Rencana kerja sama cetak-dan-segel dengan Millennium Print Group (MPG) — hanya untuk tahap produksi, bukan hackathon
 - **Routes sudah English**: `/collect` (packs), `/play`, `/trade` (marketplace), `/collection`, `/profile`, `/scan`, `/topup`
