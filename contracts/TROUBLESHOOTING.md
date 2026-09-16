@@ -26,7 +26,7 @@ This error occurs when the bytecode you're trying to verify doesn't match what's
 
 #### Solution 1: Get Bytecode from BSCScan
 
-1. Go to: https://testnet.bscscan.com/address/0x56390137c171b3167D4055d199DA8Bc8eCeE219c
+1. Go to: https://testnet.bscscan.com/address/0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4
 2. Click on "Contract" tab
 3. Copy the "Deployed ByteCode"
 4. Compare with your compiled bytecode
@@ -55,7 +55,7 @@ If the contract has constructor arguments:
 2. ABI-encode them
 3. Append to the bytecode
 
-### For Contract 0x56390137c171b3167D4055d199DA8Bc8eCeE219c
+### For Contract 0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4
 
 Based on the deployment, this contract:
 - Has NO constructor arguments (empty constructor)
@@ -92,7 +92,7 @@ forge verify-contract \
   --chain-id 97 \
   --compiler-version 0.8.24 \
   --optimizer-runs 200 \
-  0x56390137c171b3167D4055d199DA8Bc8eCeE219c \
+  0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4 \
   src/GachardCard.sol:GachardCard \
   --etherscan-api-key VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K
 
@@ -101,7 +101,7 @@ forge verify-contract \
   --chain-id 97 \
   --compiler-version 0.8.24 \
   --optimizer-runs 1000 \
-  0x56390137c171b3167D4055d199DA8Bc8eCeE219c \
+  0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4 \
   src/GachardCard.sol:GachardCard \
   --etherscan-api-key VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K
 ```
@@ -110,7 +110,7 @@ forge verify-contract \
 
 If single-file verification fails, try "Standard Input JSON":
 
-1. Go to: https://testnet.bscscan.com/address/0x56390137c171b3167D4055d199DA8Bc8eCeE219c#code
+1. Go to: https://testnet.bscscan.com/address/0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4#code
 2. Click "Verify and Publish"
 3. Select: "Solidity (Standard Input JSON)"
 4. Upload the build-info JSON file from `contracts/out/build-info/`

@@ -1,23 +1,25 @@
 # MEMORY
 
-## Instruksi untuk AI Coding Agent (dibaca otomatis setiap sesi oleh MiMoCode)
+## Instruksi untuk AI Coding Agent
+
+Tool development saat ini: **Claude Code** (ADR-029). Adapter instruksinya di `CLAUDE.md`.
 
 Selain file ini, baca juga secara eksplisit di awal sesi:
-1. `DECISIONS.md` — seluruh keputusan arsitektur (ADR) yang sudah dikunci
-2. `docs/00-project-overview.md` — problem, solution, differentiator, scope
-3. `sprints/SPRINT-[N].md` — sprint aktif, ikuti scope-nya secara ketat, gunakan isinya sebagai `/goal` di awal sesi
+1. `CLAUDE.md` — aturan kerja + invarian yang gampang dilanggar
+2. `DECISIONS.md` — seluruh keputusan arsitektur (ADR-001 s/d ADR-029)
+3. `docs/00-project-overview.md` — problem, solution, differentiator, scope
 
-Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru. Jangan membangun fitur di luar scope sprint aktif meski tampak berguna.
+Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru. Semua sprint sudah selesai, jadi `sprints/SPRINT-*.md` adalah catatan sejarah — bukan pekerjaan aktif.
 
 ## Current Sprint
-Sprint 6 selesai. Semua sprint selesai.
+Semua sprint (1-6) selesai. Tidak ada sprint aktif — pekerjaan sekarang berbasis permintaan.
 
 ## Current Goal
-Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi perubahan/fitur berikutnya.
+Per 16 September 2026: bug dismantle sudah diperbaiki di akarnya, performa mobile dioptimasi, dan dokumentasi diselaraskan dengan kode. Open item terbesar yang tersisa: keputusan soal AI Vision (lihat Open Items).
 
 ## Project Status
 - PRD selesai — lihat `docs/00-project-overview.md` (ringkas) dan `PRD-Gachard-Hackathon.md` (lengkap)
-- Tool utama: MiMoCode (model mimo-v2.5-pro, berbayar) sejak awal — TIDAK memakai Emergent (lihat ADR-015)
+- Tool development: **Claude Code** (ADR-029). Sprint 1-6 dikerjakan dengan MiMoCode (ADR-015); Emergent tidak pernah dipakai.
 - Hosting: Vercel (frontend + backend via API routes) + MongoDB Atlas (database), semua free tier
 - **Arsitektur final**: Next.js API routes sebagai SATU-SATUNYA backend (lihat ADR-017). FastAPI sudah dihapus.
 - **Enkripsi**: Private key + redeem code dienkripsi AES-256-GCM (ADR-020)
@@ -25,7 +27,6 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - Kontrak sebelumnya: `0x56390137c171b3167D4055d199DA8Bc8eCeE219c` (lama, sudah tidak aktif)
 - Admin wallet baru: `0x3F4CBDCb5bFb014d63C07400DcD11513DB5F7b56`
 - Admin wallet lama: `0xF7DEd49EB412F69520c38C3f7e36523d71428DEa` (masih di-recognize sebagai "Gachard" di UI)
-- **29 file** berubah di sesi terakhir (10 baru, 18 ubah, 1 hapus), commit `3fc40c7`
 - Deploy: https://www.gachard.com (Vercel Production)
 
 ### Sprint 1-6: SEMUA SELESAI
@@ -201,9 +202,39 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - **Deploy**: Push ke `main` → Vercel auto-deploy ke https://www.gachard.com
 - **Verified**: API `/api/marketplace/listings` mengembalikan 200 tanpa cookie autentikasi
 
+### Session 16 September 2026 — Bug Dismantle, Performa Mobile, Docs
+
+**1. Bug: kartu yang sudah di-dismantle muncul lagi di Collection** (commit `31b1558`)
+- **Akar masalah** (bukan di filter UI — itu sudah benar): `GET /api/cards` menjalankan rekonsiliasi untuk setiap transaksi `pending` milik user setiap kali Collection dibuka. Cabang `mint` di `confirmTransaction()` menulis ulang kartu **tanpa cek status**, jadi transaksi mint yang tersangkut `pending` memutar ulang receipt lamanya dan mengembalikan kartu ke `"Digital"`.
+- Cabang `print` dan `redeem` punya lubang yang sama, dan mencocokkan hanya dengan `{ tokenId }` — padahal tokenId tidak unik lintas kontrak.
+- **Fix**: guard `status: { $ne: "Burned" }` di `lib/transactions.ts` (mint/print/redeem), `api/mint` `confirmMint()`, dan `api/admin/fix-pending-transactions`. Dikunci sebagai **ADR-028**.
+- Transaksi dismantle sekarang mencatat `cardId`; `api/admin/fix-burned-card` ditulis ulang untuk mencocokkan lewat `cardId` dan men-scope fallback tokenId dengan `contractAddress`.
+- Kartu Burned juga dikeluarkan dari hitungan rarity Collection dan stats Profile (sebelumnya disembunyikan dari grid tapi masih ikut dihitung).
+- **Catatan**: masalah yang sama pernah terjadi 1 September 2026 dan hanya ditambal endpoint perbaikan (`8152d8a`, `3904fae`) tanpa akar masalah ditemukan — makanya terulang.
+
+**2. Optimisasi performa mobile** (commit `33213d7`)
+- `app/globals.css`: blok `@media (max-width: 768px)` baru — matikan animasi `driftStars` (repaint layar penuh tiap frame), buang `.cosmic-bg::after` (`mix-blend-mode` di layer fixed = backdrop readback tiap paint), ganti `backdrop-filter` di `.glass`/`.card-surface` dengan warna solid, matikan `.floaty`/`.pulse-glow`. Desktop tidak tersentuh.
+- `CardItem`, `/scan`, `/trade`: `QRScanner`, `CardDetailModal`, `ListingModal` jadi `next/dynamic` — sebelumnya ikut terunduh di halaman yang me-mount puluhan CardItem.
+- `lib/blockchain.ts`: `getProvider()` dulu bikin `JsonRpcProvider` baru tiap panggilan, masing-masing bayar probe `eth_chainId`. Sekarang di-cache + `staticNetwork: true`.
+- `api/cards`: rekonsiliasi dibatasi 10 transaksi terbaru — sebelumnya menunggu semua pending sebelum respons, jadi backlog basi menahan halaman berdetik-detik.
+- `Navbar`: `setScrolled()` tidak lagi dipanggil tiap frame scroll.
+- **Temuan**: CSS hasil build hanya memuat `-webkit-backdrop-filter` (properti standarnya dibuang minifier), jadi efek blur glass **selama ini hanya tampil di Safari/iOS**. Konsekuensi: panel glass di Chrome Android kini sedikit lebih pekat dari sebelumnya.
+
+**3. Support Gachard hanya di homepage** (commit `afb4d13`)
+- `<SupportGachard />` dipindah dari `app/layout.tsx` ke `app/page.tsx`. Sekalian menghapus request `/api/supporters/count` yang dulu ditembak setiap halaman.
+
+**4. Penyelarasan dokumentasi**
+- `DECISIONS.md`: ADR-015 dobel digabung; ADR-021 dikoreksi (bukan "8 kartu", tapi Standard 5 / Booster 10 — kode sudah lama beda dari ADR); ADR-025 dikoreksi (risk scoring pakai **MiMo**, bukan Gemini); ADR-023 ditandai sebagai nomor tidak terpakai; **ADR-028** dan **ADR-029** ditambahkan.
+- `CLAUDE.md` ditulis ulang untuk Claude Code; `README.md` dikoreksi (Stripe hanya simulasi, marketplace pakai Crystal, env var yang kurang, label "Physical"); `PRD` diberi blok Amendments di bagian atas.
+- Dihapus: `docs/STATUS-REPORT.md` (tertanggal 22 Juli, Sprint 1, URL deploy mati), `contracts/VERIFY.md` (duplikat), `contracts/README.md` (boilerplate Foundry), `frontend/public/icons/README.md` (instruksi placeholder yang sudah tidak berlaku).
+- `contracts/VERIFICATION_GUIDE.md` + `TROUBLESHOOTING.md` diarahkan ke kontrak aktif `0x3E1Cf18D...` (sebelumnya menunjuk `0x56390137...` yang sudah mati).
+
 ### Open Items (belum selesai)
-1. **AI Vision (Gemini)** — DITUNDA, WAJIB dikerjakan sebelum submission final (syarat tema hackathon "AI x Web3")
-2. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — run with `cd frontend && npx tsx scripts/clean-slate.ts`
+1. **Jalankan `POST /api/admin/fix-burned-card`** di production — memulihkan kartu yang terlanjur "hidup lagi" sebelum ADR-028 diterapkan. Sekali jalan saja.
+2. **AI Vision (Gemini)** — DITUNDA (ADR-022). Catatan lama bilang WAJIB sebelum submission final demi tema "AI x Web3"; tapi sekarang sudah ada dua fitur AI yang berjalan (anomaly detection + market insight), jadi perlu dipastikan ulang apakah ini masih benar-benar blocking.
+3. **`MIMO_API_KEY` tidak ada di `frontend/.env.local`** padahal `lib/risk-score.ts` membutuhkannya — AI risk scoring kemungkinan diam-diam jatuh ke fallback. Perlu dicek di Vercel Production.
+4. **Kredensial MongoDB di `.env.local` ditolak Atlas** (`bad auth`) — kemungkinan password sudah dirotasi tapi yang lokal belum diperbarui.
+5. **Clean Slate script**: `frontend/scripts/clean-slate.ts` — jalankan dengan `cd frontend && npx tsx scripts/clean-slate.ts`
 
 ### Documentation Cleanup (7 September 2026)
 - **10 file outdated dihapus**: Execution-Plan-Gachard.md, LAPORAN_AKHIR.md, UPDATE_REPORT.md, docs/SESSION_CHANGELOG.md, docs/BUG_FIX_REPORT.md, docs/PRIORITY_FIXES_REPORT.md, docs/compose/reports/status-lengkap.md, memory/test_credentials.md, memory/PRD.md, frontend/README.md
@@ -274,22 +305,22 @@ Rangkuman menyeluruh project selesai (7 September 2026). Siap lanjut eksekusi pe
 - **Saat ini**: `/api/scan` berfungsi penuh tanpa vision (QR-lookup on-chain vs MongoDB match).
 
 ## Notes
-- Solo developer, non-programmer, vibe coding via MiMoCode
+- Solo developer, non-programmer, vibe coding — dulu MiMoCode, sekarang Claude Code (ADR-029)
 - ~14 jam/minggu waktu efektif
 - Urutan prioritas potong jika waktu mepet: polish UI/UX → fitur AI vision (fallback ke QR lookup polos) → (core mint–vault–redeem TIDAK BOLEH dipotong)
-- Marketplace: UI placeholder "Coming Soon" saja, tidak fungsional untuk hackathon (ADR-010)
+- Marketplace: **fungsional** sejak 20 Agustus 2026 (ADR-024 menggantikan ADR-010) — listing, buy, cancel, FVM, fee 8%
 - Tanggal Demo Day pasti belum diumumkan — cek grup peserta hackathon
 - Rencana kerja sama cetak-dan-segel dengan Millennium Print Group (MPG) — hanya untuk tahap produksi, bukan hackathon
-- Jalankan `/dream` di akhir setiap sprint untuk merangkum pembelajaran sesi ke file ini
 - **Routes sudah English**: `/collect` (packs), `/play`, `/trade` (marketplace), `/collection`, `/profile`, `/scan`, `/topup`
 - **Service Worker**: sw.js sekarang punya cache versioning + network-first untuk HTML. Bump version di sw.js setiap deploy jika ada perubahan UI signifikan.
 - **Google OAuth**: Login menggunakan Google Identity Services SDK. Backend decode JWT langsung. Jika login gagal, cek: (1) cache browser, (2) Authorized JavaScript origins di Google Cloud Console, (3) env vars di Vercel.
 
 ## Aturan untuk Tool Eksternal (Emergent, AI lain, dll)
 WAJIB berikan akses ke file ini SEBELUM meminta tool eksternal mengerjakan apa pun:
-1. `MEMORY.md` — status project, sprint, aturan
-2. `DECISIONS.md` — 20 ADR yang sudah dikunci
-3. `PRD-Gachard-Hackathon.md` — scope, fitur, constraint
+1. `MEMORY.md` — status project, aturan
+2. `DECISIONS.md` — ADR-001 s/d ADR-029 yang sudah dikunci
+3. `CLAUDE.md` — invarian yang gampang dilanggar
+4. `PRD-Gachard-Hackathon.md` — scope, fitur, constraint (historis, lihat blok Amendments)
 
 Tujuan: mencegah tool yang tidak tahu konteks melanggar keputusan yang sudah dikunci (contoh: ADR-010 marketplace "Coming Soon" dilanggar oleh Emergent yang membuat marketplace fungsional).
 

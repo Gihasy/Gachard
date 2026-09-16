@@ -9,6 +9,26 @@
 
 ---
 
+## 0. Amendments (per 16 September 2026)
+
+PRD ini adalah **dokumen historis "Draft 1.0"** dan sengaja tidak ditulis ulang. Beberapa
+keputusan di dalamnya sudah berubah sejak ditulis. Kalau isi PRD bertentangan dengan
+`DECISIONS.md`, **`DECISIONS.md` yang berlaku.**
+
+| Bagian PRD | Isi PRD | Keadaan sekarang |
+|---|---|---|
+| Header "Tim" | "vibe coding via Emergent.sh" | Emergent tidak pernah dipakai sama sekali. Sprint 1–6 dikerjakan dengan MiMoCode (ADR-015); sejak September 2026 dilanjutkan dengan Claude Code (ADR-029). |
+| §4, §9, §10 | Marketplace = UI placeholder "Coming Soon", di luar scope | Marketplace **fungsional**: listing, buy, cancel, FVM pricing, fee 8%, AI price suggestion (ADR-024, menggantikan ADR-010). |
+| Scope umum | — | Fitur yang belum ada saat PRD ditulis dan kini sudah dibangun: Dismantle & Crystal (ADR-026), AI Anomaly Detection Oracle (ADR-025), Become a Creator (ADR-027). |
+| Pack | "1 kartu per pembelian" | Dua tipe pack: Standard 5 kartu/500 Credit, Booster 10 kartu/800 Credit (ADR-021). |
+| AI scan | AI vision sebagai elemen AI utama | AI vision **ditunda** (ADR-022). Elemen AI yang berjalan: risk scoring anomaly detection (MiMo) dan market insight + price suggestion (Gemini). |
+| Status label | "Real" | Label user-facing sekarang "Physical". Nilai di database tetap `"Real"` (tanpa migrasi data). |
+
+Selebihnya — latar belakang masalah, differentiator, model bisnis, dan alur domain inti
+(mint → vault → print → redeem) — masih berlaku sebagaimana ditulis.
+
+---
+
 ## 1. Latar Belakang & Masalah
 
 Kolektor kartu fisik (TCG, sports card, dsb) menghadapi dua masalah utama:

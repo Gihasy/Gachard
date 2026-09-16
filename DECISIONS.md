@@ -75,21 +75,17 @@
 **Reason**: Tim mempertimbangkan berganti-ganti tool/model (Emergent → Claude Code → MiMo Code dengan model MiMo V2.5 Pro, kemungkinan berganti lagi). Dengan dokumentasi inti yang tidak terikat tool, perpindahan antar tool tidak memerlukan penulisan ulang konteks — cukup buat adapter baru bila perlu.
 **Catatan**: MiMo Code (rilis awal, masih tahap alpha per pengecekan Juli 2026) mendukung koneksi ke berbagai provider LLM (bukan terkunci ke model MiMo saja) dan mengimpor konfigurasi dari Claude Code secara otomatis saat migrasi — memperkuat kelayakan pendekatan adapter ini. Karena masih software tahap awal, tetap disiplin commit Git yang sering sebagai fallback bila tool ini tidak stabil.
 
-## ADR-015: Ganti Rencana — MiMo Code (Berbayar, Model V2.5 Pro) Sejak Awal, Tanpa Emergent
-**Status**: Accepted — menggantikan sebagian ADR-012
-**Decision**: Tidak menggunakan Emergent sama sekali. Seluruh development (Sprint 1–6) dilakukan dengan MiMo Code (Token Plan berbayar, model `mimo-v2.5-pro`) sejak hari pertama.
-**Reason**: Menghindari biaya credit Emergent sepenuhnya; MiMo Code + model V2.5 Pro dinilai cukup kapabel untuk agentic coding jangka panjang berdasarkan riset awal (lihat diskusi 21 Juli 2026).
-**Konsekuensi**:
-- Tidak ada VM/hosting otomatis seperti Emergent — hosting harus disiapkan mandiri sejak Sprint 1 (Vercel/Render/Railway/MongoDB Atlas), bukan menunggu migrasi di Sprint 4.
-- Smart contract deploy langsung via Foundry ke BNB testnet, tanpa perantara Playbook Emergent.
-- `.mimo/config.md` menjadi adapter utama (bukan `CLAUDE.md`), tetap menunjuk ke dokumen inti tool-agnostic yang sama (lihat ADR-014).
-- Karena MiMo Code masih tahap awal/alpha per Juli 2026, disiplin commit Git yang sering menjadi lebih penting sebagai fallback.
-
 ## ADR-015: Tool Utama — MiMoCode (mimo-v2.5-pro) Sejak Awal, Tanpa Emergent
-**Status**: Accepted (menggantikan pendekatan di ADR-012)
-**Decision**: Seluruh development (Sprint 1–6) memakai MiMoCode (model `mimo-v2.5-pro`, berbayar via Xiaomi MiMo Platform atau custom provider pihak ketiga) sejak awal. Tidak memakai Emergent sama sekali. Setup git + GitHub repo dilakukan manual sejak Sprint 1 (bukan auto-sync seperti Emergent). Hosting mandiri (Vercel/Render/MongoDB Atlas, free tier) disiapkan sejak Sprint 1, bukan menunggu migrasi di pertengahan project.
-**Reason**: Menyederhanakan jadi satu tool sepanjang project (bukan dua tool berbeda di fase berbeda), model biaya lebih predictable (Token Plan/pay-as-you-go), dan MiMoCode punya sistem memori persisten (`MEMORY.md` auto-loaded, task tracking, checkpoint) yang cocok dengan pendekatan dokumentasi kita.
-**Supersedes**: ADR-012 (rencana Emergent → Claude Code) tidak lagi berlaku.
+**Status**: Accepted — menggantikan ADR-012
+**Catatan penomoran**: Sebelumnya ADR ini tercatat dua kali dengan nomor yang sama (dua entri terpisah, isi saling melengkapi). Digabung menjadi satu entri pada 16 September 2026.
+**Decision**: Tidak memakai Emergent sama sekali. Seluruh development Sprint 1–6 memakai MiMoCode (model `mimo-v2.5-pro`, berbayar via Xiaomi MiMo Platform atau custom provider pihak ketiga) sejak hari pertama. Setup git + GitHub repo manual sejak Sprint 1 (bukan auto-sync seperti Emergent). Hosting mandiri (Vercel + MongoDB Atlas, free tier) disiapkan sejak Sprint 1, bukan menunggu migrasi di pertengahan project.
+**Reason**: Menghindari biaya credit Emergent; satu tool sepanjang project (bukan dua tool di fase berbeda); biaya lebih predictable (Token Plan/pay-as-you-go); dan MiMoCode punya memori persisten (`MEMORY.md` auto-loaded, task tracking, checkpoint) yang cocok dengan pendekatan dokumentasi project ini.
+**Konsekuensi**:
+- Tidak ada VM/hosting otomatis seperti Emergent — hosting disiapkan mandiri sejak Sprint 1.
+- Smart contract deploy langsung via Foundry ke BNB testnet, tanpa perantara Playbook Emergent.
+- Karena MiMoCode masih tahap alpha per Juli 2026, disiplin commit Git yang sering jadi fallback penting.
+**Supersedes**: ADR-012 (rencana Emergent → Claude Code) tidak lagi berlaku dalam bentuk aslinya.
+**Catatan lanjutan (16 September 2026)**: Development kini dilanjutkan memakai **Claude Code**, bukan MiMoCode. Lihat ADR-029.
 
 ## ADR-016: Koreksi — File Auto-Loaded MiMoCode
 **Status**: Accepted
@@ -120,11 +116,19 @@
 **Decision**: Semua private key (wallet user dan wallet admin) dienkripsi menggunakan AES-256-GCM sebelum disimpan di MongoDB. Secret key disimpan di environment variable `ENCRYPTION_SECRET_KEY` (minimal 32 karakter), bukan di database. Saat dipakai untuk sign transaksi, private key didekripsi terlebih dahulu.
 **Reason**: Private key plaintext di database adalah risiko keamanan kritis — jika database bocor, semua wallet bisa dicuri. AES-256-GCM menyediakan authenticated encryption (integrity + confidentiality). Secret key di env var memastikan kompromi database saja tidak cukup untuk mendekripsi.
 
-## ADR-021: Pack 8 Kartu dengan Jaminan Rare+
-**Status**: Accepted
-**Decision**: Setiap pack berisi 8 kartu dengan harga 500 Credit. 7 kartu mengikuti odds table normal, 1 kartu dijamin Rare+ (Rare/Epic/Legendary dengan bobot relatif 20/8/2 dinormalisasi). Mint via `mintBatch()` atomik (1 transaksi untuk seluruh pack, bukan 8x `mintCard` terpisah). Slot jaminan di-shuffle supaya tidak selalu di posisi sama.
-**Reason**: 8 kartu per pack lebih menarik secara visual untuk demo (grid 2x4) dan memberikan pengalaman "unboxing" yang lebih kaya. Jaminan Rare+ meningkatkan kepuasan user tanpa mengorbankan distribusi rarity keseluruhan. `mintBatch()` atomik menghemat gas dan memastikan konsistensi (semua atau tidak sama sekali).
-**Supersedes**: Referensi sebelumnya yang menyebut "1 kartu per pembelian".
+## ADR-021: Pack — Dua Tipe (Standard 5 Kartu / Booster 10 Kartu)
+**Status**: Accepted — direvisi 16 September 2026 agar sesuai implementasi
+**Decision**: Ada dua tipe pack (`PACK_TYPES` di `app/api/mint/route.ts`):
+
+| Tipe | Harga | Jumlah kartu | Jaminan Rare+ |
+|---|---|---|---|
+| Standard | 500 Credit | 5 | 1 |
+| Booster | 800 Credit | 10 | 2 |
+
+Kartu non-jaminan mengikuti odds table normal; slot jaminan (Rare/Epic/Legendary, bobot relatif 20/8/2 dinormalisasi) di-shuffle supaya tidak selalu di posisi yang sama. Mint via `mintBatch()` atomik — satu transaksi untuk seluruh pack, bukan N kali `mintCard`.
+**Reason**: Dua tipe pack memberi pilihan harga dan memperkaya demo. `mintBatch()` atomik menghemat gas dan menjamin konsistensi (semua atau tidak sama sekali).
+**Riwayat revisi**: Versi awal ADR ini menetapkan "pack tunggal 8 kartu @ 500 Credit", yang kemudian menyimpang dari kode tanpa dicatat. Direvisi agar ADR kembali menjadi sumber kebenaran yang akurat.
+**Supersedes**: Referensi lama yang menyebut "1 kartu per pembelian" dan "pack 8 kartu".
 
 ## ADR-022: AI Vision (Gemini) — Ditunda, Bukan Dihapus
 **Status**: DITUNDA — kode `lib/vision.ts` tetap ada di repo, tapi tidak dipanggil dari endpoint mana pun.
@@ -132,6 +136,10 @@
 **Alasan penundaan**: Prioritas dialihkan ke stabilisasi fitur inti dan branding terlebih dahulu, dengan timeline project yang lebih panjang dari perkiraan awal.
 **WAJIB dikerjakan kembali sebelum deadline submission final**, karena ini syarat kelayakan tema hackathon "AI x Web3" yang wajib di semua track — bukan fitur opsional yang boleh hilang dari submission akhir.
 **Target revisit**: 2-3 minggu sebelum deadline submission final (tanggal pasti perlu ditentukan user).
+
+## ADR-023: (Nomor Tidak Terpakai)
+**Status**: N/A
+**Catatan**: Tidak pernah ada ADR-023. Nomor ini terlewat saat penulisan dan dicatat di sini pada 16 September 2026 supaya celah penomoran tidak disangka dokumen yang hilang.
 
 ## ADR-024: Marketplace — Functional Trade System
 **Status**: Accepted — supersedes ADR-010
@@ -142,7 +150,7 @@
 **Status**: Accepted
 **Decision**: Deteksi pola wash-trading pada transaksi marketplace menggunakan pendekatan Oracle:
 1. **Sinyal deterministik** (`fraud-signals.ts`): `repeatPairCount` (frekuensi pasangan wallet), `priceDeviationPct` (penyimpangan harga dari FVM), `resaleSpeedHours` (kecepatan resale).
-2. **AI risk scoring** (`risk-score.ts`): Gemini mensintesis ketiga sinyal jadi skor 0-100. Threshold `flagged = riskScore >= 70`.
+2. **AI risk scoring** (`risk-score.ts`): **MiMo** (`MIMO_BASE_URL`, model `mimo-v2.5-pro`) mensintesis ketiga sinyal jadi skor 0-100. Threshold `flagged = riskScore >= 70`. Catatan: Gemini dipakai untuk Market Insight dan Price Suggestion (ADR-024), **bukan** untuk risk scoring — versi awal ADR ini keliru menyebut Gemini, dikoreksi 16 September 2026.
 3. **On-chain Oracle** (`recordVerification()`): Hasil skor dan flag di-post ke smart contract, tercatat permanen di blockchain.
 4. **FVM exclusion**: Transaksi dengan `flagged === true` dikecualikan dari perhitungan FVM untuk mencegah manipulasi harga.
 5. **Non-blocking**: Semua scoring terjadi SETELAH transaksi selesai — tidak pernah memblokir atau membatalkan trade.
@@ -162,3 +170,21 @@
 **Status**: Accepted
 **Decision**: Halaman `/creators` menyediakan form whitelist untuk kolaborasi IP Owner eksternal. Fitur murni web2 (MongoDB collection `creator_applications`, tanpa blockchain). Form mengumpulkan: nama, brand/IP, tipe IP, social media, email, minat, estimasi community size. Honeypot field `website_url` untuk anti-spam bot (return 200 palsu tanpa insert). Admin tab "Creators" menampilkan semua submission. Revenue split 70/30 (creator/platform) sesuai model infrastruktur-first dari PRD.
 **Reason**: Mengakuisisi IP Creator eksternal adalah growth vector utama Gachard. Form whitelist memungkinkan pipeline partner tanpa commitment teknis dari creator. Web2-only karena tidak ada kebutuhan blockchain untuk pendaftaran — blockchain hanya relevan setelah IP di-onboard dan kartu di-mint.
+
+## ADR-028: Rekonsiliasi Tidak Boleh Menimpa Status Terminal
+**Status**: Accepted
+**Decision**: Setiap proses rekonsiliasi on-chain — `confirmTransaction()` di `lib/transactions.ts`, `confirmMint()` di `api/mint`, dan endpoint `api/admin/fix-pending-transactions` — WAJIB menyertakan guard `status: { $ne: "Burned" }` pada filter update kartu. Rekonsiliasi hanya boleh memajukan kartu dari state sementara, tidak pernah menarik kartu keluar dari state terminal.
+**Masalah yang dicegah**: `GET /api/cards` menjalankan rekonsiliasi untuk setiap transaksi `pending` milik user setiap kali halaman Collection dibuka. Cabang `mint` menulis ulang kartu tanpa memeriksa status saat ini, sehingga transaksi mint yang tersangkut `pending` memutar ulang receipt lamanya dan **menghidupkan kembali kartu yang sudah di-dismantle** — kartu muncul lagi di Collection padahal token-nya sudah di-burn on-chain dan Crystal sudah dibayarkan. Cabang `print` dan `redeem` punya lubang yang sama, dan mencocokkan hanya dengan `{ tokenId }` — padahal tokenId **tidak unik lintas kontrak**, karena project ini sudah men-deploy ulang kontrak beberapa kali dan penomoran tokenId mulai dari 1 lagi setiap kali.
+**Konsekuensi**:
+- Transaksi dismantle mencatat `cardId`, supaya perbaikan data bisa mencocokkan secara eksak dan tidak menebak lewat tokenId.
+- Endpoint perbaikan `api/admin/fix-burned-card` mencocokkan lewat `cardId`. Untuk transaksi lama yang hanya punya tokenId, pencocokan di-scope dengan `contractAddress`, dan yang ambigu dilewati — bukan ditebak.
+- Kalau nanti ada state terminal baru (mis. kartu hangus/expired), guard yang sama harus ikut diperluas.
+**Reason**: Kegagalan yang sama pernah terjadi 1 September 2026 dan hanya ditambal dengan endpoint perbaikan (commit `8152d8a`, `3904fae`) tanpa akar masalahnya ditemukan — sehingga terulang. ADR ini mengunci invariannya, bukan gejalanya.
+
+## ADR-029: Tool Development — Pindah dari MiMoCode ke Claude Code
+**Status**: Accepted — melanjutkan ADR-015
+**Decision**: Sejak September 2026 development dilanjutkan memakai **Claude Code**, bukan MiMoCode. `CLAUDE.md` di root menjadi adapter instruksi yang aktif; `MEMORY.md` dan `DECISIONS.md` tetap jadi dokumen inti yang tool-agnostic dan wajib dibaca di awal sesi.
+**Reason**: ADR-014 memang merancang dokumentasi ini supaya tool-agnostic dengan adapter per tool, jadi perpindahan tool tidak menuntut perubahan dokumen inti — hanya adapter-nya yang berganti.
+**Konsekuensi**:
+- `.mimo/config.md` dan `.mimocode/` menjadi artefak historis, bukan konfigurasi aktif.
+- ADR-016 (soal file mana yang auto-load di MiMoCode) tetap berlaku sebagai catatan sejarah, tapi tidak lagi menggambarkan setup yang berjalan.

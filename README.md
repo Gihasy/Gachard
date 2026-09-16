@@ -13,10 +13,10 @@ Dibangun untuk submission **Indonesia Web3 Hackathon 2026** (track Consumer Apps
 
 ### Core Loop
 - **Login** — Google OAuth + demo account (custodial wallet, tersembunyi dari user)
-- **Buy Pack** — Standard (5 kartu/500 Credit) atau Booster (10 kartu/800 Credit)
+- **Buy Pack** — Standard (5 kartu / 500 Credit, 1 jaminan Rare+) atau Booster (10 kartu / 800 Credit, 2 jaminan Rare+)
 - **Collect** — Kartu NFT di-mint ke blockchain, disimpan di collection user
 - **Print** — Cetak kartu fisik (+$14.99 shipping), kartu terkunci di vault
-- **Claim Shipping** — User scan QR code saat terima kartu fisik → status "Real"
+- **Claim Shipping** — User scan QR code saat terima kartu fisik → status "Physical"
 - **Redeem** — Masukkan Card ID + Redeem Code dari kartu fisik → kembali ke digital
 
 ### Fitur Lainnya
@@ -26,9 +26,10 @@ Dibangun untuk submission **Indonesia Web3 Hackathon 2026** (track Consumer Apps
 - **Unique Card ID** — Setiap kartu punya ID hex unik (e.g. `#8a866`)
 - **Invoice ID** — Setiap transaksi punya Invoice ID (e.g. `GC-20260730-a3f1`)
 - **Admin Console** — Manage users, transactions, cards, print requests
-- **Trade Marketplace** — Jual beli kartu antar user dengan FVM pricing
+- **Trade Marketplace** — Jual beli kartu antar user dengan Crystal, harga dipandu FVM (Fair Value Market), fee 8%
 - **Dismantle & Crystal** — Burn kartu untuk mendapatkan Crystal currency
-- **AI Anomaly Detection** — Deteksi wash-trading pada marketplace
+- **AI Anomaly Detection** — Deteksi wash-trading pada marketplace, hasilnya dicatat on-chain (Oracle)
+- **Become a Creator** — Form whitelist untuk IP owner di `/creators`
 - **Support Gachard** — Floating CTA button untuk early supporters
 
 ## Quick Start
@@ -69,8 +70,8 @@ Lihat `frontend/.env.local.example`.
 | Smart Contracts | Solidity 0.8.24, Foundry, OpenZeppelin v5 |
 | Wallet | Custodial (ethers.js v6), sponsored gas |
 | Auth | Google OAuth + demo accounts |
-| Payment | Stripe Test Mode (credit + direct) |
-| AI | MiMo V2.5 Pro (risk scoring), Gemini API (market insight) |
+| Payment | Disimulasikan (belum ada integrasi Stripe sungguhan) |
+| AI | MiMo V2.5 Pro (risk scoring), Gemini API (market insight + price suggestion) |
 | Hosting | Vercel (frontend + backend), Vercel Edge |
 
 ## Architecture
@@ -86,8 +87,10 @@ Lihat `frontend/.env.local.example`.
 - **ADR-025**: AI Anomaly Detection Oracle
 - **ADR-026**: Dismantle & Crystal (burn-to-earn)
 - **ADR-027**: Become a Creator (whitelist form)
+- **ADR-028**: Rekonsiliasi tidak boleh menimpa status terminal
+- **ADR-029**: Tool development pindah ke Claude Code
 
-Lihat `DECISIONS.md` untuk semua 27 ADR.
+Lihat `DECISIONS.md` untuk semua ADR (001–029).
 
 ### Project Structure
 ```
@@ -102,11 +105,11 @@ Gachard/
 ├── docs/              # Documentation
 │   ├── compose/       # Session & feature reports
 │   └── archive/       # Historical documentation
-├── .commandcode/      # Command Code config
-├── .mimo/             # MiMoCode config
-├── .mimocode/         # MiMoCode plugin
-├── MEMORY.md          # Project status & rules (auto-loaded)
-├── DECISIONS.md       # Architecture decisions (27 ADRs)
+├── sprints/           # Scope sprint 1-6 (historis, semua selesai)
+├── .mimo/             # Artefak MiMoCode (historis, tidak aktif)
+├── .mimocode/         # Artefak MiMoCode (historis, tidak aktif)
+├── MEMORY.md          # Project status & rules
+├── DECISIONS.md       # Architecture decisions (ADR-001 s/d ADR-029)
 ├── PRD-Gachard-Hackathon.md  # Product Requirements Document
 └── vercel.json        # Vercel deployment config
 ```
@@ -129,6 +132,10 @@ Gachard/
    - `BSC_TESTNET_RPC` — BNB Testnet RPC URL
    - `ENCRYPTION_SECRET_KEY` — AES-256-GCM key (min 32 chars)
    - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — Admin console credentials
+   - `CHAIN_ID` — 97 (BNB Testnet)
+   - `NEXT_PUBLIC_CONTRACT_ADDRESS` — Contract address untuk client-side
+   - `GEMINI_API_KEY` — Market insight + price suggestion
+   - `MIMO_API_KEY` / `MIMO_BASE_URL` — AI risk scoring (anomaly detection)
 
 ### Database Scripts
 ```bash
@@ -137,12 +144,15 @@ cd frontend && npx tsx scripts/clean-slate.ts
 ```
 
 ## Development Workflow
-1. Baca `MEMORY.md` — status & sprint saat ini (auto-loaded oleh MiMoCode)
-2. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci (27 ADR)
+1. Baca `MEMORY.md` — status project & sesi terakhir
+2. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci (ADR-001 s/d ADR-029)
 3. Baca `docs/00-project-overview.md` — problem, solution, scope
-4. Baca `PRD-Gachard-Hackathon.md` — PRD lengkap
-5. Implement sesuai sprint — jangan menyimpang dari `DECISIONS.md` tanpa ADR baru
-6. Commit sering — discipline fallback karena MiMoCode masih alpha
+4. Baca `PRD-Gachard-Hackathon.md` — PRD lengkap (historis; lihat blok Amendments)
+5. Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru
+6. Commit sering
+
+Sprint 1–6 sudah selesai. `sprints/SPRINT-*.md` adalah catatan sejarah, bukan pekerjaan aktif.
+Tool development saat ini: **Claude Code** (ADR-029).
 
 ## Blockchain Verification
 Semua transaksi blockchain dapat diverifikasi di BSCScan:
@@ -158,12 +168,14 @@ Admin Console (https://www.gachard.com/admin) menampilkan:
 - Risk score dari AI anomaly detection
 
 ## Catatan untuk AI Coding Agent
-- Baca `MEMORY.md`, `DECISIONS.md`, dan `docs/` sebelum membuat perubahan
+- Baca `CLAUDE.md`, `MEMORY.md`, dan `DECISIONS.md` sebelum membuat perubahan
 - Jangan gunakan istilah blockchain/crypto/on-chain di UI user-facing
 - Semua perubahan harus kompatibel dengan ADR yang sudah dikunci
-- Test di mobile (iPhone 12 Pro/390px, Galaxy S8+/360px) sebelum deploy
+- Test di mobile (iPhone 12 Pro/390px, Galaxy S8+/360px) sebelum deploy — ada blok budget performa mobile di `app/globals.css`
 - Gunakan `getAuthenticatedUser(req)` untuk semua API routes (server-side session)
 - Semua transaksi blockchain menggunakan pola async (ADR-018)
+- Rekonsiliasi tidak boleh menimpa status terminal seperti `Burned` (ADR-028)
+- `tokenId` tidak unik lintas kontrak — query kartu pakai `cardId`
 
 ## License
 Private — Indonesia Web3 Hackathon 2026 submission.

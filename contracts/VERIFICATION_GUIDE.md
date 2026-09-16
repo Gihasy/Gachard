@@ -2,7 +2,7 @@
 
 ## Contract Information
 
-- **Address**: `0x56390137c171b3167D4055d199DA8Bc8eCeE219c`
+- **Address**: `0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4`
 - **Chain**: BNB Testnet (Chain ID 97)
 - **Explorer**: https://testnet.bscscan.com
 - **Compiler**: Solidity 0.8.24
@@ -39,12 +39,12 @@
 
 ### Method 1: BSCScan Website (Easiest)
 
-1. Go to: https://testnet.bscscan.com/address/0x56390137c171b3167D4055d199DA8Bc8eCeE219c#code
+1. Go to: https://testnet.bscscan.com/address/0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4#code
 
 2. Click **"Verify and Publish"** button
 
 3. Fill in the form:
-   - **Contract Address**: `0x56390137c171b3167D4055d199DA8Bc8eCeE219c`
+   - **Contract Address**: `0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4`
    - **Compiler Type**: Solidity (Single file)
    - **Compiler Version**: `v0.8.24+commit.e11b9ed9`
    - **License**: MIT License (MIT)
@@ -65,7 +65,7 @@
 curl -X POST 'https://api-testnet.bscscan.com/api' \
   --data-urlencode 'module=contract' \
   --data-urlencode 'action=verifysourcecode' \
-  --data-urlencode 'contractaddress=0x56390137c171b3167D4055d199DA8Bc8eCeE219c' \
+  --data-urlencode 'contractaddress=0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4' \
   --data-urlencode 'sourceCode=@contracts/flattened.sol' \
   --data-urlencode 'codeformat=solidity-single-file' \
   --data-urlencode 'contractname=GachardCard' \
@@ -84,7 +84,7 @@ forge verify-contract \
   --chain-id 97 \
   --compiler-version 0.8.24 \
   --optimizer-runs 200 \
-  0x56390137c171b3167D4055d199DA8Bc8eCeE219c \
+  0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4 \
   src/GachardCard.sol:GachardCard \
   --etherscan-api-key VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K
 ```
