@@ -74,13 +74,15 @@ export async function pickGuaranteedRareOrBetter(): Promise<number> {
 
 /**
  * Build array of rarities for a pack.
- * @param packSize - Total kartu dalam pack (default 8)
- * @param guaranteedCount - Jumlah kartu dijamin Rare+ (default 1)
+ * @param packSize - Total kartu dalam pack. WAJIB diisi dari `PACK_TYPES`
+ *   (Standard 5, Booster 10 per ADR-021) — sengaja tanpa default supaya
+ *   ukuran pack hanya punya satu sumber kebenaran.
+ * @param guaranteedCount - Jumlah kartu dijamin Rare+ (Standard 1, Booster 2).
  * Shuffle sebelum dikembalikan supaya slot jaminan tidak selalu di posisi sama.
  */
 export async function buildPackRarities(
-  packSize: number = 8,
-  guaranteedCount: number = 1
+  packSize: number,
+  guaranteedCount: number
 ): Promise<number[]> {
   const rarities: number[] = [];
 
