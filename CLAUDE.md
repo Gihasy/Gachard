@@ -5,13 +5,13 @@ Project ini dibangun dengan **Claude Code** (lihat ADR-029). Sebelumnya memakai 
 
 ## Wajib dibaca sebelum membuat perubahan apa pun
 
-1. `MEMORY.md` — status project, sesi terakhir, open items
+1. `MEMORY.md` — status project, sesi terakhir, open items (file kerja lokal, sengaja tidak di-track di repo)
 2. `DECISIONS.md` — seluruh keputusan arsitektur (ADR-001 s/d ADR-029)
 3. `docs/00-project-overview.md` — problem, solution, differentiator, scope
 4. `PRD-Gachard-Hackathon.md` — PRD lengkap (dokumen historis, lihat blok Amendments di atasnya)
 
-Semua sprint (1–6) sudah selesai; `sprints/SPRINT-*.md` adalah catatan sejarah, bukan
-pekerjaan aktif.
+Semua sprint (1–6) sudah selesai. Catatan sprint dan laporan sesi disimpan lokal di luar
+repo, bukan pekerjaan aktif.
 
 ## Aturan
 

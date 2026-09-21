@@ -197,12 +197,8 @@ Gachard/
 │   └── public/        # Static assets
 ├── contracts/         # Solidity smart contracts (Foundry)
 ├── docs/              # Documentation
-│   ├── compose/       # Session & feature reports
-│   └── archive/       # Historical documentation
-├── sprints/           # Scope sprint 1-6 (historis, semua selesai)
-├── .mimo/             # Artefak MiMoCode (historis, tidak aktif)
-├── .mimocode/         # Artefak MiMoCode (historis, tidak aktif)
-├── MEMORY.md          # Project status & rules
+│   └── 00-project-overview.md
+├── CLAUDE.md          # Contributor rules & invariants
 ├── DECISIONS.md       # Architecture decisions (ADR-001 s/d ADR-029)
 ├── PRD-Gachard-Hackathon.md  # Product Requirements Document
 └── vercel.json        # Vercel deployment config
@@ -238,14 +234,13 @@ cd frontend && npx tsx scripts/clean-slate.ts
 ```
 
 ## Development Workflow
-1. Baca `MEMORY.md` — status project & sesi terakhir
-2. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci (ADR-001 s/d ADR-029)
-3. Baca `docs/00-project-overview.md` — problem, solution, scope
+1. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci (ADR-001 s/d ADR-029)
+2. Baca `docs/00-project-overview.md` — problem, solution, scope
+3. Baca `CLAUDE.md` — invarian yang gampang dilanggar
 4. Baca `PRD-Gachard-Hackathon.md` — PRD lengkap (historis; lihat blok Amendments)
 5. Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru
-6. Commit sering
 
-Sprint 1–6 sudah selesai. `sprints/SPRINT-*.md` adalah catatan sejarah, bukan pekerjaan aktif.
+Sprint 1–6 sudah selesai; catatan sprint dan laporan sesi disimpan di luar repo.
 Tool development saat ini: **Claude Code** (ADR-029).
 
 ## Blockchain Verification
@@ -262,7 +257,7 @@ Admin Console (https://www.gachard.com/admin) menampilkan:
 - Risk score dari AI anomaly detection
 
 ## Catatan untuk AI Coding Agent
-- Baca `CLAUDE.md`, `MEMORY.md`, dan `DECISIONS.md` sebelum membuat perubahan
+- Baca `CLAUDE.md` dan `DECISIONS.md` sebelum membuat perubahan
 - Jangan gunakan istilah blockchain/crypto/on-chain di UI user-facing
 - Semua perubahan harus kompatibel dengan ADR yang sudah dikunci
 - Test di mobile (iPhone 12 Pro/390px, Galaxy S8+/360px) sebelum deploy — ada blok budget performa mobile di `app/globals.css`

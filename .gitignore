@@ -37,7 +37,13 @@ credentials.json
 # Historical/archived documentation (not needed in repo)
 docs/archive/
 docs/screenshots/
+docs/compose/
 sprints/
+.screenshots/
+
+# Local-only working files
+.gitconfig
+admin_page.html
 
 # Large binary files
 *.png
