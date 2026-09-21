@@ -30,6 +30,9 @@ repo, bukan pekerjaan aktif.
 - **tokenId tidak unik lintas kontrak.** Kontrak sudah di-deploy ulang beberapa kali dan
   penomoran mulai dari 1 lagi. Query kartu pakai `cardId`; kalau terpaksa pakai `tokenId`,
   scope dengan `contractAddress`.
+- **Seluruh komponen AI dimatikan lewat flag `ENABLE_AI`** (ADR-030). Default mati. Kalau
+  menambah pemakaian AI baru, bungkus dengan `isAIEnabled()` dari `lib/ai-flags.ts` dan
+  pastikan jalur utamanya tetap jalan saat flag mati.
 - **Test di lebar mobile** (360–430px) sebelum deploy. Ada blok budget performa mobile di
   `app/globals.css` — hindari menambah `backdrop-filter` atau animasi selalu-jalan di sana.
 

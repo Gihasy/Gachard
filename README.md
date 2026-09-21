@@ -9,7 +9,7 @@ Built for the **Indonesia Web3 Hackathon 2026** submission (Consumer Apps track,
 - **App**: https://www.gachard.com
 - **Demo video**: https://www.youtube.com/watch?v=DH03_a2wL40
 - **Admin Console**: https://www.gachard.com/admin (Basic Auth protected)
-- **Smart Contract**: [`0x3E1Cf18D…87d4` on BscScan Testnet](https://testnet.bscscan.com/address/0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4)
+- **Smart Contract**: [`0x3E1Cf18D…87d4` on BscScan Testnet](https://testnet.bscscan.com/address/0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4) — source verified, so the code behind every transaction is public
 
 ## For Reviewers: Try It in 5 Minutes
 
@@ -320,6 +320,7 @@ Every blockchain transaction can be verified on BscScan:
 - **Admin Wallet**: `0x3F4CBDCb5bFb014d63C07400DcD11513DB5F7b56`
 - **Chain**: BNB Testnet (Chain ID 97)
 - **Explorer**: https://testnet.bscscan.com
+- **Source**: verified on BscScan; see `contracts/VERIFICATION.md`
 
 The Admin Console (https://www.gachard.com/admin) shows:
 - Every transaction, with txHashes that link out to BscScan

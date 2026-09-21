@@ -54,16 +54,16 @@ Jika password Anda adalah `ABC123xyz`, maka connection string menjadi:
 mongodb+srv://gachard-user:ABC123xyz@gachard-cluster.xxxxx.mongodb.net/?retryWrites=true&w=majority
 ```
 
-## Langkah 6: Beri Tahu Saya
+## Langkah 6: Pasang Connection String
 
-Setelah Anda mendapatkan connection string, **beri tahu saya** dengan cara:
-1. Copy connection string lengkap (termasuk password)
-2. Paste di chat ini
+1. Salin connection string lengkap, termasuk password yang sudah diganti
+2. Isikan sebagai `MONGODB_URL` di `frontend/.env.local` untuk development
+   (lihat `frontend/.env.local.example`)
+3. Untuk produksi, isikan variabel yang sama di Environment Variables project Vercel,
+   lalu redeploy
 
-Saya akan:
-1. Update kode untuk menggunakan MongoDB Atlas
-2. Update environment variables di Vercel
-3. Redeploy frontend
+Connection string memuat kredensial database. Jangan pernah commit `.env.local`, jangan
+menempelkannya di chat, isu, atau pull request.
 
 ## Checklist
 
@@ -72,7 +72,7 @@ Saya akan:
 - [ ] Database user dibuat dengan password
 - [ ] Network access dikonfigurasi (Allow Access from Anywhere)
 - [ ] Connection string didapatkan
-- [ ] Connection string diberikan ke saya
+- [ ] `MONGODB_URL` terpasang di `.env.local` dan di Vercel
 
 ## Troubleshooting
 
@@ -114,16 +114,24 @@ Dengan MongoDB Atlas, data berikut akan tersimpan secara permanen:
 
 ## Keamanan
 
-Untuk hackathon demo, kita simpan private key di database. Untuk produksi:
-- Enkripsi private key sebelum disimpan
-- Gunakan environment variables untuk sensitive data
-- Implementasi proper authentication
+Private key wallet custodial **tidak** disimpan dalam bentuk polos. Setiap key dienkripsi
+dengan AES-256-GCM sebelum masuk MongoDB (ADR-020), memakai `ENCRYPTION_SECRET_KEY` yang
+hanya hidup di environment variable dan tidak pernah ikut tersimpan di database. Kompromi
+database saja tidak cukup untuk mendekripsinya.
 
-## Next Steps
+Yang tetap perlu dijaga saat setup:
 
-Setelah Anda memberikan connection string:
-1. Saya akan update kode Next.js API routes
-2. Ganti in-memory storage dengan MongoDB
-3. Update environment variables di Vercel
-4. Redeploy frontend
-5. Test semua endpoint
+- Batasi Network Access ke IP yang diperlukan begitu tahap development selesai. "Allow
+  Access from Anywhere" hanya pantas untuk pengembangan awal.
+- Pakai user database terpisah untuk development dan produksi.
+- `ENCRYPTION_SECRET_KEY` minimal 32 karakter dan tidak pernah dipakai ulang sebagai token
+  atau password untuk keperluan lain.
+
+## Setelah Terhubung
+
+Collection dibuat otomatis oleh aplikasi saat pertama kali dipakai, jadi tidak ada skema
+yang perlu disiapkan manual. Yang utama antara lain `users`, `cards`, `transactions`,
+`listings`, `credits`, `crystal_balances`, `card_templates`, dan `redeem_codes`.
+
+Cek koneksi lewat `GET /api/health`, yang mengembalikan `{"status":"ok","database":"connected"}`
+kalau MongoDB sudah terjangkau.

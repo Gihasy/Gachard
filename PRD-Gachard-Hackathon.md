@@ -9,7 +9,7 @@
 
 ---
 
-## 0. Amendments (per 16 September 2026)
+## 0. Amendments (per 21 September 2026)
 
 PRD ini adalah **dokumen historis "Draft 1.0"** dan sengaja tidak ditulis ulang. Beberapa
 keputusan di dalamnya sudah berubah sejak ditulis. Kalau isi PRD bertentangan dengan
@@ -21,7 +21,9 @@ keputusan di dalamnya sudah berubah sejak ditulis. Kalau isi PRD bertentangan de
 | §4, §9, §10 | Marketplace = UI placeholder "Coming Soon", di luar scope | Marketplace **fungsional**: listing, buy, cancel, FVM pricing, fee 8%, AI price suggestion (ADR-024, menggantikan ADR-010). |
 | Scope umum | — | Fitur yang belum ada saat PRD ditulis dan kini sudah dibangun: Dismantle & Crystal (ADR-026), AI Anomaly Detection Oracle (ADR-025), Become a Creator (ADR-027). |
 | Pack | "1 kartu per pembelian" | Dua tipe pack: Standard 5 kartu/500 Credit, Booster 10 kartu/800 Credit (ADR-021). |
-| AI scan | AI vision sebagai elemen AI utama | AI vision **ditunda** (ADR-022). Elemen AI yang berjalan: risk scoring anomaly detection (MiMo) dan market insight + price suggestion (Gemini). |
+| AI scan | AI vision sebagai elemen AI utama | AI vision **ditunda** (ADR-022) dan tidak dipanggil dari endpoint mana pun. Verifikasi kartu memakai QR lookup on-chain vs database. |
+| Elemen AI | AI sebagai elemen wajib track | Seluruh komponen AI **dimatikan** lewat flag `ENABLE_AI` sejak 21 September 2026 (ADR-030): risk scoring anomaly detection (MiMo) dan market insight + price suggestion (Gemini). Kodenya tetap ada dan bisa dihidupkan kembali tanpa deploy ulang. |
+| Pembayaran | Stripe untuk credit dan biaya cetak | Stripe **tidak pernah diintegrasikan**. Top up credit menulis saldo langsung ke database dan print checkout mencatat `sim_<timestamp>`, jadi seluruh pembayaran disimulasikan. Pemisahan dua jalurnya (ADR-008) tetap berlaku di level desain. |
 | Status label | "Real" | Label user-facing sekarang "Physical". Nilai di database tetap `"Real"` (tanpa migrasi data). |
 
 Selebihnya — latar belakang masalah, differentiator, model bisnis, dan alur domain inti
