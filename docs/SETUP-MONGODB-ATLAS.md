@@ -134,4 +134,5 @@ yang perlu disiapkan manual. Yang utama antara lain `users`, `cards`, `transacti
 `listings`, `credits`, `crystal_balances`, `card_templates`, dan `redeem_codes`.
 
 Cek koneksi lewat `GET /api/health`, yang mengembalikan `{"status":"ok","database":"connected"}`
-kalau MongoDB sudah terjangkau.
+kalau MongoDB sudah terjangkau. Endpoint ini berada di balik middleware sesi, jadi panggil
+dari browser yang sudah login, bukan lewat curl anonim.
