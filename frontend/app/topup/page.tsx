@@ -248,7 +248,7 @@ export default function TopUp() {
               Payment
             </p>
             <p className="text-sm text-white/70 leading-relaxed">
-              This is a demo top-up. In production, payments are settled via Stripe. Your credit balance updates instantly.
+              This is a demo top-up. No payment is processed and no card details are collected. Your credit balance updates instantly.
             </p>
           </div>
 

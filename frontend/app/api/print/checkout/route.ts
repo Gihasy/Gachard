@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     });
 
-    // Simulate Stripe checkout (for hackathon demo)
+    // Simulated payment. No gateway is integrated; the id below marks the record as simulated (ADR-008).
     const paymentRecord = {
       userId: user._id.toString(),
       tokenId,
