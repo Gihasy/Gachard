@@ -1,103 +1,103 @@
 # Gachard
 
-Platform TCG digital-native di mana brand/IP dapat menerbitkan kartu (Battle Card / Collection Card) yang bisa dibeli, dikoleksi, dicetak fisik, dan ditukar kembali ke digital — dengan blockchain yang sepenuhnya tersembunyi dari user.
+A digital-native TCG platform where brands and IP owners issue cards (Battle Card / Collection Card) that can be bought, collected, printed as physical copies, and redeemed back to digital, with the blockchain kept entirely out of the user's way.
 
-Dibangun untuk submission **Indonesia Web3 Hackathon 2026** (track Consumer Apps, BNB Chain).
+Built for the **Indonesia Web3 Hackathon 2026** submission (Consumer Apps track, BNB Chain).
 
 ## Live Demo
 
 - **App**: https://www.gachard.com
 - **Demo video**: https://www.youtube.com/watch?v=DH03_a2wL40
-- **Admin Console**: https://www.gachard.com/admin (dilindungi Basic Auth)
-- **Smart Contract**: [`0x3E1Cf18D…87d4` di BscScan Testnet](https://testnet.bscscan.com/address/0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4)
+- **Admin Console**: https://www.gachard.com/admin (Basic Auth protected)
+- **Smart Contract**: [`0x3E1Cf18D…87d4` on BscScan Testnet](https://testnet.bscscan.com/address/0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4)
 
-## Untuk Juri — Coba Sendiri dalam 5 Menit
+## For Reviewers: Try It in 5 Minutes
 
-Tidak perlu wallet, tidak perlu akun Google, tidak perlu testnet faucet.
+No wallet, no Google account, and no testnet faucet required.
 
-1. Buka https://www.gachard.com/login lalu klik **Demo Account**. Satu wallet custodial BNB
-   Testnet dibuat di server untuk Anda, tanpa seed phrase dan tanpa dialog wallet apa pun.
-2. Masuk ke **Top Up**, tambahkan credit. Pembayaran di build hackathon ini **disimulasikan**,
-   jadi tidak ada kartu kredit yang diminta.
-3. **Buy Pack** di halaman Collect. Pilih Standard (5 kartu) atau Booster (10 kartu). Satu pack
-   di-mint sebagai satu transaksi `mintBatch()` di BNB Testnet.
-4. Buka **Collection**, pilih satu kartu, lalu coba salah satu: **Dismantle** untuk membakar
-   kartu secara permanen on-chain dan menerima Crystal, atau **Sell** untuk memasangnya di
-   marketplace dengan harga berpanduan FVM.
-5. Buka **Profile → Transaction History**. Setiap transaksi punya txHash yang bisa dibuka
-   langsung ke BscScan. Di situlah bukti bahwa semua ini benar-benar on-chain, bukan basis data
-   biasa yang diberi label blockchain.
+1. Open https://www.gachard.com/login and click **Demo Account**. A custodial BNB Testnet wallet
+   is generated server-side for you, with no seed phrase and no wallet dialog.
+2. Go to **Top Up** and add credits. Payments in this hackathon build are simulated, so no card
+   details are requested.
+3. **Buy Pack** on the Collect page. Choose Standard (5 cards) or Booster (10 cards). Each pack is
+   minted as a single `mintBatch()` transaction on BNB Testnet.
+4. Open **Collection**, pick a card, then try either **Dismantle**, which burns the card
+   permanently on-chain and pays out Crystal, or **Sell**, which lists it on the marketplace at an
+   FVM-guided price.
+5. Open **Profile → Transaction History**. Every transaction carries a txHash that links straight
+   to BscScan. That is where you can confirm the state changes are genuinely on-chain rather than
+   database rows labelled as blockchain.
 
-Yang perlu diperhatikan saat mencoba: **tidak ada satu pun istilah wallet, token, gas, atau
-on-chain yang muncul di UI**. Itu disengaja dan merupakan premis produknya (ADR-002). Seluruh
-istilah teknis hanya hidup di Admin Console dan di BscScan.
+One thing worth watching while you test: the interface never uses the words wallet, token, gas or
+on-chain. That is deliberate and it is the premise of the product (ADR-002). Technical vocabulary
+appears only in the Admin Console and on BscScan.
 
 ## User Flow
 
 ```mermaid
 flowchart TD
-    A["Login: Google atau Demo Account"] --> B["Wallet custodial dibuat di server"]
+    A["Sign in with Google or Demo Account"] --> B["Custodial wallet created server-side"]
     B --> C["Top up Credit"]
-    C --> D{"Pilih pack"}
-    D -->|"Standard · 500 Credit"| E["5 kartu · 1 jaminan Rare+"]
-    D -->|"Booster · 800 Credit"| F["10 kartu · 2 jaminan Rare+"]
-    E --> G["mintBatch() · satu transaksi on-chain"]
+    C --> D{"Choose a pack"}
+    D -->|"Standard · 500 Credit"| E["5 cards · 1 guaranteed Rare+"]
+    D -->|"Booster · 800 Credit"| F["10 cards · 2 guaranteed Rare+"]
+    E --> G["mintBatch() · one on-chain transaction"]
     F --> G
     G --> H["Pack reveal"]
-    H --> I{"Mau diapakan?"}
+    H --> I{"What next?"}
 
-    I -->|"Simpan"| J["Koleksi · status Digital"]
-    I -->|"Dismantle"| K["burnCard() · kartu hangus permanen"]
-    I -->|"Cetak fisik"| L["requestPrint() · kartu terkunci di vault"]
+    I -->|"Keep"| J["Collection · status Digital"]
+    I -->|"Dismantle"| K["burnCard() · permanently destroyed"]
+    I -->|"Order print"| L["requestPrint() · card locked in vault"]
 
-    K --> M["Crystal masuk · 20 / 50 / 120 / 300 per rarity"]
-    L --> N["Admin cetak dan kirim · QR di kartu fisik"]
-    N --> O["User scan QR saat terima · status Physical"]
-    O -->|"Redeem · kartu fisik dirusak"| J
+    K --> M["Crystal credited · 20 / 50 / 120 / 300 by rarity"]
+    L --> N["Admin prints and ships · QR on the physical card"]
+    N --> O["User scans QR on delivery · status Physical"]
+    O -->|"Redeem · physical copy destroyed"| J
 
-    J --> P["Pasang di marketplace · floor 70% FVM"]
-    M --> Q["Beli kartu user lain dengan Crystal"]
+    J --> P["List on marketplace · floor at 70% of FVM"]
+    M --> Q["Buy another collector's card with Crystal"]
     P --> Q
-    Q --> R["Penjual terima 92% · fee 8% keluar dari sirkulasi"]
+    Q --> R["Seller receives 92% · the 8% fee leaves circulation"]
     R --> J
 ```
 
-## Status Fitur (jujur, per 21 September 2026)
+## Feature Status (as of 21 September 2026)
 
-| Fitur | Status |
+| Feature | Status |
 |---|---|
-| Login, wallet custodial, gas disponsori | Jalan di produksi |
-| Buy pack, mint on-chain, reveal | Jalan di produksi |
-| Print request, vault lock, claim QR, redeem | Jalan di produksi |
-| Dismantle dan Crystal | Jalan di produksi |
-| Marketplace: listing, buy, cancel, FVM floor, fee 8% | Jalan di produksi |
-| AI Anomaly Detection Oracle (MiMo, dicatat on-chain) | **Dimatikan** lewat flag `ENABLE_AI` (ADR-030) |
-| AI market insight dan price suggestion (Gemini) | **Dimatikan** lewat flag `ENABLE_AI` (ADR-030) |
-| Pembayaran (top up credit dan biaya cetak) | **Disimulasikan** — belum ada payment gateway |
-| AI vision untuk verifikasi visual kartu | **Ditunda** (ADR-022), verifikasi memakai QR lookup on-chain |
+| Sign-in, custodial wallet, sponsored gas | Live in production |
+| Buy pack, on-chain mint, reveal | Live in production |
+| Print request, vault lock, claim QR, redeem | Live in production |
+| Dismantle and Crystal | Live in production |
+| Marketplace: listing, buy, cancel, FVM floor, 8% fee | Live in production |
+| AI Anomaly Detection Oracle (MiMo, recorded on-chain) | Disabled via the `ENABLE_AI` flag (ADR-030) |
+| AI market insight and price suggestion (Gemini) | Disabled via the `ENABLE_AI` flag (ADR-030) |
+| Payments (credit top-up and print fees) | Simulated; no payment gateway integrated |
+| AI vision for visual card verification | Deferred (ADR-022); verification uses on-chain QR lookup |
 
-## Fitur Utama
+## Features
 
 ### Core Loop
-- **Login** — Google OAuth + demo account (custodial wallet, tersembunyi dari user)
-- **Buy Pack** — Standard (5 kartu / 500 Credit, 1 jaminan Rare+) atau Booster (10 kartu / 800 Credit, 2 jaminan Rare+)
-- **Collect** — Kartu NFT di-mint ke blockchain, disimpan di collection user
-- **Print** — Cetak kartu fisik (+$14.99 shipping), kartu terkunci di vault
-- **Claim Shipping** — User scan QR code saat terima kartu fisik → status "Physical"
-- **Redeem** — Masukkan Card ID + Redeem Code dari kartu fisik → kembali ke digital
+- **Sign in** — Google OAuth and demo accounts, each with a custodial wallet hidden from the user
+- **Buy Pack** — Standard (5 cards / 500 Credit, 1 guaranteed Rare+) or Booster (10 cards / 800 Credit, 2 guaranteed Rare+)
+- **Collect** — Cards are minted on-chain and stored in the user's collection
+- **Print** — Order a physical copy (+$14.99 shipping); the card is locked in the vault
+- **Claim Shipping** — The user scans the QR code on delivery and the card shows as "Physical"
+- **Redeem** — Enter the Card ID and Redeem Code from the physical copy to return it to digital
 
-### Fitur Lainnya
-- **Scan & Verify** — Scan QR code untuk verifikasi keaslian kartu
-- **Credit System** — Top up credit untuk beli pack
-- **Transaction History** — Riwayat semua transaksi di Profile page
-- **Unique Card ID** — Setiap kartu punya ID hex unik (e.g. `#8a866`)
-- **Invoice ID** — Setiap transaksi punya Invoice ID (e.g. `GC-20260730-a3f1`)
-- **Admin Console** — Manage users, transactions, cards, print requests
-- **Trade Marketplace** — Jual beli kartu antar user dengan Crystal, harga dipandu FVM (Fair Value Market), fee 8%
-- **Dismantle & Crystal** — Burn kartu untuk mendapatkan Crystal currency
-- **AI Anomaly Detection** — Deteksi wash-trading pada marketplace, hasilnya dicatat on-chain (Oracle). Saat ini dimatikan lewat flag `ENABLE_AI` (ADR-030); kodenya tetap ada dan bisa dihidupkan tanpa deploy ulang
-- **Become a Creator** — Form whitelist untuk IP owner di `/creators`
-- **Support Gachard** — Floating CTA button untuk early supporters
+### Additional Features
+- **Scan & Verify** — Scan a QR code to verify a card's authenticity
+- **Credit System** — Top up credits to buy packs
+- **Transaction History** — Every transaction listed on the Profile page
+- **Unique Card ID** — Each card carries a unique hex ID (e.g. `#8a866`)
+- **Invoice ID** — Each transaction carries an invoice ID (e.g. `GC-20260730-a3f1`)
+- **Admin Console** — Manage users, transactions, cards and print requests
+- **Trade Marketplace** — Peer-to-peer trading priced in Crystal, guided by FVM (Fair Value Market), with an 8% fee
+- **Dismantle & Crystal** — Burn a card to earn Crystal
+- **AI Anomaly Detection** — Wash-trading detection on the marketplace, with verdicts recorded on-chain. Currently disabled via the `ENABLE_AI` flag (ADR-030); the code remains in place and can be re-enabled without a redeploy
+- **Become a Creator** — Whitelist form for IP owners at `/creators`
+- **Support Gachard** — Floating CTA for early supporters
 
 ## Quick Start
 
@@ -113,7 +113,7 @@ npm install
 npm run dev
 ```
 
-Backend berjalan lewat Next.js API routes (`app/api/`) — tidak ada service terpisah.
+The backend runs as Next.js API routes (`app/api/`). There is no separate service.
 
 ### Smart Contracts (Foundry)
 ```bash
@@ -124,7 +124,7 @@ forge test
 ```
 
 ### Environment Variables
-Lihat `frontend/.env.local.example`.
+See `frontend/.env.local.example`.
 
 ## Stack
 
@@ -136,22 +136,22 @@ Lihat `frontend/.env.local.example`.
 | Blockchain | BNB Chain Testnet, BEP-1155 |
 | Smart Contracts | Solidity 0.8.24, Foundry, OpenZeppelin v5 |
 | Wallet | Custodial (ethers.js v6), sponsored gas |
-| Auth | Google OAuth + demo accounts |
-| Payment | Disimulasikan (belum ada integrasi Stripe sungguhan) |
-| AI | MiMo V2.5 Pro (risk scoring), Gemini API (market insight + price suggestion) — **nonaktif**, lihat ADR-030 |
-| Hosting | Vercel (frontend + backend), Vercel Edge |
+| Auth | Google OAuth and demo accounts |
+| Payment | Simulated; no payment gateway integrated |
+| AI | MiMo V2.5 Pro (risk scoring), Gemini API (market insight and price suggestion) — currently disabled, see ADR-030 |
+| Hosting | Vercel (frontend and backend), Vercel Edge |
 
 ## Architecture
 
 ### System Overview
 
-Satu service Next.js menangani frontend dan backend sekaligus (ADR-017). Blockchain, AI,
-dan database semuanya diakses dari API routes — tidak pernah dari browser, sehingga wallet
-custodial dan private key tidak pernah menyentuh client.
+A single Next.js service handles both frontend and backend (ADR-017). The blockchain, the AI
+providers and the database are reached only from API routes, never from the browser, so custodial
+wallets and private keys never touch the client.
 
 ```mermaid
 flowchart LR
-    U["User<br/>PWA di browser"]
+    U["User<br/>PWA in the browser"]
     N["Next.js 16 App Router<br/>pages + API routes"]
     DB[("MongoDB Atlas<br/>cards · transactions<br/>listings · crystal")]
     BC["GachardCard.sol<br/>BEP-1155 · BNB Testnet"]
@@ -160,7 +160,7 @@ flowchart LR
 
     U -->|"cookie session"| N
     N --> DB
-    N -->|"ethers v6<br/>gas disponsori platform"| BC
+    N -->|"ethers v6<br/>platform-sponsored gas"| BC
     N --> G
     N --> MM
 
@@ -174,42 +174,43 @@ flowchart LR
 
 ### Card Lifecycle
 
-Inti produknya: satu kartu, satu token ID, seumur hidupnya. Cetak fisik **mengunci** kartu di
-vault — bukan burn-and-remint — sehingga provenance tidak pernah terputus (ADR-004).
+The heart of the product: one card, one token ID, for its entire life. Printing **locks** the card
+in the vault rather than burning and re-minting it, so provenance is never broken (ADR-004).
 
 ```mermaid
 stateDiagram-v2
     state "In Progress" as InProgress
 
     [*] --> Processing: Buy pack · mintBatch()
-    Processing --> Digital: receipt terkonfirmasi
+    Processing --> Digital: receipt confirmed
 
     Digital --> Digital: Trade · marketplaceTransfer()
 
     Digital --> InProgress: Request print · requestPrint()
-    InProgress --> Shipping: admin menandai Printed lalu Shipping
-    Shipping --> Physical: user scan QR klaim
+    InProgress --> Shipping: admin marks Printed then Shipping
+    Shipping --> Physical: user scans the claim QR
     Physical --> Digital: Redeem · redeemCard()
 
     Digital --> Burned: Dismantle · burnCard()
     Burned --> [*]
 ```
 
-Catatan:
+Notes:
 
-- **Trade** memindahkan kepemilikan tanpa mengubah status — kartu tetap `Digital`.
-- **In Progress** memayungi tiga tahap fulfillment internal: `Locked` → `Processing` → `Printed`.
-  Saat `requestPrint()`, NFT benar-benar berpindah ke alamat kontrak (vault) dan transfer diblokir.
-- **Physical** berarti kartu fisik sudah di tangan user. Redeem mengembalikannya ke digital dengan
-  syarat kartu fisiknya dirusak permanen.
-- **Burned** adalah status terminal — token dihancurkan on-chain, tapi record-nya tetap disimpan
-  supaya riwayatnya masih bisa ditelusuri lewat Scan (ADR-026, ADR-028).
+- **Trade** moves ownership without changing status; the card stays `Digital`.
+- **In Progress** covers three internal fulfilment stages: `Locked` → `Processing` → `Printed`.
+  On `requestPrint()` the token really moves to the contract address (the vault) and ordinary
+  transfers are blocked.
+- **Physical** means the printed card is in the user's hands. Redeeming returns it to digital, on
+  the condition that the physical copy is permanently destroyed.
+- **Burned** is terminal. The token is destroyed on-chain while the record is retained, so the
+  card's history remains traceable through Scan (ADR-026, ADR-028).
 
-### Pola Async untuk Transaksi Blockchain
+### Async Pattern for Blockchain Transactions
 
-Endpoint tidak pernah menunggu receipt on-chain, karena batas waktu function Vercel akan
-memotongnya di tengah jalan dan membuat refund ter-skip. Semua POST langsung mengembalikan
-`pending`, lalu frontend polling (ADR-018).
+Endpoints never wait for an on-chain receipt, because the Vercel function timeout would cut them
+off mid-flight and skip the refund path. Every POST returns `pending` immediately and the frontend
+polls for confirmation (ADR-018).
 
 ```mermaid
 sequenceDiagram
@@ -220,39 +221,39 @@ sequenceDiagram
 
     U->>API: POST /api/mint
     API->>BC: submit mintBatch()
-    BC-->>API: txHash (belum terkonfirmasi)
-    API->>DB: simpan card status "pending"
+    BC-->>API: txHash (not yet confirmed)
+    API->>DB: store card as "pending"
     API-->>U: { status: "pending", invoiceId }
 
-    loop polling sampai selesai
+    loop poll until settled
         U->>API: GET /api/transactions
         API->>BC: getTransactionReceipt(txHash)
-        alt receipt siap
-            BC-->>API: receipt sukses
+        alt receipt ready
+            BC-->>API: receipt succeeded
             API->>DB: card "Digital" + tokenId
             API-->>U: { status: "Success" }
-        else belum siap
+        else not ready
             API-->>U: { status: "Processing" }
         end
     end
 ```
 
 ### Key Design Decisions
-- **ADR-002**: Wallet custodial, tersembunyi dari user
-- **ADR-003**: Gas fee disponsori platform
-- **ADR-004**: Lock in-place via status flag (bukan burn)
-- **ADR-017**: Next.js API routes sebagai satu-satunya backend
-- **ADR-018**: Async pattern untuk transaksi blockchain
-- **ADR-020**: AES-256-GCM encryption untuk private key
-- **ADR-024**: Marketplace fungsional (trade system)
+- **ADR-002**: Custodial wallet, hidden from the user
+- **ADR-003**: Gas fees sponsored by the platform
+- **ADR-004**: Lock in place via status flag, not burn and re-mint
+- **ADR-017**: Next.js API routes as the only backend
+- **ADR-018**: Async pattern for blockchain transactions
+- **ADR-020**: AES-256-GCM encryption for private keys
+- **ADR-024**: Functional marketplace (trade system)
 - **ADR-025**: AI Anomaly Detection Oracle
-- **ADR-030**: Seluruh komponen AI dimatikan lewat flag `ENABLE_AI`
 - **ADR-026**: Dismantle & Crystal (burn-to-earn)
 - **ADR-027**: Become a Creator (whitelist form)
-- **ADR-028**: Status terminal kartu — klaim atomik + guard anti-timpa
-- **ADR-029**: Tool development pindah ke Claude Code
+- **ADR-028**: Terminal card status — atomic claim and anti-overwrite guard
+- **ADR-029**: Development tooling moved to Claude Code
+- **ADR-030**: All AI components disabled behind the `ENABLE_AI` flag
 
-Lihat `DECISIONS.md` untuk semua ADR (001–030).
+See `DECISIONS.md` for the full set (ADR-001 to ADR-030).
 
 ### Project Structure
 ```
@@ -267,7 +268,7 @@ Gachard/
 ├── docs/              # Documentation
 │   └── 00-project-overview.md
 ├── CLAUDE.md          # Contributor rules & invariants
-├── DECISIONS.md       # Architecture decisions (ADR-001 s/d ADR-030)
+├── DECISIONS.md       # Architecture decisions (ADR-001 to ADR-030)
 ├── PRD-Gachard-Hackathon.md  # Product Requirements Document
 └── vercel.json        # Vercel deployment config
 ```
@@ -275,64 +276,66 @@ Gachard/
 ## Deployment
 
 ### Vercel
-1. Push ke `main` branch → auto-deploy
+1. Push to `main` to trigger an auto-deploy
 2. Settings:
    - Framework Preset: Next.js
    - Root Directory: `frontend`
-3. Environment Variables:
+3. Environment variables:
    - `MONGODB_URL` — MongoDB Atlas connection string
    - `DATABASE_NAME` — gachard
    - `GOOGLE_CLIENT_ID` — Google OAuth Client ID
    - `GOOGLE_CLIENT_SECRET` — Google OAuth Client Secret
-   - `CONTRACT_ADDRESS` — Smart contract address
-   - `ADMIN_WALLET_ADDRESS` — Admin wallet address
-   - `ADMIN_PRIVATE_KEY` — Admin wallet private key
+   - `ENABLE_DEMO_LOGIN` — set to `true` to expose the demo account button
+   - `CONTRACT_ADDRESS` — smart contract address
+   - `NEXT_PUBLIC_CONTRACT_ADDRESS` — contract address for client-side use
+   - `ADMIN_WALLET_ADDRESS` — admin wallet address
+   - `ADMIN_PRIVATE_KEY` — admin wallet private key
    - `BSC_TESTNET_RPC` — BNB Testnet RPC URL
-   - `ENCRYPTION_SECRET_KEY` — AES-256-GCM key (min 32 chars)
-   - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — Admin console credentials
    - `CHAIN_ID` — 97 (BNB Testnet)
-   - `NEXT_PUBLIC_CONTRACT_ADDRESS` — Contract address untuk client-side
-   - `GEMINI_API_KEY` — Market insight + price suggestion
+   - `ENCRYPTION_SECRET_KEY` — AES-256-GCM key (32 characters minimum)
+   - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — Admin Console credentials
+   - `ENABLE_AI` — master switch for every AI component; off unless set to `true` (ADR-030)
+   - `GEMINI_API_KEY` — market insight and price suggestion
    - `MIMO_API_KEY` / `MIMO_BASE_URL` — AI risk scoring (anomaly detection)
 
 ### Database Scripts
 ```bash
-# Clean slate (hapus semua data testing)
+# Clean slate (removes all test data)
 cd frontend && npx tsx scripts/clean-slate.ts
 ```
 
 ## Development Workflow
-1. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci (ADR-001 s/d ADR-030)
-2. Baca `docs/00-project-overview.md` — problem, solution, scope
-3. Baca `CLAUDE.md` — invarian yang gampang dilanggar
-4. Baca `PRD-Gachard-Hackathon.md` — PRD lengkap (historis; lihat blok Amendments)
-5. Jangan menyimpang dari `DECISIONS.md` tanpa mencatat ADR baru
+1. Read `DECISIONS.md` for the architecture decisions already locked in (ADR-001 to ADR-030)
+2. Read `docs/00-project-overview.md` for problem, solution and scope
+3. Read `CLAUDE.md` for the invariants that are easy to break
+4. Read `PRD-Gachard-Hackathon.md` for the full PRD (historical; see the Amendments block)
+5. Do not deviate from `DECISIONS.md` without recording a new ADR
 
-Sprint 1–6 sudah selesai; catatan sprint dan laporan sesi disimpan di luar repo.
-Tool development saat ini: **Claude Code** (ADR-029).
+Sprints 1 to 6 are complete; sprint notes and session reports are kept outside this repository.
+Current development tooling: **Claude Code** (ADR-029).
 
 ## Blockchain Verification
-Semua transaksi blockchain dapat diverifikasi di BSCScan:
-- **Smart Contract**: `0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4` (AI Anomaly Detection Oracle)
+Every blockchain transaction can be verified on BscScan:
+- **Smart Contract**: `0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4` (includes the anomaly detection oracle)
 - **Admin Wallet**: `0x3F4CBDCb5bFb014d63C07400DcD11513DB5F7b56`
 - **Chain**: BNB Testnet (Chain ID 97)
 - **Explorer**: https://testnet.bscscan.com
 
-Admin Console (https://www.gachard.com/admin) menampilkan:
-- Semua transaksi dengan txHash yang bisa diklik ke BSCScan
-- Wallet address setiap user
-- Token ID setiap kartu di blockchain
-- Risk score dari AI anomaly detection
+The Admin Console (https://www.gachard.com/admin) shows:
+- Every transaction, with txHashes that link out to BscScan
+- Each user's wallet address
+- Each card's on-chain token ID
+- Risk scores from anomaly detection, for trades scored while `ENABLE_AI` was on
 
-## Catatan untuk AI Coding Agent
-- Baca `CLAUDE.md` dan `DECISIONS.md` sebelum membuat perubahan
-- Jangan gunakan istilah blockchain/crypto/on-chain di UI user-facing
-- Semua perubahan harus kompatibel dengan ADR yang sudah dikunci
-- Test di mobile (iPhone 12 Pro/390px, Galaxy S8+/360px) sebelum deploy — ada blok budget performa mobile di `app/globals.css`
-- Gunakan `getAuthenticatedUser(req)` untuk semua API routes (server-side session)
-- Semua transaksi blockchain menggunakan pola async (ADR-018)
-- Rekonsiliasi tidak boleh menimpa status terminal seperti `Burned` (ADR-028)
-- `tokenId` tidak unik lintas kontrak — query kartu pakai `cardId`
+## Notes for AI Coding Agents
+- Read `CLAUDE.md` and `DECISIONS.md` before making any change
+- Never use blockchain, crypto or on-chain vocabulary in user-facing UI
+- Every change must stay compatible with the ADRs already locked in
+- Test on mobile (iPhone 12 Pro / 390px, Galaxy S8+ / 360px) before deploying; there is a mobile performance budget block in `app/globals.css`
+- Use `getAuthenticatedUser(req)` in every API route for server-side sessions
+- All blockchain transactions follow the async pattern (ADR-018)
+- Reconciliation must never overwrite a terminal status such as `Burned` (ADR-028)
+- `tokenId` is not unique across contract deployments; query cards by `cardId`
 
 ## License
 Private — Indonesia Web3 Hackathon 2026 submission.
