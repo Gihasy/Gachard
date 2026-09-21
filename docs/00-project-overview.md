@@ -18,4 +18,4 @@ Lihat PRD lengkap (`PRD-Gachard-Hackathon.md`) §9 untuk detail Scope IN/OUT. Ri
 ## Track & Chain
 **Track**: Consumer Apps — Indonesia Web3 Hackathon 2026 (kolaborasi Binance Academy, BNB Chain, Coinvestasi, Dev Web3 Jogja).
 **Chain**: BNB Chain Testnet / opBNB Testnet.
-**Elemen AI**: AI Anomaly Detection Oracle untuk mendeteksi wash-trading di marketplace, hasilnya dicatat on-chain (ADR-025), plus market insight dan price suggestion (Gemini). AI vision untuk scan kartu **ditunda** dan tidak dipakai di endpoint mana pun (ADR-022) — verifikasi kartu saat ini murni QR lookup on-chain vs database.
+**Elemen AI**: seluruh komponen AI saat ini **dimatikan** lewat flag `ENABLE_AI` (ADR-030) atas keputusan pemilik project. Kodenya tetap ada dan bisa dihidupkan kembali tanpa deploy ulang: AI Anomaly Detection Oracle untuk wash-trading dengan hasil dicatat on-chain (ADR-025), serta market insight dan price suggestion (Gemini, ADR-024). AI vision untuk scan kartu terpisah dan sudah lebih dulu ditunda (ADR-022) — verifikasi kartu memakai QR lookup on-chain vs database.

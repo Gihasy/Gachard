@@ -233,6 +233,17 @@ Total 6 kartu rusak dari 168 transaksi dismantle. **Seluruh 6 kartu itu di-disma
 
 **Catatan metode (16 September 2026)**: saat 6 kartu rusak itu dilaporkan, sempat disimpulkan bahwa guard "tidak cukup" dan ada balapan tulis yang masih hidup. Kesimpulan itu **salah** — dibangun dari asumsi bahwa kartu-kartu tersebut di-dismantle setelah guard ter-deploy, tanpa memverifikasi timestamp-nya lebih dulu. Setelah dicek, dismantle terjadi 14 menit sebelum guard di-commit. Pelajaran: bandingkan timestamp data dengan waktu deploy SEBELUM menyimpulkan sebuah perbaikan gagal.
 
+## ADR-030: Seluruh Komponen AI Dimatikan lewat Flag `ENABLE_AI`
+**Status**: Accepted — 21 September 2026
+**Decision**: Seluruh komponen AI dinonaktifkan dan hanya menyala kalau environment variable `ENABLE_AI` bernilai persis `"true"`. Default-nya **mati**. Switch-nya ada di `lib/ai-flags.ts` (`isAIEnabled()`), dipakai di tiga titik:
+- `POST /api/marketplace/listings/[id]/buy` — blok `after()` yang menjalankan `calculateTradeSignals()`, `calculateRiskScore()`, dan `recordVerification()` dilewati seluruhnya (mematikan ADR-025 secara operasional).
+- `GET /api/marketplace/insight` — membalas `200 { insight: null, disabled: true }`, bukan 500.
+- `GET /api/marketplace/suggest` — membalas `200 { suggestion: null, disabled: true }`.
+**Konsekuensi yang disengaja**: trade tetap berjalan penuh, hanya tanpa skor. Tidak ada transaksi yang di-flag, jadi **seluruh trade ikut dihitung dalam FVM** dan perlindungan anti wash-trading di ADR-025 tidak aktif. Tidak ada penulisan ke oracle on-chain. UI menyembunyikan panel insight dan saran harga sendiri karena keduanya sudah menangani nilai null.
+**Reason**: Keputusan produk pemilik project. Balasan 200 dipilih daripada 500 supaya fitur yang dimatikan tidak terlihat seperti fitur rusak.
+**Catatan penting**: ADR-024 dan ADR-025 **tidak dicabut**. Kode AI-nya tetap utuh di repo dan bisa dihidupkan kembali hanya dengan menyetel `ENABLE_AI=true`, tanpa deploy ulang kode. ADR ini mengatur status operasional, bukan menghapus keputusan arsitekturnya.
+**Risiko yang sudah disampaikan ke pemilik project**: "AI x Web3" adalah tema wajib di semua track Indonesia Web3 Hackathon 2026. Dengan flag mati, submission tidak memiliki komponen AI yang berjalan.
+
 ## ADR-029: Tool Development — Pindah dari MiMoCode ke Claude Code
 **Status**: Accepted — melanjutkan ADR-015
 **Decision**: Sejak September 2026 development dilanjutkan memakai **Claude Code**, bukan MiMoCode. `CLAUDE.md` di root menjadi adapter instruksi yang aktif; `MEMORY.md` dan `DECISIONS.md` tetap jadi dokumen inti yang tool-agnostic dan wajib dibaca di awal sesi.

@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { suggestListingPrice } from "@/lib/market-insight";
+import { isAIEnabled } from "@/lib/ai-flags";
 
 export async function GET(req: NextRequest) {
+  // AI dimatikan (ADR-030): suggestion null, UI menyembunyikan panel saran harga.
+  if (!isAIEnabled()) {
+    return NextResponse.json({ suggestion: null, disabled: true });
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const templateId = searchParams.get("templateId");

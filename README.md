@@ -59,7 +59,6 @@ flowchart TD
     M --> Q["Beli kartu user lain dengan Crystal"]
     P --> Q
     Q --> R["Penjual terima 92% · fee 8% keluar dari sirkulasi"]
-    Q --> S["Trade di-scoring AI · hasil dicatat on-chain"]
     R --> J
 ```
 
@@ -72,8 +71,8 @@ flowchart TD
 | Print request, vault lock, claim QR, redeem | Jalan di produksi |
 | Dismantle dan Crystal | Jalan di produksi |
 | Marketplace: listing, buy, cancel, FVM floor, fee 8% | Jalan di produksi |
-| AI Anomaly Detection Oracle (MiMo, dicatat on-chain) | Jalan di produksi |
-| AI market insight dan price suggestion (Gemini) | **Mati sementara** — Gemini API belum diaktifkan di GCP project |
+| AI Anomaly Detection Oracle (MiMo, dicatat on-chain) | **Dimatikan** lewat flag `ENABLE_AI` (ADR-030) |
+| AI market insight dan price suggestion (Gemini) | **Dimatikan** lewat flag `ENABLE_AI` (ADR-030) |
 | Pembayaran (top up credit dan biaya cetak) | **Disimulasikan** — belum ada payment gateway |
 | AI vision untuk verifikasi visual kartu | **Ditunda** (ADR-022), verifikasi memakai QR lookup on-chain |
 
@@ -96,7 +95,7 @@ flowchart TD
 - **Admin Console** — Manage users, transactions, cards, print requests
 - **Trade Marketplace** — Jual beli kartu antar user dengan Crystal, harga dipandu FVM (Fair Value Market), fee 8%
 - **Dismantle & Crystal** — Burn kartu untuk mendapatkan Crystal currency
-- **AI Anomaly Detection** — Deteksi wash-trading pada marketplace, hasilnya dicatat on-chain (Oracle)
+- **AI Anomaly Detection** — Deteksi wash-trading pada marketplace, hasilnya dicatat on-chain (Oracle). Saat ini dimatikan lewat flag `ENABLE_AI` (ADR-030); kodenya tetap ada dan bisa dihidupkan tanpa deploy ulang
 - **Become a Creator** — Form whitelist untuk IP owner di `/creators`
 - **Support Gachard** — Floating CTA button untuk early supporters
 
@@ -139,7 +138,7 @@ Lihat `frontend/.env.local.example`.
 | Wallet | Custodial (ethers.js v6), sponsored gas |
 | Auth | Google OAuth + demo accounts |
 | Payment | Disimulasikan (belum ada integrasi Stripe sungguhan) |
-| AI | MiMo V2.5 Pro (risk scoring), Gemini API (market insight + price suggestion) |
+| AI | MiMo V2.5 Pro (risk scoring), Gemini API (market insight + price suggestion) — **nonaktif**, lihat ADR-030 |
 | Hosting | Vercel (frontend + backend), Vercel Edge |
 
 ## Architecture
@@ -247,12 +246,13 @@ sequenceDiagram
 - **ADR-020**: AES-256-GCM encryption untuk private key
 - **ADR-024**: Marketplace fungsional (trade system)
 - **ADR-025**: AI Anomaly Detection Oracle
+- **ADR-030**: Seluruh komponen AI dimatikan lewat flag `ENABLE_AI`
 - **ADR-026**: Dismantle & Crystal (burn-to-earn)
 - **ADR-027**: Become a Creator (whitelist form)
 - **ADR-028**: Status terminal kartu — klaim atomik + guard anti-timpa
 - **ADR-029**: Tool development pindah ke Claude Code
 
-Lihat `DECISIONS.md` untuk semua ADR (001–029).
+Lihat `DECISIONS.md` untuk semua ADR (001–030).
 
 ### Project Structure
 ```
@@ -267,7 +267,7 @@ Gachard/
 ├── docs/              # Documentation
 │   └── 00-project-overview.md
 ├── CLAUDE.md          # Contributor rules & invariants
-├── DECISIONS.md       # Architecture decisions (ADR-001 s/d ADR-029)
+├── DECISIONS.md       # Architecture decisions (ADR-001 s/d ADR-030)
 ├── PRD-Gachard-Hackathon.md  # Product Requirements Document
 └── vercel.json        # Vercel deployment config
 ```
@@ -302,7 +302,7 @@ cd frontend && npx tsx scripts/clean-slate.ts
 ```
 
 ## Development Workflow
-1. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci (ADR-001 s/d ADR-029)
+1. Baca `DECISIONS.md` — keputusan arsitektur yang sudah dikunci (ADR-001 s/d ADR-030)
 2. Baca `docs/00-project-overview.md` — problem, solution, scope
 3. Baca `CLAUDE.md` — invarian yang gampang dilanggar
 4. Baca `PRD-Gachard-Hackathon.md` — PRD lengkap (historis; lihat blok Amendments)
