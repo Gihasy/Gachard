@@ -41,6 +41,7 @@
 **Status**: Accepted
 **Decision**: **Credit** (top-up nominal bebas via Stripe test-mode satu kali, disimpan sebagai integer/sen di database, dipakai khusus untuk beli pack) dipisah total dari **Direct Payment** (Stripe test-mode per transaksi, wajib untuk request print, tidak bisa memakai credit).
 **Reason**: Request print punya biaya nyata (cetak + kirim) yang sengaja dipisahkan dari ekonomi virtual pack. Mengurangi integrasi Stripe berulang untuk setiap pembelian pack.
+**Keadaan implementasi (dicatat 21 September 2026)**: pemisahan dua jalurnya sudah berjalan, tetapi **Stripe belum pernah diintegrasikan**. Tidak ada dependency `stripe` di `frontend/package.json`. `POST /api/credits/topup` menambah saldo langsung di database, dan `POST /api/print/checkout` mencatat `stripePaymentId: "sim_<timestamp>"`. Jadi seluruh pembayaran saat ini **disimulasikan**. Jangan mengklaim integrasi Stripe di materi submission atau pitch sampai dependency dan webhook-nya benar-benar ada.
 
 ## ADR-009: Odds/Rarity — Disimpan di Backend, Bukan On-chain
 **Status**: Accepted

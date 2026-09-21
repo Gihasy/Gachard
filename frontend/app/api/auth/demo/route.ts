@@ -8,8 +8,9 @@ import { createSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/lib/
  * Demo / sandbox account.
  *
  * Creates a fresh custodial-wallet user in MongoDB (real BNB Testnet wallet,
- * generated server-side) and grants starter credits so anyone can try every
- * gated page + on-chain function WITHOUT Google OAuth. The wallet address and
+ * generated server-side) so anyone can try every gated page and on-chain
+ * function WITHOUT Google OAuth. Credits start at zero and are topped up in
+ * app; top-up is simulated, so it costs nothing. The wallet address and
  * any blockchain data are never shown to the user — they are only visible in
  * the Admin console. Each account gets a sequential handle @DemoN.
  *

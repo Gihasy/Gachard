@@ -13,9 +13,9 @@ Berbeda dengan platform seperti Courtyard yang men-tokenisasi kartu fisik yang s
 End-user pembeli/kolektor kartu (rencana beta fokus Amerika Serikat; versi hackathon: demo umum). User tidak perlu tahu istilah wallet, gas fee, atau NFT — semua tersembunyi di balik UX seperti aplikasi konsumen biasa.
 
 ## Scope (Hackathon)
-Lihat PRD lengkap (`PRD-Gachard-Hackathon.md`) §9 untuk detail Scope IN/OUT. Ringkasnya: login + wallet custodial, mint pack, vault/print/redeem loop, AI scan (QR + vision), sistem credit dual-track, marketplace fungsional (trade + FVM + AI price suggestion), dismantle & crystal (burn-to-earn).
+Lihat PRD lengkap (`PRD-Gachard-Hackathon.md`) §9 untuk detail Scope IN/OUT. Ringkasnya: login + wallet custodial, mint pack (Standard 5 kartu / Booster 10 kartu), vault/print/redeem loop, scan & verify berbasis QR lookup on-chain, sistem credit (pembayaran disimulasikan, belum ada payment gateway sungguhan), marketplace fungsional dengan currency Crystal (trade + FVM floor 70% + fee 8%), dismantle & crystal (burn-to-earn), dan AI anomaly detection oracle untuk trade.
 
 ## Track & Chain
 **Track**: Consumer Apps — Indonesia Web3 Hackathon 2026 (kolaborasi Binance Academy, BNB Chain, Coinvestasi, Dev Web3 Jogja).
 **Chain**: BNB Chain Testnet / opBNB Testnet.
-**Elemen AI**: fitur AI-scan (QR lookup + vision model) untuk memenuhi tema wajib "AI x Web3" di semua track.
+**Elemen AI**: AI Anomaly Detection Oracle untuk mendeteksi wash-trading di marketplace, hasilnya dicatat on-chain (ADR-025), plus market insight dan price suggestion (Gemini). AI vision untuk scan kartu **ditunda** dan tidak dipakai di endpoint mana pun (ADR-022) — verifikasi kartu saat ini murni QR lookup on-chain vs database.

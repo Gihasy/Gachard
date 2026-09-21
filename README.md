@@ -7,7 +7,75 @@ Dibangun untuk submission **Indonesia Web3 Hackathon 2026** (track Consumer Apps
 ## Live Demo
 
 - **App**: https://www.gachard.com
-- **Admin Console**: https://www.gachard.com/admin
+- **Demo video**: https://www.youtube.com/watch?v=DH03_a2wL40
+- **Admin Console**: https://www.gachard.com/admin (dilindungi Basic Auth)
+- **Smart Contract**: [`0x3E1Cf18D…87d4` di BscScan Testnet](https://testnet.bscscan.com/address/0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4)
+
+## Untuk Juri — Coba Sendiri dalam 5 Menit
+
+Tidak perlu wallet, tidak perlu akun Google, tidak perlu testnet faucet.
+
+1. Buka https://www.gachard.com/login lalu klik **Demo Account**. Satu wallet custodial BNB
+   Testnet dibuat di server untuk Anda, tanpa seed phrase dan tanpa dialog wallet apa pun.
+2. Masuk ke **Top Up**, tambahkan credit. Pembayaran di build hackathon ini **disimulasikan**,
+   jadi tidak ada kartu kredit yang diminta.
+3. **Buy Pack** di halaman Collect. Pilih Standard (5 kartu) atau Booster (10 kartu). Satu pack
+   di-mint sebagai satu transaksi `mintBatch()` di BNB Testnet.
+4. Buka **Collection**, pilih satu kartu, lalu coba salah satu: **Dismantle** untuk membakar
+   kartu secara permanen on-chain dan menerima Crystal, atau **Sell** untuk memasangnya di
+   marketplace dengan harga berpanduan FVM.
+5. Buka **Profile → Transaction History**. Setiap transaksi punya txHash yang bisa dibuka
+   langsung ke BscScan. Di situlah bukti bahwa semua ini benar-benar on-chain, bukan basis data
+   biasa yang diberi label blockchain.
+
+Yang perlu diperhatikan saat mencoba: **tidak ada satu pun istilah wallet, token, gas, atau
+on-chain yang muncul di UI**. Itu disengaja dan merupakan premis produknya (ADR-002). Seluruh
+istilah teknis hanya hidup di Admin Console dan di BscScan.
+
+## User Flow
+
+```mermaid
+flowchart TD
+    A["Login: Google atau Demo Account"] --> B["Wallet custodial dibuat di server"]
+    B --> C["Top up Credit"]
+    C --> D{"Pilih pack"}
+    D -->|"Standard · 500 Credit"| E["5 kartu · 1 jaminan Rare+"]
+    D -->|"Booster · 800 Credit"| F["10 kartu · 2 jaminan Rare+"]
+    E --> G["mintBatch() · satu transaksi on-chain"]
+    F --> G
+    G --> H["Pack reveal"]
+    H --> I{"Mau diapakan?"}
+
+    I -->|"Simpan"| J["Koleksi · status Digital"]
+    I -->|"Dismantle"| K["burnCard() · kartu hangus permanen"]
+    I -->|"Cetak fisik"| L["requestPrint() · kartu terkunci di vault"]
+
+    K --> M["Crystal masuk · 20 / 50 / 120 / 300 per rarity"]
+    L --> N["Admin cetak dan kirim · QR di kartu fisik"]
+    N --> O["User scan QR saat terima · status Physical"]
+    O -->|"Redeem · kartu fisik dirusak"| J
+
+    J --> P["Pasang di marketplace · floor 70% FVM"]
+    M --> Q["Beli kartu user lain dengan Crystal"]
+    P --> Q
+    Q --> R["Penjual terima 92% · fee 8% keluar dari sirkulasi"]
+    Q --> S["Trade di-scoring AI · hasil dicatat on-chain"]
+    R --> J
+```
+
+## Status Fitur (jujur, per 21 September 2026)
+
+| Fitur | Status |
+|---|---|
+| Login, wallet custodial, gas disponsori | Jalan di produksi |
+| Buy pack, mint on-chain, reveal | Jalan di produksi |
+| Print request, vault lock, claim QR, redeem | Jalan di produksi |
+| Dismantle dan Crystal | Jalan di produksi |
+| Marketplace: listing, buy, cancel, FVM floor, fee 8% | Jalan di produksi |
+| AI Anomaly Detection Oracle (MiMo, dicatat on-chain) | Jalan di produksi |
+| AI market insight dan price suggestion (Gemini) | **Mati sementara** — Gemini API belum diaktifkan di GCP project |
+| Pembayaran (top up credit dan biaya cetak) | **Disimulasikan** — belum ada payment gateway |
+| AI vision untuk verifikasi visual kartu | **Ditunda** (ADR-022), verifikasi memakai QR lookup on-chain |
 
 ## Fitur Utama
 
@@ -120,7 +188,7 @@ stateDiagram-v2
     Digital --> Digital: Trade · marketplaceTransfer()
 
     Digital --> InProgress: Request print · requestPrint()
-    InProgress --> Shipping: admin: Printed lalu Shipping
+    InProgress --> Shipping: admin menandai Printed lalu Shipping
     Shipping --> Physical: user scan QR klaim
     Physical --> Digital: Redeem · redeemCard()
 
