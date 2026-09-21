@@ -4,7 +4,7 @@
 # This script verifies the contract using the BSCScan API
 
 CONTRACT_ADDRESS="0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4"
-API_KEY="VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K"
+API_KEY="${BSCSCAN_API_KEY:?Set BSCSCAN_API_KEY before running this script. Never hardcode the key: this file is committed to a public repository.}"
 
 echo "=========================================="
 echo "BSCScan API Contract Verification"

@@ -6,7 +6,7 @@
 
 CONTRACT_ADDRESS="0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4"
 COMPILER_VERSION="v0.8.24+commit.e11b9ed9"
-API_KEY="VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K"
+API_KEY="${BSCSCAN_API_KEY:?Set BSCSCAN_API_KEY before running this script. Never hardcode the key: this file is committed to a public repository.}"
 CHAIN_ID="97"
 
 echo "=========================================="

@@ -73,7 +73,7 @@ curl -X POST 'https://api-testnet.bscscan.com/api' \
   --data-urlencode 'optimizationUsed=1' \
   --data-urlencode 'runs=200' \
   --data-urlencode 'licenseType=3' \
-  --data-urlencode 'apikey=VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K'
+  --data-urlencode 'apikey=$BSCSCAN_API_KEY'
 ```
 
 ### Method 3: Foundry (If Installed)
@@ -86,7 +86,7 @@ forge verify-contract \
   --optimizer-runs 200 \
   0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4 \
   src/GachardCard.sol:GachardCard \
-  --etherscan-api-key VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K
+  --etherscan-api-key $BSCSCAN_API_KEY
 ```
 
 ## After Verification

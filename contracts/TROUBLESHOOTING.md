@@ -94,7 +94,7 @@ forge verify-contract \
   --optimizer-runs 200 \
   0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4 \
   src/GachardCard.sol:GachardCard \
-  --etherscan-api-key VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K
+  --etherscan-api-key $BSCSCAN_API_KEY
 
 # If that fails, try with different optimization
 forge verify-contract \
@@ -103,7 +103,7 @@ forge verify-contract \
   --optimizer-runs 1000 \
   0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4 \
   src/GachardCard.sol:GachardCard \
-  --etherscan-api-key VVJZYE57SQPKNV6BWHBSXQK6N64MBRG33K
+  --etherscan-api-key $BSCSCAN_API_KEY
 ```
 
 ### Alternative: Verify with Standard Input JSON
