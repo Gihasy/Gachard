@@ -132,8 +132,9 @@ Kartu non-jaminan mengikuti odds table normal; slot jaminan (Rare/Epic/Legendary
 **Supersedes**: Referensi lama yang menyebut "1 kartu per pembelian" dan "pack 8 kartu".
 
 ## ADR-022: AI Vision (Gemini) — Ditunda, Bukan Dihapus
-**Status**: DITUNDA — kode `lib/vision.ts` tetap ada di repo, tapi tidak dipanggil dari endpoint mana pun.
-**Decision**: AI Vision (Google Gemini) untuk analisis visual kartu di-DEFER dari scope hackathon saat ini. Kode referensi tetap di `lib/vision.ts` untuk dipakai ulang nanti. Semua verifikasi kartu saat ini mengandalkan QR-lookup on-chain vs MongoDB match (cache-based, tanpa elemen vision).
+**Status**: DITUNDA — kodenya sudah tidak ada di repo.
+**Decision**: AI Vision (Google Gemini) untuk analisis visual kartu di-DEFER dari scope hackathon saat ini.
+**Koreksi (21 September 2026)**: versi awal ADR ini menyatakan kode referensi tetap disimpan di `lib/vision.ts`. File itu ternyata sudah terhapus pada commit `c0c97b0`, jadi tidak ada kode vision yang tersisa di repo. Kalau fitur ini dihidupkan lagi, implementasinya ditulis dari nol atau diambil dari riwayat git. Semua verifikasi kartu saat ini mengandalkan QR-lookup on-chain vs MongoDB match (cache-based, tanpa elemen vision).
 **Alasan penundaan**: Prioritas dialihkan ke stabilisasi fitur inti dan branding terlebih dahulu, dengan timeline project yang lebih panjang dari perkiraan awal.
 **WAJIB dikerjakan kembali sebelum deadline submission final**, karena ini syarat kelayakan tema hackathon "AI x Web3" yang wajib di semua track — bukan fitur opsional yang boleh hilang dari submission akhir.
 **Target revisit**: 2-3 minggu sebelum deadline submission final (tanggal pasti perlu ditentukan user).
