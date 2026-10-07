@@ -110,8 +110,16 @@ export default function CardItem({
     setFormError(null);
   };
 
-  const handleClaimScan = async (scannedClaimId: string) => {
+  const handleClaimScan = async (scanned: string) => {
     setShowClaimScanner(false);
+    // QRScanner mengirim isi QR apa adanya. QR klaim berisi URL
+    // `/scan?claimId=…`, jadi ambil claimId-nya dulu sebelum dibandingkan.
+    let scannedClaimId = scanned.trim();
+    try {
+      scannedClaimId = new URL(scannedClaimId).searchParams.get("claimId") ?? scannedClaimId;
+    } catch {
+      // Bukan URL — anggap isinya claimId mentah
+    }
     if (scannedClaimId !== claimId) {
       setClaimError("QR code does not match this card. Please scan the correct Claim Shipping QR.");
       return;

@@ -92,6 +92,12 @@ function ScanContent() {
             router.push(`/scan?cardId=${cid}`);
             return;
           }
+          // QR klaim pengiriman berisi `/scan?claimId=…`
+          const claim = url.searchParams.get("claimId");
+          if (claim) {
+            router.push(`/scan?claimId=${claim}`);
+            return;
+          }
         }
       } catch {
         // Not a URL, continue with hex check
