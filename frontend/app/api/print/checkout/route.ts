@@ -6,10 +6,10 @@ const PRINT_PRICE_CENTS = 1499; // $14.99 Print + Shipping (flat rate)
 
 export async function POST(request: Request) {
   try {
-    const { tokenId, shippingAddress } = await request.json();
+    const { cardId, shippingAddress } = await request.json();
 
-    if (tokenId === undefined) {
-      return NextResponse.json({ error: "tokenId required" }, { status: 400 });
+    if (typeof cardId !== "string" || !cardId) {
+      return NextResponse.json({ error: "cardId required" }, { status: 400 });
     }
 
     // Validate shipping address
@@ -23,9 +23,10 @@ export async function POST(request: Request) {
     }
     const userId = user._id.toString();
 
-    // Verify card ownership
+    // Verify card ownership. Lookup by cardId: tokenId is not unique across
+    // contract deployments.
     const cardsCollection = await getCollection("cards");
-    const card = await cardsCollection.findOne({ tokenId });
+    const card = await cardsCollection.findOne({ cardId: cardId.toLowerCase() });
     if (!card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
@@ -37,7 +38,8 @@ export async function POST(request: Request) {
     const shippingCollection = await getCollection("shipping_addresses");
     await shippingCollection.insertOne({
       userId: user._id.toString(),
-      tokenId,
+      cardId: card.cardId,
+      tokenId: card.tokenId,
       recipientName: shippingAddress.recipientName,
       addressLine1: shippingAddress.addressLine1,
       addressLine2: shippingAddress.addressLine2 || "",
@@ -50,7 +52,8 @@ export async function POST(request: Request) {
     // Simulated payment. No gateway is integrated; the id below marks the record as simulated (ADR-008).
     const paymentRecord = {
       userId: user._id.toString(),
-      tokenId,
+      cardId: card.cardId,
+      tokenId: card.tokenId,
       amountCents: PRINT_PRICE_CENTS,
       currency: "usd",
       status: "succeeded",

@@ -11,7 +11,10 @@ export const maxDuration = 15;
 
 export async function POST(request: Request) {
   try {
-    const { tokenId } = await request.json();
+    const { cardId } = await request.json();
+    if (typeof cardId !== "string" || !cardId) {
+      return NextResponse.json({ error: "cardId required" }, { status: 400 });
+    }
 
     const user = await getAuthenticatedUser(request);
     if (!user) {
@@ -19,9 +22,10 @@ export async function POST(request: Request) {
     }
     const userId = user._id.toString();
 
-    // Verify card ownership — user hanya bisa print kartu milik sendiri
+    // Verify card ownership — user hanya bisa print kartu milik sendiri.
+    // Cari lewat cardId: tokenId tidak unik lintas deploy kontrak.
     const cardsCollection = await getCollection("cards");
-    const card = await cardsCollection.findOne({ tokenId });
+    const card = await cardsCollection.findOne({ cardId: cardId.toLowerCase() });
     if (!card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
@@ -39,6 +43,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Card has been dismantled and cannot be printed." }, { status: 400 });
     }
 
+    const tokenId: number = card.tokenId;
+
     // Generate redeem code (plaintext TIDAK pernah ke frontend atau on-chain)
     const code = generateRedeemCode();
     const hash = hashRedeemCode(code);
@@ -52,6 +58,7 @@ export async function POST(request: Request) {
     const result = await txCollection.insertOne({
       userId: user._id.toString(),
       type: "print",
+      cardId: card.cardId,
       tokenId,
       tokenIds: [tokenId],
       rarity: card.rarity ?? 0,
@@ -70,6 +77,7 @@ export async function POST(request: Request) {
     const codesCollection = await getCollection("redeem_codes");
     await Promise.all([
       codesCollection.insertOne({
+        cardId: card.cardId,
         tokenId,
         txId: result.insertedId.toString(),
         codeEncrypted: encrypt(code),
@@ -77,7 +85,7 @@ export async function POST(request: Request) {
         createdAt: new Date().toISOString(),
       }),
       cardsCollection.updateOne(
-        { tokenId },
+        { cardId: card.cardId },
         {
           $set: {
             status: "Vaulted",

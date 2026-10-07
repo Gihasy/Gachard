@@ -11,7 +11,7 @@ export const maxDuration = 15;
 
 export async function POST(request: Request) {
   try {
-    const { cardId, tokenId, code } = await request.json();
+    const { cardId, code } = await request.json();
 
     const user = await getAuthenticatedUser(request);
     if (!user) {
@@ -19,14 +19,12 @@ export async function POST(request: Request) {
     }
     const userId = user._id.toString();
 
-    // Find card by cardId or tokenId
+    // Find card by cardId only — tokenId is not unique across contract deployments
     const cardsCollection = await getCollection("cards");
-    let card = null;
-    if (cardId) {
-      card = await cardsCollection.findOne({ cardId: cardId.toLowerCase() });
-    } else if (tokenId) {
-      card = await cardsCollection.findOne({ tokenId });
-    }
+    const card =
+      typeof cardId === "string" && cardId
+        ? await cardsCollection.findOne({ cardId: cardId.toLowerCase() })
+        : null;
     if (!card) {
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }

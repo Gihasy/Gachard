@@ -140,7 +140,7 @@ export default function CardItem({
   };
 
   const handleRequestPrint = async () => {
-    if (!tokenId) return;
+    if (!tokenId || !cardId) return;
     if (!isFormValid) {
       setFormError("Please fill in all required fields.");
       return;
@@ -156,7 +156,7 @@ export default function CardItem({
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          tokenId,
+          cardId,
           shippingAddress: {
             recipientName: form.recipientName.trim(),
             addressLine1: form.addressLine1.trim(),
@@ -178,7 +178,7 @@ export default function CardItem({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ tokenId, paymentId: checkoutData.paymentId }),
+        body: JSON.stringify({ cardId, paymentId: checkoutData.paymentId }),
       });
       const printData = await printRes.json();
       if (printRes.ok) {
