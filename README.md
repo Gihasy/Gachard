@@ -8,7 +8,7 @@ Built for the **Indonesia Web3 Hackathon 2026** submission (Consumer Apps track,
 
 - **App**: https://www.gachard.com
 - **Demo video**: https://www.youtube.com/watch?v=DH03_a2wL40
-- **Admin Console**: https://www.gachard.com/admin (Basic Auth protected)
+- **Admin Console**: https://www.gachard.com/admin (public, no login required, so judges can inspect on-chain activity; ADR-032)
 - **Smart Contract**: [`0x3E1Cf18D…87d4` on BscScan Testnet](https://testnet.bscscan.com/address/0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4) — source verified, so the code behind every transaction is public
 
 ## For Reviewers: Try It in 5 Minutes
@@ -254,7 +254,7 @@ sequenceDiagram
 - **ADR-029**: Development tooling moved to Claude Code
 - **ADR-030**: All AI components disabled behind the `ENABLE_AI` flag
 
-See `DECISIONS.md` for the full set (ADR-001 to ADR-031).
+See `DECISIONS.md` for the full set (ADR-001 to ADR-032).
 
 ### Project Structure
 ```
@@ -269,7 +269,7 @@ Gachard/
 ├── docs/              # Documentation
 │   └── 00-project-overview.md
 ├── CLAUDE.md          # Contributor rules & invariants
-├── DECISIONS.md       # Architecture decisions (ADR-001 to ADR-031)
+├── DECISIONS.md       # Architecture decisions (ADR-001 to ADR-032)
 ├── PRD-Gachard-Hackathon.md  # Product Requirements Document
 └── vercel.json        # Vercel deployment config
 ```
@@ -294,7 +294,7 @@ Gachard/
    - `BSC_TESTNET_RPC` — BNB Testnet RPC URL
    - `CHAIN_ID` — 97 (BNB Testnet)
    - `ENCRYPTION_SECRET_KEY` — AES-256-GCM key (32 characters minimum)
-   - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — Admin Console credentials
+   - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — Basic Auth for the destructive `clean-slate` endpoint only
    - `ENABLE_AI` — master switch for every AI component; off unless set to `true` (ADR-030)
    - `GEMINI_API_KEY` — market insight and price suggestion
    - `MIMO_API_KEY` / `MIMO_BASE_URL` — AI risk scoring (anomaly detection)
@@ -306,7 +306,7 @@ cd frontend && npx tsx scripts/clean-slate.ts
 ```
 
 ## Development Workflow
-1. Read `DECISIONS.md` for the architecture decisions already locked in (ADR-001 to ADR-031)
+1. Read `DECISIONS.md` for the architecture decisions already locked in (ADR-001 to ADR-032)
 2. Read `docs/00-project-overview.md` for problem, solution and scope
 3. Read `CLAUDE.md` for the invariants that are easy to break
 4. Read `PRD-Gachard-Hackathon.md` for the full PRD (historical; see the Amendments block)

@@ -265,3 +265,14 @@ Total 6 kartu rusak dari 168 transaksi dismantle. **Seluruh 6 kartu itu di-disma
 - Transaksi `print` di MongoDB masih mencatat `toAddress: "vault"` sebagai penanda event, bukan alamat tujuan. Scan menampilkannya sebagai "Print lock", bukan "Gachard Vault", supaya riwayat tidak mengklaim kartu berpindah tangan ke Gachard.
 - Transaksi `redeem` baru mencatat `fromAddress` = pemilik sebelumnya (`card.ownerAddress`), sesuai transfer on-chain yang sebenarnya. Baris lama dengan `fromAddress: "vault"` dibiarkan dan ikut tampil sebagai "Print lock".
 - Label "Your Vault" di halaman Collection tidak terdampak — itu metafora koleksi, bukan klaim custody.
+
+## ADR-032: Admin Console Sengaja Terbuka untuk Publik
+**Status**: Accepted — 8 Oktober 2026, mencatat keputusan yang sudah berjalan sejak commit `9f56c68`
+**Decision**: `/admin` dan seluruh `/api/admin/*` dapat diakses tanpa login. Middleware meloloskan kedua prefix itu tanpa pemeriksaan. Satu-satunya pengecualian adalah `POST /api/admin/clean-slate`, yang tetap memeriksa Basic Auth (`ADMIN_USERNAME`/`ADMIN_PASSWORD`) di dalam handler-nya.
+**Reason**: Keputusan pemilik project, supaya juri hackathon bisa memeriksa langsung bukti integrasi blockchain (txHash, tokenId, link BscScan, status kartu) tanpa perlu kredensial.
+**Risiko yang diterima** (sudah disampaikan ke pemilik project, 8 Oktober 2026):
+- `GET /api/admin/print-requests` mengembalikan kode redeem dalam bentuk plaintext. Siapa pun yang membacanya bisa me-redeem kartu fisik milik user lain. Ini membuat jaminan ADR-005 ("plaintext tidak pernah ditampilkan") tidak berlaku selama admin terbuka.
+- Data pribadi ikut terbuka: email dan wallet user, nama penerima, alamat, dan nomor telepon pengiriman.
+- Endpoint yang mengubah data juga terbuka: `fulfillment`, `confirm-all`, `fix-*`, dan `fix-index` (drop index database).
+**Alternatif yang ditawarkan dan ditolak**: (a) memasang kembali Basic Auth untuk seluruh admin; (b) admin tetap publik tetapi hanya-baca, dengan email/telepon disamarkan, kode redeem dan alamat disembunyikan, dan semua endpoint POST dikunci.
+**Kapan ditinjau ulang**: setelah penjurian hackathon selesai, atau sebelum ada pengguna sungguhan di luar demo — mana yang lebih dulu.
