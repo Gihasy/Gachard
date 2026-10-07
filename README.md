@@ -48,7 +48,7 @@ flowchart TD
 
     I -->|"Keep"| J["Collection · status Digital"]
     I -->|"Dismantle"| K["burnCard() · permanently destroyed"]
-    I -->|"Order print"| L["requestPrint() · card locked in vault"]
+    I -->|"Order print"| L["requestPrint() · card locked in place"]
 
     K --> M["Crystal credited · 20 / 50 / 120 / 300 by rarity"]
     L --> N["Admin prints and ships · QR on the physical card"]
@@ -82,7 +82,7 @@ flowchart TD
 - **Sign in** — Google OAuth and demo accounts, each with a custodial wallet hidden from the user
 - **Buy Pack** — Standard (5 cards / 500 Credit, 1 guaranteed Rare+) or Booster (10 cards / 800 Credit, 2 guaranteed Rare+)
 - **Collect** — Cards are minted on-chain and stored in the user's collection
-- **Print** — Order a physical copy (+$14.99 shipping); the card is locked in the vault
+- **Print** — Order a physical copy (+$14.99 shipping); the card is locked in place and cannot be traded until redeemed
 - **Claim Shipping** — The user scans the QR code on delivery and the card shows as "Physical"
 - **Redeem** — Enter the Card ID and Redeem Code from the physical copy to return it to digital
 
@@ -174,8 +174,8 @@ flowchart LR
 
 ### Card Lifecycle
 
-The heart of the product: one card, one token ID, for its entire life. Printing **locks** the card
-in the vault rather than burning and re-minting it, so provenance is never broken (ADR-004).
+The heart of the product: one card, one token ID, for its entire life. Printing **locks** the card in place
+rather than burning and re-minting it, so provenance is never broken (ADR-004).
 
 ```mermaid
 stateDiagram-v2
@@ -199,8 +199,9 @@ Notes:
 
 - **Trade** moves ownership without changing status; the card stays `Digital`.
 - **In Progress** covers three internal fulfilment stages: `Locked` → `Processing` → `Printed`.
-  On `requestPrint()` the token really moves to the contract address (the vault) and ordinary
-  transfers are blocked.
+  On `requestPrint()` the token stays in the owner's wallet; its status flips to `Vaulted` and
+  the contract rejects every transfer or burn until it is redeemed (ADR-031). "Vault" is a lock
+  state, not an address that holds the card.
 - **Physical** means the printed card is in the user's hands. Redeeming returns it to digital, on
   the condition that the physical copy is permanently destroyed.
 - **Burned** is terminal. The token is destroyed on-chain while the record is retained, so the
@@ -253,7 +254,7 @@ sequenceDiagram
 - **ADR-029**: Development tooling moved to Claude Code
 - **ADR-030**: All AI components disabled behind the `ENABLE_AI` flag
 
-See `DECISIONS.md` for the full set (ADR-001 to ADR-030).
+See `DECISIONS.md` for the full set (ADR-001 to ADR-031).
 
 ### Project Structure
 ```
@@ -268,7 +269,7 @@ Gachard/
 ├── docs/              # Documentation
 │   └── 00-project-overview.md
 ├── CLAUDE.md          # Contributor rules & invariants
-├── DECISIONS.md       # Architecture decisions (ADR-001 to ADR-030)
+├── DECISIONS.md       # Architecture decisions (ADR-001 to ADR-031)
 ├── PRD-Gachard-Hackathon.md  # Product Requirements Document
 └── vercel.json        # Vercel deployment config
 ```
@@ -305,7 +306,7 @@ cd frontend && npx tsx scripts/clean-slate.ts
 ```
 
 ## Development Workflow
-1. Read `DECISIONS.md` for the architecture decisions already locked in (ADR-001 to ADR-030)
+1. Read `DECISIONS.md` for the architecture decisions already locked in (ADR-001 to ADR-031)
 2. Read `docs/00-project-overview.md` for problem, solution and scope
 3. Read `CLAUDE.md` for the invariants that are easy to break
 4. Read `PRD-Gachard-Hackathon.md` for the full PRD (historical; see the Amendments block)

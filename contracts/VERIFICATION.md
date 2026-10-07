@@ -15,7 +15,7 @@ public, so anyone can audit the code and replay the state transitions the app cl
 1. **BEP-1155 multi-token** — one unique token ID per card (ADR-001)
 2. **Card status machine** — `Digital` → `Vaulted` → `Digital`, enforced in `_update()`
 3. **Minting** — `mintCard()` and `mintBatch()`, one transaction per pack
-4. **Print and redeem** — `requestPrint()` moves the token into the vault, `redeemCard()` releases it
+4. **Print and redeem** — `requestPrint()` locks the token in place (status `Vaulted`, it stays in the owner's wallet), `redeemCard()` unlocks it and transfers it to the redeemer (ADR-031)
 5. **Marketplace** — `marketplaceTransfer()`
 6. **Burn** — `burnCard()`, used by the dismantle feature
 7. **Verification oracle** — `recordVerification()` stores a trade's risk score on-chain

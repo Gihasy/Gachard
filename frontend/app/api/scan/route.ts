@@ -144,13 +144,16 @@ export async function GET(request: Request) {
           "0xf7ded49eb412f69520c38c3f7e36523d71428dea",
           "0x869e4d60819c6c09f672a04bda0bbaddd924215e",
         ].filter(Boolean);
+        // "vault" adalah penanda event print/redeem, bukan alamat: token tetap di
+        // wallet pemilik selama Vaulted (ADR-031), jadi jangan ditampilkan seolah
+        // kartu berpindah ke Gachard.
         return {
           invoiceId: generateInvoiceId(tx._id.toString()),
           type: tx.type,
           status: friendlyTxStatus(tx.status),
           price: tx.amount || null,
-          from: cleanFrom === "vault" ? "Gachard Vault" : ADMIN_WALLETS.includes(cleanFrom) ? "Gachard" : addressToUsername.get(cleanFrom) || tx.fromAddress?.trim().replace(/^"|"$/g, ''),
-          to: cleanTo === "vault" ? "Gachard Vault" : ADMIN_WALLETS.includes(cleanTo) ? "Gachard" : addressToUsername.get(cleanTo) || tx.toAddress?.trim().replace(/^"|"$/g, ''),
+          from: cleanFrom === "vault" ? "Print lock" : ADMIN_WALLETS.includes(cleanFrom) ? "Gachard" : addressToUsername.get(cleanFrom) || tx.fromAddress?.trim().replace(/^"|"$/g, ''),
+          to: cleanTo === "vault" ? "Print lock" : ADMIN_WALLETS.includes(cleanTo) ? "Gachard" : addressToUsername.get(cleanTo) || tx.toAddress?.trim().replace(/^"|"$/g, ''),
           timestamp: tx.createdAt,
         };
       }),

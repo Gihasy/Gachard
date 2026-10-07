@@ -86,7 +86,9 @@ export async function POST(request: Request) {
       txHash,
       status: "pending",
       contractAddress,
-      fromAddress: "vault",
+      // On-chain, redeemCard() memindahkan token dari pemilik sebelumnya, bukan dari
+      // kontrak — kartu tidak pernah dipegang vault (ADR-031).
+      fromAddress: card.ownerAddress || "vault",
       toAddress: user.walletAddress,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

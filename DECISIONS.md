@@ -17,8 +17,8 @@
 **Known limitation**: satu wallet admin/relayer menjadi titik sentralisasi — perlu multi-sig atau custodian pihak ketiga di tahap produksi.
 
 ## ADR-004: State Machine Kartu — Lock In-Place via Status Flag, Bukan Burn
-**Status**: Accepted (diklarifikasi 28 Juli 2026)
-**Decision**: NFT tidak pernah di-burn saat print. Status berubah `Digital → Vaulted` (transfer ke alamat vault, transfer normal ditolak selama status ini) `→ Digital` (redeem, transfer ke pemilik baru). **Klarifikasi on-chain**: Deployed contract `requestPrint()` melakukan `_update(ownerAddress, address(this))` yang memindahkan NFT ke vault (contract address). `_update()` override memblokir transfer biasa saat `cardStatus == Vaulted`. NFT secara on-chain pindah ke contract saat vault, bukan tetap di wallet user.
+**Status**: Accepted — mekanisme lock dikoreksi oleh ADR-031
+**Decision**: NFT tidak pernah di-burn saat print. Status berubah `Digital → Vaulted` (transfer normal ditolak selama status ini) `→ Digital` (redeem, transfer ke pemilik baru). Token **tetap di wallet pemilik** selama `Vaulted`; yang mengunci adalah status flag + `_update()` override, bukan perpindahan ke alamat vault. Lihat ADR-031 — "klarifikasi" 28 Juli 2026 yang sebelumnya tertulis di sini menggambarkan kontrak lama dan sudah tidak berlaku.
 **Reason**: Riwayat/provenance tetap utuh dalam satu token ID, lebih sederhana untuk fitur AI-scan provenance, dan lebih intuitif untuk narasi produk ("dikunci", bukan "dihancurkan").
 **Verified**: 28 Juli 2026 — `safeTransferFrom` pada token Vaulted (tokenId 46) REVERT dengan pesan "Card is vaulted, transfer blocked". Token Digital (tokenId 45) bisa ditransfer normal.
 
@@ -252,3 +252,16 @@ Total 6 kartu rusak dari 168 transaksi dismantle. **Seluruh 6 kartu itu di-disma
 **Konsekuensi**:
 - `.mimo/config.md` dan `.mimocode/` menjadi artefak historis, bukan konfigurasi aktif.
 - ADR-016 (soal file mana yang auto-load di MiMoCode) tetap berlaku sebagai catatan sejarah, tapi tidak lagi menggambarkan setup yang berjalan.
+
+## ADR-031: Vault adalah Status Lock, Bukan Alamat Custody
+**Status**: Accepted — 7 Oktober 2026, mengoreksi klarifikasi di ADR-004
+**Decision**: "Vault" di Gachard adalah **status** (`cardStatus == Vaulted`), bukan tempat penyimpanan. `requestPrint()` hanya mengubah status dan menyimpan hash redeem; token **tetap di wallet pemilik**. Kuncinya adalah override `_update()` yang me-revert setiap transfer (termasuk burn) selama status `Vaulted`. `redeemCard()` mengembalikan status ke `Digital` lalu memindahkan token dari `lastOwner` ke penerima. Kontrak tidak pernah memegang kartu.
+**Bukti**:
+- Source: `contracts/src/GachardCard.sol`, `requestPrint()` — tidak ada `_update()` ke `address(this)`.
+- On-chain (7 Oktober 2026), kontrak `0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4`: token 154 berstatus `Vaulted`, `balanceOf(lastOwner, 154) = 1`, `balanceOf(contract, 154) = 0`.
+**Bagaimana dokumentasi menyimpang**: versi awal kontrak memang memindahkan token ke `address(this)` saat print dan mengambilnya kembali saat redeem. Commit `026c37c` (28 Juli 2026) menghapus kedua transfer itu dan beralih ke lock di tempat. Di hari yang sama ADR-004 "diklarifikasi" berdasarkan hasil uji pada kontrak lama yang masih ter-deploy (tokenId 46/47), sehingga ADR mencatat perilaku yang baru saja dihapus dari source. Klaim itu lalu menyebar ke README, `contracts/VERIFICATION.md`, dan overview. Kontrak yang ter-deploy sekarang (yang punya `burnCard` dan `recordVerification`) jauh lebih baru dari `026c37c`, jadi seluruhnya memakai model lock di tempat.
+**Reason**: Kode dan perilaku on-chain dipertahankan, dokumen yang dikoreksi. Lock di tempat lebih sederhana (redeem tidak perlu jalur keluar dari kontrak), sudah ter-deploy, dan memberi jaminan yang sama: kartu yang sedang dicetak tidak bisa dipindah, dijual, atau di-burn. Provenance tetap utuh dalam satu tokenId (inti ADR-004 tidak berubah).
+**Konsekuensi**:
+- Transaksi `print` di MongoDB masih mencatat `toAddress: "vault"` sebagai penanda event, bukan alamat tujuan. Scan menampilkannya sebagai "Print lock", bukan "Gachard Vault", supaya riwayat tidak mengklaim kartu berpindah tangan ke Gachard.
+- Transaksi `redeem` baru mencatat `fromAddress` = pemilik sebelumnya (`card.ownerAddress`), sesuai transfer on-chain yang sebenarnya. Baris lama dengan `fromAddress: "vault"` dibiarkan dan ikut tampil sebagai "Print lock".
+- Label "Your Vault" di halaman Collection tidak terdampak — itu metafora koleksi, bukan klaim custody.

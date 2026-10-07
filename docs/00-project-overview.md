@@ -4,7 +4,7 @@
 Kolektor kartu fisik menghadapi grading otentikasi yang mahal dan tidak pasti hasilnya (mis. PSA), sementara kartu digital sulit dibuktikan keasliannya dan riwayat kepemilikannya.
 
 ## Solution
-Gachard adalah platform di mana brand/IP (via licensee atau invite) menerbitkan kartu TCG digital-native (Battle Card / Collection Card). User membeli card pack, reveal kartu (tercatat sebagai NFT tersembunyi di balik UX aplikasi biasa), bisa meminta cetak fisik (kartu terkunci di Vault Gachard, bukan di-burn), dan redeem kembali ke digital dengan merusak kartu fisik secara permanen.
+Gachard adalah platform di mana brand/IP (via licensee atau invite) menerbitkan kartu TCG digital-native (Battle Card / Collection Card). User membeli card pack, reveal kartu (tercatat sebagai NFT tersembunyi di balik UX aplikasi biasa), bisa meminta cetak fisik (kartu dikunci di tempat lewat status Vaulted — tetap milik user, tidak bisa dipindah, bukan di-burn; ADR-031), dan redeem kembali ke digital dengan merusak kartu fisik secara permanen.
 
 ## Differentiator
 Berbeda dengan platform seperti Courtyard yang men-tokenisasi kartu fisik yang sudah ada, Gachard menciptakan kartu digital-native sejak lahir — dengan mekanisme lock-vault-redeem yang menjaga riwayat/provenance dalam satu token ID, bukan burn-and-remint.

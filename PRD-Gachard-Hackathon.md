@@ -9,7 +9,7 @@
 
 ---
 
-## 0. Amendments (per 21 September 2026)
+## 0. Amendments (per 7 Oktober 2026)
 
 PRD ini adalah **dokumen historis "Draft 1.0"** dan sengaja tidak ditulis ulang. Beberapa
 keputusan di dalamnya sudah berubah sejak ditulis. Kalau isi PRD bertentangan dengan
@@ -24,6 +24,7 @@ keputusan di dalamnya sudah berubah sejak ditulis. Kalau isi PRD bertentangan de
 | AI scan | AI vision sebagai elemen AI utama | AI vision **ditunda** (ADR-022) dan tidak dipanggil dari endpoint mana pun. Verifikasi kartu memakai QR lookup on-chain vs database. |
 | Elemen AI | AI sebagai elemen wajib track | Seluruh komponen AI **dimatikan** lewat flag `ENABLE_AI` sejak 21 September 2026 (ADR-030): risk scoring anomaly detection (MiMo) dan market insight + price suggestion (Gemini). Kodenya tetap ada dan bisa dihidupkan kembali tanpa deploy ulang. |
 | Pembayaran | Stripe untuk credit dan biaya cetak | Stripe **tidak pernah diintegrasikan**. Top up credit menulis saldo langsung ke database dan print checkout mencatat `sim_<timestamp>`, jadi seluruh pembayaran disimulasikan. Pemisahan dua jalurnya (ADR-008) tetap berlaku di level desain. |
+| §5 Request Print / Redeem | NFT berpindah ke alamat vault Gachard saat print, lalu dari vault ke wallet pemanggil saat redeem | Token **tetap di wallet pemilik**; "vault" adalah status lock (`Vaulted`) yang ditegakkan `_update()`, bukan alamat penyimpanan. Redeem memindahkan token dari pemilik sebelumnya ke pemanggil (ADR-031). |
 | Status label | "Real" | Label user-facing sekarang "Physical". Nilai di database tetap `"Real"` (tanpa migrasi data). |
 
 Selebihnya — latar belakang masalah, differentiator, model bisnis, dan alur domain inti
