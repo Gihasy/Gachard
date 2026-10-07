@@ -164,10 +164,15 @@ export default function Profil() {
         });
         setRedeemCardId("");
         setRedeemCode("");
-        fetch("/api/cards", { credentials: "include" })
-          .then((r) => r.json())
-          .then((d: { cards?: Card[] }) => setCards(d.cards ?? []))
-          .catch(() => {});
+        // Redeem dikonfirmasi lewat rekonsiliasi di /api/cards (ADR-018), jadi
+        // muat ulang sekali lagi setelah blok berikutnya kemungkinan sudah masuk.
+        const refreshCards = () =>
+          fetch("/api/cards", { credentials: "include" })
+            .then((r) => r.json())
+            .then((d: { cards?: Card[] }) => setCards(d.cards ?? []))
+            .catch(() => {});
+        refreshCards();
+        setTimeout(refreshCards, 5000);
       } else {
         setRedeemMessage({ text: data.error || "Redeem failed", ok: false });
       }
