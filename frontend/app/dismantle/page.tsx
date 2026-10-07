@@ -175,7 +175,7 @@ export default function DismantlePage() {
           <span className="text-gradient-aurora">Dismantle</span> Cards
         </>
       }
-      description="Select cards to permanently destroy them on the blockchain and receive Crystal."
+      description="Select cards to permanently destroy them and receive Crystal. This cannot be undone."
     >
       {/* Crystal balance + back link */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">

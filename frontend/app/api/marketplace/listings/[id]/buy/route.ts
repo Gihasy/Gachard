@@ -72,7 +72,7 @@ export async function POST(
       await getCollection("listings").then((c) =>
         c.updateOne({ listingId: id }, { $set: { status: "active" }, $unset: { buyerId: "", soldAt: "" } })
       );
-      return NextResponse.json({ error: "Blockchain transfer failed. Crystal refunded." }, { status: 500 });
+      return NextResponse.json({ error: "Purchase could not be completed. Your Crystal has been refunded." }, { status: 500 });
     }
 
     // Wait for receipt (async pattern — ADR-018)

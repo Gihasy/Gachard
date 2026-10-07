@@ -83,13 +83,13 @@ export default function TopUp() {
   return (
     <PageShell
       testId="topup-page"
-      eyebrow="Credit Wallet"
+      eyebrow="Credit Balance"
       title={
         <>
           Top up <span className="text-gradient-gold">credit</span>
         </>
       }
-      description="Instant top-ups. Credits are used to buy card packs, request prints, and settle trades."
+      description="Instant top-ups. Credits are used to buy card packs."
     >
       <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] max-w-5xl mx-auto lg:mx-0">
         {/* Left: presets + CTA */}
