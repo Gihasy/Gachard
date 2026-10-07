@@ -96,11 +96,11 @@ export async function POST(request: Request) {
       ),
     ]);
 
-    // Return with redeem code for frontend to display
+    // Kode redeem TIDAK ikut dikirim (ADR-005): admin mengambilnya terenkripsi
+    // lewat /api/admin/print-requests untuk dicetak di kartu fisik.
     return NextResponse.json({
       status: "Processing",
       txId: generateInvoiceId(result.insertedId.toString()),
-      redeemCode: code, // Show to user, will be printed on physical card
     });
   } catch (error) {
     console.error("Print error:", error);
