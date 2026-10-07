@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Fragment, useEffect, useState, useCallback } from "react";
 import PageShell from "@/components/PageShell";
+import {
+  FilterBar, applySort, byDate, byNumber, byText, initialFilter, matchesQuery, sel, toOptions,
+  type Comparator, type FilterState,
+} from "./filter-bar";
 
 type AdminUser = {
   id: string;
@@ -43,6 +47,7 @@ type AdminCard = {
   ownerAddress: string;
   ownerUsername: string | null;
   createdAt: string;
+  updatedAt: string | null;
 };
 
 type ShippingAddress = {
@@ -72,6 +77,12 @@ type PrintRequest = {
 };
 
 const RARITY_LABELS = ["Common", "Rare", "Epic", "Legendary"];
+
+/** Tanggal + jam lokal; "—" untuk nilai kosong atau tidak valid. */
+function formatTime(value: string | null | undefined): string {
+  const t = value ? new Date(value) : null;
+  return t && !Number.isNaN(t.getTime()) ? t.toLocaleString() : "—";
+}
 const BSC_TESTNET_TX = "https://testnet.bscscan.com/tx/";
 const BSC_TESTNET_TOKEN = "https://testnet.bscscan.com/token/";
 const CONTRACT_ADDR = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x3E1Cf18D6b94A4aCC438176b87E1387280aC87d4").trim();
@@ -164,6 +175,163 @@ const TAB_META: Record<TabKey, { label: string; icon: React.ReactNode }> = {
   },
 };
 
+const TAB_ORDER: TabKey[] = ["cards", "transactions", "dismantle", "prints", "health", "users", "supporters", "creators"];
+
+type DismantleRow = { tx: AdminTx; card: AdminCard | undefined; owner: string | null; rarity: number | null };
+
+const capitalize = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
+
+const RARITY_OPTIONS = RARITY_LABELS.map((label, i) => ({ value: String(i), label }));
+
+const RISK_OPTIONS = [
+  { value: "flagged", label: "Flagged" },
+  { value: "high", label: "High (≥70)" },
+  { value: "medium", label: "Medium (30-69)" },
+  { value: "low", label: "Low (<30)" },
+  { value: "none", label: "No Score" },
+];
+
+/** Tahap fulfillment, urut dari yang paling butuh tindakan admin. */
+const STAGE_ORDER = ["Locked", "Processing", "Printed", "Shipping", "Real"];
+const printStage = (pr: PrintRequest) => pr.card?.fulfillmentStatus || pr.fulfillmentStatus || "";
+const stageRank = (pr: PrintRequest) => {
+  const i = STAGE_ORDER.indexOf(printStage(pr));
+  return i === -1 ? STAGE_ORDER.length : i;
+};
+
+const NEWEST = { value: "newest", label: "Newest" };
+const OLDEST = { value: "oldest", label: "Oldest" };
+
+const TX_SORT_OPTIONS = [
+  NEWEST, OLDEST,
+  { value: "amount-desc", label: "Amount: high → low" },
+  { value: "amount-asc", label: "Amount: low → high" },
+  { value: "risk-desc", label: "Risk: high → low" },
+  { value: "risk-asc", label: "Risk: low → high" },
+  { value: "type-asc", label: "Type A → Z" },
+];
+const TX_SORTS: Record<string, Comparator<AdminTx>> = {
+  newest: (a, b) => byDate(a.createdAt, b.createdAt, -1),
+  oldest: (a, b) => byDate(a.createdAt, b.createdAt, 1),
+  "amount-desc": (a, b) => byNumber(a.amount, b.amount, -1),
+  "amount-asc": (a, b) => byNumber(a.amount, b.amount, 1),
+  "risk-desc": (a, b) => byNumber(a.riskScore, b.riskScore, -1),
+  "risk-asc": (a, b) => byNumber(a.riskScore, b.riskScore, 1),
+  "type-asc": (a, b) => byText(a.type, b.type, 1) || byDate(a.createdAt, b.createdAt, -1),
+};
+
+const CARD_SORT_OPTIONS = [
+  NEWEST, OLDEST,
+  { value: "token-desc", label: "Token ID: high → low" },
+  { value: "token-asc", label: "Token ID: low → high" },
+  { value: "rarity-desc", label: "Rarity: Legendary → Common" },
+  { value: "rarity-asc", label: "Rarity: Common → Legendary" },
+  { value: "template-asc", label: "Template A → Z" },
+  { value: "owner-asc", label: "Owner A → Z" },
+  { value: "updated", label: "Recently updated" },
+];
+const CARD_SORTS: Record<string, Comparator<AdminCard>> = {
+  newest: (a, b) => byDate(a.createdAt, b.createdAt, -1),
+  oldest: (a, b) => byDate(a.createdAt, b.createdAt, 1),
+  "token-desc": (a, b) => byNumber(a.tokenId, b.tokenId, -1),
+  "token-asc": (a, b) => byNumber(a.tokenId, b.tokenId, 1),
+  "rarity-desc": (a, b) => byNumber(a.rarity, b.rarity, -1) || byDate(a.createdAt, b.createdAt, -1),
+  "rarity-asc": (a, b) => byNumber(a.rarity, b.rarity, 1) || byDate(a.createdAt, b.createdAt, -1),
+  "template-asc": (a, b) => byText(a.templateId, b.templateId, 1),
+  "owner-asc": (a, b) => byText(a.ownerUsername, b.ownerUsername, 1),
+  updated: (a, b) => byDate(a.updatedAt ?? a.createdAt, b.updatedAt ?? b.createdAt, -1),
+};
+
+const DISMANTLE_SORT_OPTIONS = [
+  NEWEST, OLDEST,
+  { value: "crystal-desc", label: "Crystal: high → low" },
+  { value: "crystal-asc", label: "Crystal: low → high" },
+  { value: "rarity-desc", label: "Rarity: Legendary → Common" },
+  { value: "owner-asc", label: "Owner A → Z" },
+];
+const DISMANTLE_SORTS: Record<string, Comparator<DismantleRow>> = {
+  newest: (a, b) => byDate(a.tx.createdAt, b.tx.createdAt, -1),
+  oldest: (a, b) => byDate(a.tx.createdAt, b.tx.createdAt, 1),
+  "crystal-desc": (a, b) => byNumber(a.tx.amount, b.tx.amount, -1),
+  "crystal-asc": (a, b) => byNumber(a.tx.amount, b.tx.amount, 1),
+  "rarity-desc": (a, b) => byNumber(a.rarity, b.rarity, -1) || byDate(a.tx.createdAt, b.tx.createdAt, -1),
+  "owner-asc": (a, b) => byText(a.owner, b.owner, 1),
+};
+
+const PRINT_SORT_OPTIONS = [
+  NEWEST, OLDEST,
+  { value: "updated", label: "Recently updated" },
+  { value: "action", label: "Needs action first" },
+];
+const PRINT_SORTS: Record<string, Comparator<PrintRequest>> = {
+  newest: (a, b) => byDate(a.createdAt, b.createdAt, -1),
+  oldest: (a, b) => byDate(a.createdAt, b.createdAt, 1),
+  updated: (a, b) => byDate(a.updatedAt, b.updatedAt, -1),
+  action: (a, b) => stageRank(a) - stageRank(b) || byDate(a.createdAt, b.createdAt, 1),
+};
+
+const PENDING_SORT_OPTIONS = [
+  { value: "longest", label: "Longest pending" },
+  { value: "shortest", label: "Shortest pending" },
+  NEWEST, OLDEST,
+];
+const PENDING_SORTS: Record<string, Comparator<PendingCard>> = {
+  longest: (a, b) => byNumber(a.pendingMs, b.pendingMs, -1),
+  shortest: (a, b) => byNumber(a.pendingMs, b.pendingMs, 1),
+  newest: (a, b) => byDate(a.createdAt, b.createdAt, -1),
+  oldest: (a, b) => byDate(a.createdAt, b.createdAt, 1),
+};
+
+const USER_SORT_OPTIONS = [
+  NEWEST, OLDEST,
+  { value: "username-asc", label: "Username A → Z" },
+  { value: "username-desc", label: "Username Z → A" },
+  { value: "email-asc", label: "Email A → Z" },
+  { value: "email-desc", label: "Email Z → A" },
+];
+const USER_SORTS: Record<string, Comparator<AdminUser>> = {
+  newest: (a, b) => byDate(a.createdAt, b.createdAt, -1),
+  oldest: (a, b) => byDate(a.createdAt, b.createdAt, 1),
+  "username-asc": (a, b) => byText(a.username, b.username, 1),
+  "username-desc": (a, b) => byText(a.username, b.username, -1),
+  "email-asc": (a, b) => byText(a.email, b.email, 1),
+  "email-desc": (a, b) => byText(a.email, b.email, -1),
+};
+
+const SUPPORTER_SORT_OPTIONS = [
+  NEWEST, OLDEST,
+  { value: "email-asc", label: "Email A → Z" },
+  { value: "email-desc", label: "Email Z → A" },
+];
+const SUPPORTER_SORTS: Record<string, Comparator<AdminSupporter>> = {
+  newest: (a, b) => byDate(a.createdAt, b.createdAt, -1),
+  oldest: (a, b) => byDate(a.createdAt, b.createdAt, 1),
+  "email-asc": (a, b) => byText(a.email, b.email, 1),
+  "email-desc": (a, b) => byText(a.email, b.email, -1),
+};
+
+const CREATOR_SORT_OPTIONS = [
+  NEWEST, OLDEST,
+  { value: "name-asc", label: "Name A → Z" },
+  { value: "name-desc", label: "Name Z → A" },
+  { value: "brand-asc", label: "Brand A → Z" },
+  { value: "brand-desc", label: "Brand Z → A" },
+];
+const CREATOR_SORTS: Record<string, Comparator<CreatorApp>> = {
+  newest: (a, b) => byDate(a.createdAt, b.createdAt, -1),
+  oldest: (a, b) => byDate(a.createdAt, b.createdAt, 1),
+  "name-asc": (a, b) => byText(a.name, b.name, 1),
+  "name-desc": (a, b) => byText(a.name, b.name, -1),
+  "brand-asc": (a, b) => byText(a.brandName, b.brandName, 1),
+  "brand-desc": (a, b) => byText(a.brandName, b.brandName, -1),
+};
+
+/** Urutan default per tab. Health memprioritaskan yang paling lama pending. */
+const DEFAULT_SORT: Record<TabKey, string> = {
+  cards: "newest", transactions: "newest", dismantle: "newest", prints: "newest",
+  health: "longest", users: "newest", supporters: "newest", creators: "newest",
+};
+
 export default function AdminPage() {
   const [tab, setTab] = useState<TabKey>("cards");
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -177,11 +345,13 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [confirmingAll, setConfirmingAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [txTypeFilter, setTxTypeFilter] = useState<string>("all");
-  const [txRiskFilter, setTxRiskFilter] = useState<string>("all");
-  const [cardSearch, setCardSearch] = useState<string>("");
-  const [cardStatusFilter, setCardStatusFilter] = useState<string>("all");
-  const [cardRarityFilter, setCardRarityFilter] = useState<string>("all");
+  // Filter per tab disimpan di sini supaya tidak hilang saat berpindah tab.
+  const [filters, setFilters] = useState<Record<TabKey, FilterState>>(() => {
+    const f = {} as Record<TabKey, FilterState>;
+    for (const t of TAB_ORDER) f[t] = initialFilter(DEFAULT_SORT[t]);
+    return f;
+  });
+  const setFilter = (t: TabKey) => (next: FilterState) => setFilters((prev) => ({ ...prev, [t]: next }));
 
   const fetchAll = useCallback(() => {
     setLoading(true);
@@ -214,45 +384,141 @@ export default function AdminPage() {
     fetchAll();
   }, [fetchAll]);
 
-  const filteredTxs = txs.filter((tx) => {
-    if (txTypeFilter !== "all" && tx.type !== txTypeFilter) return false;
-    if (txRiskFilter === "flagged" && !tx.flagged) return false;
-    if (txRiskFilter === "high" && (tx.riskScore === null || tx.riskScore < 70)) return false;
-    if (txRiskFilter === "medium" && (tx.riskScore === null || tx.riskScore < 30 || tx.riskScore >= 70)) return false;
-    if (txRiskFilter === "low" && (tx.riskScore === null || tx.riskScore >= 30)) return false;
-    if (txRiskFilter === "none" && tx.riskScore !== null) return false;
-    return true;
+  /* ─── Transactions ─── */
+  const ft = filters.transactions;
+  const filteredTxs = applySort(
+    txs.filter((tx) => {
+      const type = sel(ft, "type"), status = sel(ft, "status"), risk = sel(ft, "risk");
+      if (type !== "all" && tx.type !== type) return false;
+      if (status !== "all" && tx.rawStatus !== status) return false;
+      if (risk === "flagged" && !tx.flagged) return false;
+      if (risk === "high" && (tx.riskScore === null || tx.riskScore < 70)) return false;
+      if (risk === "medium" && (tx.riskScore === null || tx.riskScore < 30 || tx.riskScore >= 70)) return false;
+      if (risk === "low" && (tx.riskScore === null || tx.riskScore >= 30)) return false;
+      if (risk === "none" && tx.riskScore !== null) return false;
+      return matchesQuery(ft.q, [tx.id, tx.rawId, tx.txHash, tx.type, tx.tokenId, ...(tx.tokenIds ?? []), tx.userId, tx.fromAddress, tx.toAddress]);
+    }),
+    ft.sort,
+    TX_SORTS,
+  );
+
+  /* ─── Cards ─── */
+  const fc = filters.cards;
+  const filteredCards = applySort(
+    cards.filter((c) => {
+      const status = sel(fc, "status"), rarity = sel(fc, "rarity"), fulfillment = sel(fc, "fulfillment");
+      if (status !== "all" && c.status !== status) return false;
+      if (rarity !== "all" && c.rarity !== Number(rarity)) return false;
+      if (fulfillment === "none" && c.fulfillmentStatus) return false;
+      if (fulfillment !== "all" && fulfillment !== "none" && c.fulfillmentStatus !== fulfillment) return false;
+      return matchesQuery(fc.q, [c.cardId, c.tokenId, c.templateId, c.ownerUsername, c.ownerAddress]);
+    }),
+    fc.sort,
+    CARD_SORTS,
+  );
+
+  /* ─── Dismantle ─── */
+  const cardByTokenId = new Map(cards.map((c) => [c.tokenId, c]));
+  const userById = new Map(users.map((u) => [u.id, u]));
+  const dismantleRows: DismantleRow[] = txs
+    .filter((t) => t.type === "dismantled")
+    .map((tx) => {
+      const card = tx.tokenId != null ? cardByTokenId.get(tx.tokenId) : undefined;
+      return { tx, card, owner: userById.get(tx.userId)?.username ?? null, rarity: tx.rarity ?? card?.rarity ?? null };
+    });
+  const fd = filters.dismantle;
+  const filteredDismantle = applySort(
+    dismantleRows.filter((r) => {
+      const rarity = sel(fd, "rarity"), status = sel(fd, "status");
+      if (rarity !== "all" && r.rarity !== Number(rarity)) return false;
+      if (status !== "all" && r.tx.rawStatus !== status) return false;
+      return matchesQuery(fd.q, [r.owner, r.tx.userId, r.card?.templateId, r.card?.cardId, r.tx.tokenId, r.tx.txHash]);
+    }),
+    fd.sort,
+    DISMANTLE_SORTS,
+  );
+
+  /* ─── Print requests ─── */
+  const fp = filters.prints;
+  const filteredPrints = applySort(
+    prints.filter((pr) => {
+      const stage = sel(fp, "stage"), code = sel(fp, "code");
+      if (stage !== "all" && printStage(pr) !== stage) return false;
+      if (code !== "all" && (pr.codeStatus ?? "unknown") !== code) return false;
+      return matchesQuery(fp.q, [
+        pr.card?.cardId, pr.tokenId, pr.card?.templateId, pr.user?.email, pr.user?.username, pr.redeemCode,
+        pr.redeemer?.username, pr.shippingAddress?.recipientName, pr.shippingAddress?.city, pr.shippingAddress?.phone,
+      ]);
+    }),
+    fp.sort,
+    PRINT_SORTS,
+  );
+
+  /* ─── Health (pending mints) ─── */
+  const fh = filters.health;
+  const filteredPending = applySort(
+    pendingCards.filter((c) => {
+      const txStatus = sel(fh, "txStatus"), age = sel(fh, "age"), rarity = sel(fh, "rarity");
+      if (txStatus !== "all" && c.txStatus !== txStatus) return false;
+      if (age === "stale" && !c.isStale) return false;
+      if (age === "fresh" && c.isStale) return false;
+      if (rarity !== "all" && c.rarityCode !== Number(rarity)) return false;
+      return matchesQuery(fh.q, [c.cardId, c.tokenId, c.templateId, c.ownerUsername, c.txHash]);
+    }),
+    fh.sort,
+    PENDING_SORTS,
+  );
+
+  /* ─── Users ─── */
+  const fu = filters.users;
+  const filteredUsers = applySort(
+    users.filter((u) => matchesQuery(fu.q, [u.email, u.username, u.walletAddress])),
+    fu.sort,
+    USER_SORTS,
+  );
+
+  /* ─── Supporters ─── */
+  const fsup = filters.supporters;
+  const filteredSupporters = applySort(
+    supporters.filter((x) => matchesQuery(fsup.q, [x.email, x.message])),
+    fsup.sort,
+    SUPPORTER_SORTS,
+  );
+
+  /* ─── Creators ─── */
+  const fcr = filters.creators;
+  const filteredCreators = applySort(
+    creatorApps.filter((a) => {
+      const ipType = sel(fcr, "ipType"), status = sel(fcr, "status");
+      if (ipType !== "all" && a.ipType !== ipType) return false;
+      if (status !== "all" && a.status !== status) return false;
+      return matchesQuery(fcr.q, [a.name, a.brandName, a.ipType, a.email, a.socialMedia, a.interest, a.communitySize]);
+    }),
+    fcr.sort,
+    CREATOR_SORTS,
+  );
+
+  const view: Record<TabKey, { total: number; filtered: number }> = {
+    cards: { total: cards.length, filtered: filteredCards.length },
+    transactions: { total: txs.length, filtered: filteredTxs.length },
+    dismantle: { total: dismantleRows.length, filtered: filteredDismantle.length },
+    prints: { total: prints.length, filtered: filteredPrints.length },
+    health: { total: pendingCards.length, filtered: filteredPending.length },
+    users: { total: users.length, filtered: filteredUsers.length },
+    supporters: { total: supporters.length, filtered: filteredSupporters.length },
+    creators: { total: creatorApps.length, filtered: filteredCreators.length },
+  };
+  const count = view[tab].filtered;
+
+  /** Props bersama untuk FilterBar sebuah tab. */
+  const bar = (t: TabKey) => ({
+    state: filters[t],
+    onChange: setFilter(t),
+    defaultSort: DEFAULT_SORT[t],
+    total: view[t].total,
+    filtered: view[t].filtered,
+    testId: `${t}-filters`,
   });
-
-  const txTypes = [...new Set(txs.map((t) => t.type))].sort();
-
-  const filteredCards = cards.filter((c) => {
-    if (cardStatusFilter !== "all" && c.status !== cardStatusFilter) return false;
-    if (cardRarityFilter !== "all" && c.rarity !== Number(cardRarityFilter)) return false;
-    if (cardSearch) {
-      const q = cardSearch.toLowerCase();
-      const match =
-        (c.cardId && c.cardId.toLowerCase().includes(q)) ||
-        (c.tokenId !== null && String(c.tokenId).includes(q)) ||
-        (c.templateId && c.templateId.toLowerCase().includes(q)) ||
-        (c.ownerUsername && c.ownerUsername.toLowerCase().includes(q)) ||
-        (c.ownerAddress && c.ownerAddress.toLowerCase().includes(q));
-      if (!match) return false;
-    }
-    return true;
-  });
-
-  const cardStatuses = [...new Set(cards.map((c) => c.status))].sort();
-
-  const count =
-    tab === "users" ? users.length :
-    tab === "transactions" ? filteredTxs.length :
-    tab === "cards" ? filteredCards.length :
-    tab === "prints" ? prints.length :
-    tab === "supporters" ? supporters.length :
-    tab === "dismantle" ? txs.filter((t) => t.type === "dismantled").length :
-    tab === "creators" ? creatorApps.length :
-    pendingCards.length;
 
   const pendingPrints = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) !== "Real").length;
   const newPrintRequests = prints.filter((p) => (p.card?.fulfillmentStatus || p.fulfillmentStatus) === "Locked").length;
@@ -291,7 +557,7 @@ export default function AdminPage() {
       {/* Tabs */}
       <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
         <div className="flex gap-2 flex-wrap">
-          {(["cards", "transactions", "dismantle", "prints", "health", "users", "supporters", "creators"] as const).map((t) => {
+          {TAB_ORDER.map((t) => {
             const isActive = tab === t;
             return (
               <button
@@ -348,34 +614,47 @@ export default function AdminPage() {
         <>
           <p className="text-xs text-white/40 mb-3 uppercase tracking-widest" data-testid="admin-count">
             {count} record{count === 1 ? "" : "s"}
+            {count !== view[tab].total && <span className="text-white/25"> of {view[tab].total}</span>}
           </p>
-          {tab === "users" && <UsersTable users={users} />}
+          {tab === "users" && (
+            <>
+              <FilterBar {...bar("users")} searchPlaceholder="Search email, username, wallet…" sorts={USER_SORT_OPTIONS} />
+              <UsersTable users={filteredUsers} />
+            </>
+          )}
           {tab === "transactions" && (
             <>
-              <TxFilterBar
-                txTypes={txTypes}
-                typeFilter={txTypeFilter}
-                onTypeChange={setTxTypeFilter}
-                riskFilter={txRiskFilter}
-                onRiskChange={setTxRiskFilter}
-                total={txs.length}
-                filtered={filteredTxs.length}
+              <FilterBar
+                {...bar("transactions")}
+                searchPlaceholder="Search invoice, txHash, token, user, address…"
+                selects={[
+                  { key: "type", label: "Type", options: toOptions(txs.map((t) => t.type)) },
+                  { key: "status", label: "Status", options: toOptions(txs.map((t) => t.rawStatus)) },
+                  { key: "risk", label: "Risk", options: RISK_OPTIONS },
+                ]}
+                sorts={TX_SORT_OPTIONS}
               />
               <TxsTable txs={filteredTxs} />
             </>
           )}
           {tab === "cards" && (
             <>
-              <CardsFilterBar
-                cardStatuses={cardStatuses}
-                statusFilter={cardStatusFilter}
-                onStatusChange={setCardStatusFilter}
-                rarityFilter={cardRarityFilter}
-                onRarityChange={setCardRarityFilter}
-                search={cardSearch}
-                onSearchChange={setCardSearch}
-                total={cards.length}
-                filtered={filteredCards.length}
+              <FilterBar
+                {...bar("cards")}
+                searchPlaceholder="Search cardId, tokenId, template, owner…"
+                selects={[
+                  { key: "status", label: "Status", options: toOptions(cards.map((c) => c.status)) },
+                  { key: "rarity", label: "Rarity", options: RARITY_OPTIONS },
+                  {
+                    key: "fulfillment",
+                    label: "Fulfillment",
+                    options: [
+                      { value: "none", label: "None" },
+                      ...toOptions(cards.map((c) => c.fulfillmentStatus), (v) => FULFILLMENT_DISPLAY[v] ?? v),
+                    ],
+                  },
+                ]}
+                sorts={CARD_SORT_OPTIONS}
               />
               <CardsTable cards={filteredCards} />
             </>
@@ -396,20 +675,74 @@ export default function AdminPage() {
                   Fix Claimed Cards
                 </button>
               </div>
-              <PrintRequestsTable prints={prints} onAccept={fetchAll} />
+              <FilterBar
+                {...bar("prints")}
+                searchPlaceholder="Search card, user, redeem code, recipient, city…"
+                selects={[
+                  { key: "stage", label: "Stage", options: STAGE_ORDER.map((v) => ({ value: v, label: FULFILLMENT_DISPLAY[v] ?? v })) },
+                  { key: "code", label: "Code", options: toOptions(prints.map((p) => p.codeStatus ?? "unknown"), capitalize) },
+                ]}
+                sorts={PRINT_SORT_OPTIONS}
+              />
+              <PrintRequestsTable prints={filteredPrints} onAccept={fetchAll} />
             </>
           )}
           {tab === "health" && (
             <HealthTable
-              pendingCards={pendingCards}
+              pendingCards={filteredPending}
               meta={pendingMeta}
               confirmingAll={confirmingAll}
               onConfirmAll={handleConfirmAll}
+              filterBar={
+                pendingCards.length > 0 ? (
+                  <FilterBar
+                    {...bar("health")}
+                    searchPlaceholder="Search card, template, owner, txHash…"
+                    selects={[
+                      { key: "txStatus", label: "Tx", options: toOptions(pendingCards.map((c) => c.txStatus)) },
+                      { key: "age", label: "Age", options: [{ value: "stale", label: "Stale (>1m)" }, { value: "fresh", label: "Fresh" }] },
+                      { key: "rarity", label: "Rarity", options: RARITY_OPTIONS },
+                    ]}
+                    sorts={PENDING_SORT_OPTIONS}
+                  />
+                ) : null
+              }
             />
           )}
-          {tab === "supporters" && <SupportersTable supporters={supporters} />}
-          {tab === "dismantle" && <DismantleTable txs={txs.filter((t) => t.type === "dismantled")} cards={cards} users={users} />}
-          {tab === "creators" && <CreatorAppsTable apps={creatorApps} />}
+          {tab === "supporters" && (
+            <>
+              <FilterBar {...bar("supporters")} searchPlaceholder="Search email, message…" sorts={SUPPORTER_SORT_OPTIONS} />
+              <SupportersTable supporters={filteredSupporters} />
+            </>
+          )}
+          {tab === "dismantle" && (
+            <>
+              <FilterBar
+                {...bar("dismantle")}
+                searchPlaceholder="Search owner, card, tokenId, txHash…"
+                selects={[
+                  { key: "rarity", label: "Rarity", options: RARITY_OPTIONS },
+                  { key: "status", label: "Status", options: toOptions(dismantleRows.map((r) => r.tx.rawStatus)) },
+                ]}
+                sorts={DISMANTLE_SORT_OPTIONS}
+              />
+              <DismantleTable rows={filteredDismantle} />
+            </>
+          )}
+          {tab === "creators" && (
+            <>
+              <FilterBar
+                {...bar("creators")}
+                searchPlaceholder="Search name, brand, email, social, interest…"
+                selects={[
+                  { key: "ipType", label: "Type", options: toOptions(creatorApps.map((a) => a.ipType)) },
+                  { key: "status", label: "Status", options: toOptions(creatorApps.map((a) => a.status), capitalize) },
+                ]}
+                sorts={CREATOR_SORT_OPTIONS}
+              />
+              <CreatorAppsTable apps={filteredCreators} />
+            </>
+          )}
         </>
       )}
     </PageShell>
@@ -473,7 +806,7 @@ function UsersTable({ users }: { users: AdminUser[] }) {
             <td className="px-4 py-3.5 text-white/90">{u.email}</td>
             <td className="px-4 py-3.5" style={{ color: "var(--cosmic-violet)" }}>@{u.username}</td>
             <td className="px-4 py-3.5 font-mono text-xs text-white/60">{u.walletAddress}</td>
-            <td className="px-4 py-3.5 text-white/50">{new Date(u.createdAt).toLocaleDateString()}</td>
+            <td className="px-4 py-3.5 text-white/50 whitespace-nowrap">{formatTime(u.createdAt)}</td>
           </tr>
         ))
       )}
@@ -482,58 +815,6 @@ function UsersTable({ users }: { users: AdminUser[] }) {
 }
 
 /* ─── Transactions ─── */
-function TxFilterBar({
-  txTypes, typeFilter, onTypeChange, riskFilter, onRiskChange, total, filtered,
-}: {
-  txTypes: string[];
-  typeFilter: string;
-  onTypeChange: (v: string) => void;
-  riskFilter: string;
-  onRiskChange: (v: string) => void;
-  total: number;
-  filtered: number;
-}) {
-  const selectStyle: React.CSSProperties = {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.15)",
-    color: "rgba(255,255,255,0.85)",
-    borderRadius: "0.5rem",
-    padding: "0.375rem 0.75rem",
-    fontSize: "0.75rem",
-    outline: "none",
-    cursor: "pointer",
-  };
-  const optionStyle: React.CSSProperties = {
-    backgroundColor: "#1a1a2e",
-    color: "rgba(255,255,255,0.85)",
-  };
-  return (
-    <div className="flex flex-wrap items-center gap-3 mb-4" data-testid="tx-filters">
-      <div className="flex items-center gap-2">
-        <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Type</span>
-        <select value={typeFilter} onChange={(e) => onTypeChange(e.target.value)} style={selectStyle}>
-          <option value="all" style={optionStyle}>All</option>
-          {txTypes.map((t) => <option key={t} value={t} style={optionStyle}>{t}</option>)}
-        </select>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Risk</span>
-        <select value={riskFilter} onChange={(e) => onRiskChange(e.target.value)} style={selectStyle}>
-          <option value="all" style={optionStyle}>All</option>
-          <option value="flagged" style={optionStyle}>Flagged</option>
-          <option value="high" style={optionStyle}>High (&#8805;70)</option>
-          <option value="medium" style={optionStyle}>Medium (30-69)</option>
-          <option value="low" style={optionStyle}>Low (&lt;30)</option>
-          <option value="none" style={optionStyle}>No Score</option>
-        </select>
-      </div>
-      {filtered !== total && (
-        <span className="text-[0.6rem] text-white/30 ml-2">{filtered} of {total}</span>
-      )}
-    </div>
-  );
-}
-
 function TxsTable({ txs }: { txs: AdminTx[] }) {
   const [expandedTx, setExpandedTx] = useState<string | null>(null);
 
@@ -543,8 +824,8 @@ function TxsTable({ txs }: { txs: AdminTx[] }) {
         <tr><td colSpan={6} className="p-8 text-center text-white/40">No transactions found</td></tr>
       ) : (
         txs.map((tx) => (
-          <>
-            <tr key={tx.rawId} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
+          <Fragment key={tx.rawId}>
+            <tr style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
               <td className="px-4 py-3.5">
                 <div className="font-mono text-xs text-white/90">{tx.id}</div>
                 <div className="text-[0.6rem] text-white/35 font-mono">{tx.rawId}</div>
@@ -590,7 +871,7 @@ function TxsTable({ txs }: { txs: AdminTx[] }) {
                 </td>
               </tr>
             )}
-          </>
+          </Fragment>
         ))
       )}
     </TableShell>
@@ -667,77 +948,6 @@ function TokenIdCell({ tokenId }: { tokenId: number }) {
   );
 }
 
-/* ─── Cards Filter Bar ─── */
-function CardsFilterBar({
-  cardStatuses, statusFilter, onStatusChange, rarityFilter, onRarityChange, search, onSearchChange, total, filtered,
-}: {
-  cardStatuses: string[];
-  statusFilter: string;
-  onStatusChange: (v: string) => void;
-  rarityFilter: string;
-  onRarityChange: (v: string) => void;
-  search: string;
-  onSearchChange: (v: string) => void;
-  total: number;
-  filtered: number;
-}) {
-  const selectStyle: React.CSSProperties = {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.15)",
-    color: "rgba(255,255,255,0.85)",
-    borderRadius: "0.5rem",
-    padding: "0.375rem 0.75rem",
-    fontSize: "0.75rem",
-    outline: "none",
-    cursor: "pointer",
-  };
-  const optionStyle: React.CSSProperties = {
-    backgroundColor: "#1a1a2e",
-    color: "rgba(255,255,255,0.85)",
-  };
-  return (
-    <div className="flex flex-wrap items-center gap-3 mb-4" data-testid="cards-filters">
-      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search cardId, tokenId, template, owner…"
-          className="flex-1 bg-transparent text-sm text-white/85 placeholder:text-white/25 outline-none"
-          style={{
-            border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: "0.5rem",
-            padding: "0.375rem 0.75rem",
-            fontSize: "0.75rem",
-          }}
-          data-testid="cards-search"
-        />
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Status</span>
-        <select value={statusFilter} onChange={(e) => onStatusChange(e.target.value)} style={selectStyle}>
-          <option value="all" style={optionStyle}>All</option>
-          {cardStatuses.map((s) => <option key={s} value={s} style={optionStyle}>{s}</option>)}
-        </select>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-[0.62rem] uppercase tracking-widest text-white/40">Rarity</span>
-        <select value={rarityFilter} onChange={(e) => onRarityChange(e.target.value)} style={selectStyle}>
-          <option value="all" style={optionStyle}>All</option>
-          <option value="0" style={optionStyle}>Common</option>
-          <option value="1" style={optionStyle}>Rare</option>
-          <option value="2" style={optionStyle}>Epic</option>
-          <option value="3" style={optionStyle}>Legendary</option>
-        </select>
-      </div>
-      {filtered !== total && (
-        <span className="text-[0.6rem] text-white/30 ml-2">{filtered} of {total}</span>
-      )}
-    </div>
-  );
-}
-
 function CardsTable({ cards }: { cards: AdminCard[] }) {
   const [copiedAddr, setCopiedAddr] = useState<string | null>(null);
 
@@ -748,9 +958,9 @@ function CardsTable({ cards }: { cards: AdminCard[] }) {
   };
 
   return (
-    <TableShell head={<><TH>Token ID</TH><TH>Card ID</TH><TH>Template</TH><TH>Rarity</TH><TH>Status</TH><TH>Fulfillment</TH><TH>Owner</TH></>}>
+    <TableShell head={<><TH>Token ID</TH><TH>Card ID</TH><TH>Template</TH><TH>Rarity</TH><TH>Status</TH><TH>Fulfillment</TH><TH>Owner</TH><TH>Created</TH></>}>
       {cards.length === 0 ? (
-        <tr><td colSpan={7} className="p-8 text-center text-white/40">No cards found</td></tr>
+        <tr><td colSpan={8} className="p-8 text-center text-white/40">No cards found</td></tr>
       ) : (
         cards.map((c, i) => (
           <tr key={c.tokenId ?? `card-${i}`} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
@@ -787,6 +997,12 @@ function CardsTable({ cards }: { cards: AdminCard[] }) {
                 </div>
               ) : (
                 <span className="text-white/30">—</span>
+              )}
+            </td>
+            <td className="px-4 py-3.5 text-xs whitespace-nowrap">
+              <div className="text-white/50">{formatTime(c.createdAt)}</div>
+              {c.updatedAt && c.updatedAt !== c.createdAt && (
+                <div className="text-[0.6rem] text-white/30 mt-0.5">Updated {formatTime(c.updatedAt)}</div>
               )}
             </td>
           </tr>
@@ -870,6 +1086,10 @@ function PrintRequestsTable({ prints, onAccept }: { prints: PrintRequest[]; onAc
                       {RARITY_LABELS[pr.card.rarity] ?? "Unknown"}
                     </span>
                   </>
+                )}
+                <p className="text-[0.6rem] text-white/40 mt-2">Requested {formatTime(pr.createdAt)}</p>
+                {pr.updatedAt && pr.updatedAt !== pr.createdAt && (
+                  <p className="text-[0.6rem] text-white/30">Updated {formatTime(pr.updatedAt)}</p>
                 )}
               </div>
 
@@ -992,11 +1212,13 @@ function HealthTable({
   meta,
   confirmingAll,
   onConfirmAll,
+  filterBar,
 }: {
   pendingCards: PendingCard[];
   meta: { total: number; staleCount: number; avgPendingMinutes: number };
   confirmingAll: boolean;
   onConfirmAll: () => void;
+  filterBar: React.ReactNode;
 }) {
   return (
     <div className="space-y-4">
@@ -1034,8 +1256,12 @@ function HealthTable({
         )}
       </div>
 
+      {filterBar}
+
       {/* Table */}
-      {pendingCards.length === 0 ? (
+      {meta.total > 0 && pendingCards.length === 0 ? (
+        <div className="glass p-12 text-center text-white/40">No pending cards match these filters</div>
+      ) : pendingCards.length === 0 ? (
         <div className="glass p-12 text-center" data-testid="admin-health-empty">
           <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: "rgba(0,204,255,0.15)" }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--electric-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1108,7 +1334,7 @@ function SupportersTable({ supporters }: { supporters: AdminSupporter[] }) {
   return (
     <TableShell head={<><TH>Email</TH><TH>Message</TH><TH>Submitted</TH></>}>
       {supporters.length === 0 ? (
-        <tr><td colSpan={3} className="p-8 text-center text-white/40">No supporters yet</td></tr>
+        <tr><td colSpan={3} className="p-8 text-center text-white/40">No supporters found</td></tr>
       ) : (
         supporters.map((s) => (
           <tr key={s.id} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
@@ -1125,10 +1351,7 @@ function SupportersTable({ supporters }: { supporters: AdminSupporter[] }) {
 }
 
 /* ─── Dismantle ─── */
-function DismantleTable({ txs, cards, users }: { txs: AdminTx[]; cards: AdminCard[]; users: AdminUser[] }) {
-  const cardMap = new Map(cards.map((c) => [c.tokenId, c]));
-  const userMap = new Map(users.map((u) => [u.id, u]));
-
+function DismantleTable({ rows }: { rows: DismantleRow[] }) {
   return (
     <TableShell
       head={
@@ -1143,19 +1366,17 @@ function DismantleTable({ txs, cards, users }: { txs: AdminTx[]; cards: AdminCar
         </>
       }
     >
-      {txs.length === 0 ? (
-        <tr><td colSpan={7} className="p-8 text-center text-white/40">No dismantle records yet</td></tr>
+      {rows.length === 0 ? (
+        <tr><td colSpan={7} className="p-8 text-center text-white/40">No dismantle records found</td></tr>
       ) : (
-        txs.map((tx) => {
-          const card = tx.tokenId != null ? cardMap.get(tx.tokenId) : undefined;
-          const user = userMap.get(tx.userId);
-          const rarityLabel = tx.rarity != null ? RARITY_LABELS[tx.rarity] ?? "?" : card ? RARITY_LABELS[card.rarity] ?? "?" : "?";
+        rows.map(({ tx, card, owner, rarity }) => {
+          const rarityLabel = rarity != null ? RARITY_LABELS[rarity] ?? "?" : "?";
           const cardName = card?.templateId ?? `Token #${tx.tokenId ?? "?"}`;
 
           return (
             <tr key={tx.id} style={rowStyle} className="hover:bg-white/[0.03] transition-colors">
               <td className="px-4 py-3.5 text-white/50 whitespace-nowrap">{new Date(tx.createdAt).toLocaleString()}</td>
-              <td className="px-4 py-3.5 text-white/90">{user?.username ?? tx.userId}</td>
+              <td className="px-4 py-3.5 text-white/90">{owner ?? tx.userId}</td>
               <td className="px-4 py-3.5 text-white/90">{cardName}</td>
               <td className="px-4 py-3.5">
                 <span
@@ -1224,7 +1445,7 @@ function CreatorAppsTable({ apps }: { apps: CreatorApp[] }) {
       }
     >
       {apps.length === 0 ? (
-        <tr><td colSpan={8} className="p-8 text-center text-white/40">No applications yet</td></tr>
+        <tr><td colSpan={8} className="p-8 text-center text-white/40">No applications found</td></tr>
       ) : (
         apps.map((a) => {
           const isExpanded = expanded === a.id;

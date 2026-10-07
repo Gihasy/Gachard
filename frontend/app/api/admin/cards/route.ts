@@ -32,6 +32,7 @@ export async function GET() {
       ownerAddress: c.ownerAddress,
       ownerUsername: c.ownerAddress ? addressToUsername.get(c.ownerAddress.toLowerCase()) || null : null,
       createdAt: c.createdAt,
+      updatedAt: c.updatedAt || null,
     }));
 
     return NextResponse.json(
